@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
-const { Cruiser } = require('../../modules/ships/cruiser');
-const squadrons = require('../../database/db.js');
+const db = require('../../database/db.js');
 
 
 module.exports = {
@@ -47,9 +46,11 @@ module.exports = {
             leader: `${member.id}`,
             officer: ``,
             ships: [],
+            modules: [],
+            specs: [],
         };
 
-        squadrons.set(`${member.id}`, newSquadron);
+        db.squadrons.set(`${member.id}`, newSquadron);
 
         // Obligatory reply
         await interaction.reply({content: `${member.displayName} has been promoted to ${role.name}!`, ephemeral: true});

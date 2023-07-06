@@ -1,3 +1,4 @@
+
 const { Ship } = require('./base.js');
 
 class Cruiser extends Ship {
