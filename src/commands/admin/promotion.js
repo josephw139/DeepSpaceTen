@@ -32,7 +32,7 @@ module.exports = {
         // Send Announcement
         const reply = new EmbedBuilder()
 		.setTitle(`U.C.S. Exploration Fleet Promotion`)
-        .setDescription(`Congratulations <@${member.id}>! You have been promoted to ${role.name}!`)
+        .setDescription(`Congratulations <@${member.id}>! You have been promoted to ${role.name}!`);
 
         await channel.send({ embeds: [reply]});
 
@@ -43,7 +43,7 @@ module.exports = {
 
         // Save Squadron details to database
         const newSquadron = {
-            leader: `${member.id}`,
+            leader: `${member.displayName}`,
             officer: ``,
             ships: [],
             modules: [],

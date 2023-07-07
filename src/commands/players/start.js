@@ -80,13 +80,13 @@ module.exports = {
             const cruiser = ships.createShip(false, "cruiser", `${flagship}`); // new ships.Cruiser(`U.C.S. ${flagship}`);
             const secondShip = ships.createShip(false, `${starterShip}`, `${secondName}`);
 
-            db.squadrons.push(`${member}`, `${cruiser.toArray()}`, "ships");
-            db.squadrons.push(`${member}`, `${secondShip.toArray()}`, "ships");
+            db.squadrons.push(`${member}`, cruiser.toArray(), "ships");
+            db.squadrons.push(`${member}`, secondShip.toArray(), "ships");
             db.squadrons.push(`${member}`, `${module}`, "modules");
             db.squadrons.push(`${member}`, `${specShip}`, "specs");
         }
 
         // Obligatory reply
-        await interaction.reply({content: `Flagship ${flagship} has been deployde, alongside U.C.S. ${secondName}`, ephemeral: false});
+        await interaction.reply({content: `Flagship U.C.S. ${flagship} has been deployed, alongside U.C.S. ${secondName}`, ephemeral: false});
 	}
 };

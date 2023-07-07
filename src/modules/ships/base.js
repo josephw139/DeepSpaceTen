@@ -2,15 +2,16 @@ function createShip (ship, shipType, name = null) {
     let type;
     switch(shipType) {
         case "cruiser":
-            type = Cruiser
+            type = Cruiser;
+            break;
         case "freighter":
-            type = Freighter
+            type = Freighter;
             break;
         case "scout":
-            type = Scout
+            type = Scout;
             break;
         case "science_vessel":
-            type = ScienceVessel
+            type = ScienceVessel;
             break;
     }
     // if we're recreating ship from the database
@@ -24,7 +25,7 @@ function createShip (ship, shipType, name = null) {
 }
 
 class Ship {
-    constructor(name, hp, cargo, armor, speed, modules) {
+    constructor(name, hp, cargo, armor, speed, modules, ) {
         this.name = name;
         this.hp = hp;
         this.cargo = cargo;
