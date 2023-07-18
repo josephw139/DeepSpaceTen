@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
-const ships = require('../../modules/ships/base');
+const { Fleet, capitalize } = require('../../modules/ships/base');
 const db = require('../../database/db.js');
 
 /* TO DO
@@ -23,46 +23,56 @@ module.exports = {
             .addChoices(
                 { name: 'Freighter', value: 'freighter' },
                 { name: 'Scout', value: 'scout' },
-                { name: 'Science Vessel', value: 'science_vessel' },
+                { name: 'Science Vessel', value: 'science vessel' },
             ))
     .addStringOption(option =>
         option.setName("name")
             .setDescription('Name your new ship!')
             .setRequired(true))
     .addStringOption(option =>
-        option.setName("specialized")
-            .setDescription("Choose your fleet's Specialized Ship")
+        option.setName("drone")
+            .setDescription("Choose your fleet's Drone Ship")
             .setRequired(true)
             .addChoices(
-                { name: 'Mining Platform', value: 'mining_platform' },
-                { name: 'Comm Relay', value: 'comm_relay' },
-                { name: 'Fighter Squad', value: 'fighter_squad' },
+                { name: 'Mining Platform', value: 'mining platform' },
+                { name: 'Comm Relay', value: 'comm relay' },
             ))
     .addStringOption(option =>
         option.setName("module")
-            .setDescription("Choose a module to gain, attachable to a Starship")
+            .setDescription("Choose a Module to upgrade one of your ships with")
             .setRequired(true)
             .addChoices(
-                { name: 'Hangar Bay', value: 'hanger_bay' },
-                { name: 'Weapon Silos', value: 'weapon_silos' },
-                { name: 'Shields', value: 'shields' },
-                { name: 'Cargo Storage', value: 'cargo_storage' },
+                { name: 'Cargo Storage', value: 'cargo storage' },
+                { name: 'Weapon Silos', value: 'weapon silos' },
+                // { name: 'Shields', value: 'shields' },
+                // { name: 'Hangar Bay', value: 'hanger bay' },
+
+            ))
+    .addStringOption(option =>
+        option.setName("upgrade")
+            .setDescription("Choose which ship to attach your chosen Module to")
+            .setRequired(true)
+            .addChoices(
+                // { name: 'Hangar Bay', value: 'hanger bay' },
+                { name: 'Flagship', value: 'flagship' },
+                { name: 'Secondary', value: 'secondary' },
             ))
 	,
 	async execute(interaction) {
         const member = interaction.member.id;
-        const flagship = interaction.options.get('flagship').value;
+        const flagshipName = interaction.options.get('flagship').value;
         const starterShip = interaction.options.get('secondary').value;
         const secondName = interaction.options.get('name').value;
-        const specShip = interaction.options.get('specialized').value;
-        const module = interaction.options.get('module').value;
+        const drone = capitalize(interaction.options.get('drone').value);
+        const module = capitalize(interaction.options.get('module').value);
+        const upgrade = interaction.options.get('upgrade').value;
 
         // TESTING
-        const test = ships.createShip(false, "cruiser", `${flagship}`);
-        test.toArray();
+        //const test = Fleet.createShip("cruiser", `${flagshipName}`);
+        //test.toArray();
 
         // Check to see if they already have ships
-        if ((db.squadrons.get(`${member}`, "ships")).length > 0) {
+        if ((db.squadrons.get(`${member}`, "fleet"))) {
             await interaction.reply({content: "You've already created your fleet!", ephemeral: true});
             return;
         }
@@ -74,19 +84,31 @@ module.exports = {
         /* Plan: Get private channel of member, send them first
         time setup dialogue to pick starter ships & ship modules */
 
+        const fleet = new Fleet();
         if (true === true) { //role.name === "Squadron Leader"
 
             // Create starting fleet loadout
-            const cruiser = ships.createShip(false, "cruiser", `${flagship}`); // new ships.Cruiser(`U.C.S. ${flagship}`);
-            const secondShip = ships.createShip(false, `${starterShip}`, `${secondName}`);
+            // console.log(`${flagshipName}`)
 
-            db.squadrons.push(`${member}`, cruiser.toArray(), "ships");
-            db.squadrons.push(`${member}`, secondShip.toArray(), "ships");
-            db.squadrons.push(`${member}`, `${module}`, "modules");
-            db.squadrons.push(`${member}`, `${specShip}`, "specs");
+            const flagship = fleet.createShip("cruiser", `${flagshipName}`); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            const secondShip = fleet.createShip(`${starterShip}`, `${secondName}`);
+
+            if (upgrade === 'flagship') {
+                flagship.modules.push(module);
+            } else {
+                secondShip.modules.push(module);
+            }
+
+            db.squadrons.set(`${member}`, fleet.fleetSave(), "fleet");
+
+
+            //db.squadrons.push(`${member}`, cruiser.toArray(), "ships");
+            //db.squadrons.push(`${member}`, secondShip.toArray(), "ships");
+            //db.squadrons.push(`${member}`, `${module}`, "modules");
+            db.squadrons.set(`${member}`, `${drone}`, "drones");
         }
 
         // Obligatory reply
-        await interaction.reply({content: `Flagship U.C.S. ${flagship} has been deployed, alongside U.C.S. ${secondName}`, ephemeral: false});
+        await interaction.reply({content: `Flagship Cruiser U.C.S. ${capitalize(flagshipName)} has been deployed, alongside U.C.S. ${capitalize(starterShip)} ${capitalize(secondName)}`, ephemeral: false});
 	}
 };

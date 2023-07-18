@@ -44,10 +44,10 @@ module.exports = {
         // Save Squadron details to database
         const newSquadron = {
             leader: `${member.displayName}`,
-            officer: ``,
-            ships: [],
+            /*officer: ``,
+            fleet: [],
             modules: [],
-            specs: [],
+            specs: [],*/
         };
 
         db.squadrons.set(`${member.id}`, newSquadron);

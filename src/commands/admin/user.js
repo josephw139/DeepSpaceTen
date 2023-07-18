@@ -1,12 +1,38 @@
 const { SlashCommandBuilder } = require('discord.js');
+const db = require('../../database/db.js');
+
 
 module.exports = {
 	data: new SlashCommandBuilder()
-		.setName('user')
-		.setDescription('Provides information about the user.'),
+	.setName('user')
+	.setDescription('user manipulation')
+	.addUserOption(option =>
+        option
+            .setName('user')
+            .setDescription('user to assign role')
+            .setRequired(true))
+	.addBooleanOption(option =>
+        option
+            .setName('reset')
+            .setDescription('resets squadron database')
+            .setRequired(true))
+	,
 	async execute(interaction) {
-		// interaction.user is the object representing the User who ran the command
-		// interaction.member is the GuildMember object, which represents the user in the specific guild
-		await interaction.reply(`This command was run by ${interaction.user.username}, who joined on ${interaction.member.joinedAt}.`);
-	},
+        const member = interaction.options.getMember('user');
+
+        // Save Squadron details to database
+        const newSquadron = {
+            leader: `${member.displayName}`,
+            /*officer: ``,
+            fleet: [],
+            modules: [],
+            specs: [],*/
+        };
+
+        db.squadrons.set(`${member.id}`, newSquadron);
+
+        // Obligatory reply
+        await interaction.reply({content: `${member.displayName} has been reset`, ephemeral: true});
+
+	}
 };
