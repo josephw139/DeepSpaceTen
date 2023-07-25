@@ -39,17 +39,19 @@ class Ship {
 
     rollAttack() {
         // TO DO: for loop to split tons of fice (1d8+1d6+1d6+1d6)
-        // const splitDice = this.attack.split('+');
-        const split = this.attack.split('d');
-        const numDice = split[0];
-        const diceSize = split[1];
+        const splitDice = this.attack.split('+');
         let diceArray = [];
         let total = 0;
-        for (let i = 0; i < numDice; i++) {
-            let result = Math.floor(Math.random() * diceSize) + 1;
-            diceArray.push(result);
-            total += result;
-        };
+        for (let i = 0; i < splitDice.length; i++) {
+            let split = splitDice[i].split('d');
+            let numDice = split[0];
+            let diceSize = split[1];
+            for (let j = 0; j < numDice; i++) {
+                let result = Math.floor(Math.random() * diceSize) + 1;
+                diceArray.push(result);
+                total += result;
+            };
+        }
 
         let diceString = "[";
         for (let i = 0; i < diceArray.length; i++) {
@@ -68,6 +70,7 @@ class Fleet {
         this.fleetJSON = [];
         this.fleetSpecs = [];
 
+        // Recreating an existing Fleet
         if (array != null) {
             const specs =['scout'];
             for (let i = 0; i < array.length; i++) {
