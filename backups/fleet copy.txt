@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
-const { Fleet } = require('../../modules/ships/base');
-const db = require('../../database/db.js');
+const { Fleet } = require('../src/modules/ships/base.js');
+const sectors = require('../src/locations/locations.js');
+const db = require('../src/database/db.js');
 
 
 module.exports = {
@@ -27,18 +28,25 @@ module.exports = {
 	,
 	async execute(interaction) {
         const member = interaction.member;
-		// const modules = db.squadrons.get(`${member.id}`, "modules");
-		const drones = db.squadrons.get(`${member.id}`, "drones");
+		// const modules = db.player.get(`${member.id}`, "modules");
+		// const drones = db.player.get(`${member.id}`, "drones");
 		const channel = interaction.channel;
-		let fleetArray;
-		let fleet;
+		let fleetArray, fleet, location, locationDisplay;
 		try {
-			fleetArray = db.squadrons.get(`${member.id}`, "fleet");
+			fleetArray = db.player.get(`${member.id}`, "fleet");
+			console.log(fleetArray)
 			// recreate class instances
 			fleet = new Fleet(fleetArray);
 		} catch (e) {
 			await interaction.reply({content: `You haven't created your fleet yet! Use /start to begin!`, ephemeral: true});
 			return;
+		}
+
+		try {
+			location = db.player.get(`${member.id}`, "location");
+			locationDisplay = `Sector: ${location.currentSector}\nSystem: ${location.currentSystem.name}\nLocation: ${location.currentLocation.name}`;
+		} catch (e) {
+			console.log(e);
 		}
 		// console.log(fleetArray);
 
@@ -60,22 +68,24 @@ module.exports = {
 				.setDescription(`${target.shipDisplay()}`)
 				.addFields(
 					// { name: '\u200B', value: '\u200B' },
+					{ name: 'Location', value: `${locationDisplay}`},
 					{ name: 'Stats', value: `${target.shipDisplay(true)}` },
 				)
 				channel.send({ embeds: [shipView] });
 				await interaction.reply({content: `Use /fleet to see all your ships`, ephemeral: true});
 
-
-			} else { // SHOW ALL SHIPS
+			// SHOW ALL SHIPS
+			} else {
 				let shipDisplay = fleet.showAllShips();
 
 				const fleetDisplay = new EmbedBuilder()
 				.setTitle(`Exploration Team ${member.displayName}`)
-				.setDescription(`Your Squadron's Overview`)
+				.setDescription(`Fleet Overview`)
 				.addFields(
 					// { name: '\u200B', value: '\u200B' },
+					{ name: 'Location', value: `${locationDisplay}`},
 					{ name: 'Ships', value: `${shipDisplay}` },
-					{ name: 'Drone Ships', value: `${drones}`},
+					// { name: 'Drone Ships', value: `${drones}`},
 					// { name: 'Available Modules', value: `${modules}`},
 					// { name: 'Attack Test', value: `Rolled: ${newFleet[0].attack}\nTotal Damage: ${damage[0]} | Dice Rolled: ${damage[1]}`},
 				)

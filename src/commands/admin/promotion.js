@@ -1,3 +1,5 @@
+// Promote User
+
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
 const db = require('../../database/db.js');
 
@@ -50,7 +52,7 @@ module.exports = {
             specs: [],*/
         };
 
-        db.squadrons.set(`${member.id}`, newSquadron);
+        db.player.set(`${member.id}`, newSquadron);
 
         // Obligatory reply
         await interaction.reply({content: `${member.displayName} has been promoted to ${role.name}!`, ephemeral: true});

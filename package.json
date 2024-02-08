@@ -4,12 +4,14 @@
   "description": "sci-fi discord-based game",
   "main": "/src/index.js",
   "scripts": {
+    "start": "node ./src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.11.0",
-    "enmap": "^5.9.8"
+    "enmap": "^5.9.8",
+    "node-schedule": "^2.1.1"
   }
 }

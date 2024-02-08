@@ -29,7 +29,7 @@ module.exports = {
             specs: [],*/
         };
 
-        db.squadrons.set(`${member.id}`, newSquadron);
+        db.player.set(`${member.id}`, newSquadron);
 
         // Obligatory reply
         await interaction.reply({content: `${member.displayName} has been reset`, ephemeral: true});

@@ -14,7 +14,7 @@ const deserializer = (data) => {
 };
 
 module.exports = {
-    squadrons: new Enmap({
-      name: "squadrons"
+    player: new Enmap({
+      name: "player"
     })
   }

@@ -1,14 +1,23 @@
-class Ship {
-    constructor(type, name, hp, cargoCapacity, inventory, armor, speed, modules, modCapacity, attack) {
-        this.type = type, this.name = name, this.hp = hp, this.cargoCapacity = cargoCapacity,
-        this.inventory = inventory, this.armor = armor, this.speed = speed,
-        this.modules = modules, this.modCapacity = modCapacity, this.attack = attack;
+// class for a Ship
 
+
+class Ship {
+    constructor({ type, capabilities, name, manufacturer, hp, cargoCapacity, armor, speed, modCapacity, modules, inventory }) {
+        this.type = type;
+        this.capabilities = capabilities;
+        this.name = name;
+        this.manufacturer = manufacturer;
+        this.hp = hp;
+        this.cargoCapacity = cargoCapacity;
+        this.armor = armor;
+        this.speed = speed;
+        this.modules = modules;
+        this.modCapacity = modCapacity;
+        this.inventory = inventory;
+
+        // modify stats based on modules equipped
         for (let i = 0; i < modules.length; i++) {
             switch(modules[i]) {
-                case "Weapon Silos":
-                    this.attack += '+1d6';
-                    break;
                 case "Cargo Storage":
                     this.cargoCapacity += 2;
                     break;
@@ -18,25 +27,45 @@ class Ship {
         this.deploy = `${this.name} is operational and ready to deploy!`;
     }
 
-    shipDisplay(detailed=false) {
+    // function to call in the Fleet command to show ship details
+    shipDisplay(detailed = false) {
         if (detailed) {
-            return `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed} | Attack: ${this.attack}\n
-            Installed Modules (${this.modules.length}/${this.modCapacity}): ${this.modules}\n
-            Cargo Hold (${this.inventory.length}/${this.cargoCapacity}): ${this.inventory}`;
+            const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
+            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight})`).join(', ');
+    
+            return `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\n` +
+                    `Capabilities: ${this.capabilities.join(', ')}\n\n` +
+                   `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${this.modules.join(', ')}\n` +
+                   `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
-        return `${this.name} - ${capitalize(this.type)}`;
+        return `${this.name}, ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
     }
+    
+    
+    
 
+    // convert ship stats to JSON for database saving
     toArray() {
-        const array = {type: this.type, name: this.name, hp: this.hp, cargoCapacity: this.cargoCapacity,
-            inventory: this.inventory, armor: this.armor, speed: this.speed, modules: this.modules,
-            modCapacity: this.modCapacity, attack: this.attack};
+        const array = {
+            type: this.type,
+            capabilities: this.capabilities,
+            name: this.name,
+            hp: this.hp,
+            manufacturer: this.manufacturer,
+            cargoCapacity: this.cargoCapacity,
+            inventory: this.inventory,
+            armor: this.armor, 
+            speed: this.speed,
+            modules: this.modules,
+            modCapacity: this.modCapacity
+        };
 
         //console.log('base(54) toArray:\n' + array);
 
         return array;
     }
 
+    /*
     rollAttack() {
         // TO DO: for loop to split tons of fice (1d8+1d6+1d6+1d6)
         const splitDice = this.attack.split('+');
@@ -61,42 +90,87 @@ class Ship {
 
         return ([total, diceString]);
     }
+    */
 
 }
 
+// Fleet contains all the information for a player's ships
 class Fleet {
     constructor(array=null) {
         this.fleet = [];
         this.fleetJSON = [];
         this.fleetSpecs = [];
+        this.activeShip = null;
 
         // Recreating an existing Fleet
         if (array != null) {
+            // console.log(array);
+
+            // array comes from fleetJSON.
+            // fleetJSON contains an array of ships at [0], and the active ship at [1]
+            // [1] is just supposed to be a string,
+            // but it saves as the full object for some reason which works for me
             const specs =['scout'];
-            for (let i = 0; i < array.length; i++) {
-                this.createShip(array[i].type, array[i]);
-                if (specs.includes(array[i].type)) {
-                    this.fleetSpecs.push(array[i].type)
+            for (let i = 0; i < array[0].length; i++) {
+                this.createShip(array[0][i].type, array[0][i]);
+                if (specs.includes(array[0][i].type)) {
+                    this.fleetSpecs.push(array[0][i].type)
                 }
                 // this.fleet.push(ship);
                 // console.log(newFleet[i]);
             }
+            this.setActiveShip(array[1]);
         }
     }
 
+    // set active ship
+    setActiveShip(shipName) {
+        let ship = null;
+        if (typeof shipName === 'string') {
+            ship = this.fleet.find(s => s.name === shipName);
+        } else {
+            ship = this.fleet.find(s => s.name === shipName.name);
+        }
+        if (ship) {
+            this.activeShip = ship;
+        } else {
+            console.error(`Ship with name ${shipName} not found in the fleet.`);
+        }
+    }
+
+    getActiveShip() {
+        return this.activeShip;
+    }
+
+    // display a list of all ships owned by a player
     showAllShips() {
         // console.log(this.fleet);
         let shipDisplay = ``;
         for (let i = 0; i < this.fleet.length; i++) {
-            shipDisplay += `${i + 1} - ${this.fleet[i].shipDisplay()}\n`;
+            if (this.fleet[i] === this.activeShip) {
+                shipDisplay += `**`;
+            }
+            shipDisplay += `${i + 1} - ${this.fleet[i].shipDisplay()}`;
+            if (this.fleet[i] === this.activeShip) {
+                shipDisplay += `**\n`;
+            }
+            if (this.fleet[i] === this.activeShip) {
+                shipDisplay += `STATUS: ACTIVE\n\n`;
+            } else {
+                shipDisplay += `STATUS: INACTIVE\n\n`;
+            }
         }
         return shipDisplay;
     }
 
+    // convert fleet to JSON to save to database
     fleetSave() {
+        let shipJSON = [];
         for (let i = 0; i < this.fleet.length; i++) {
-            this.fleetJSON.push(this.fleet[i].toArray());
+            shipJSON.push(this.fleet[i].toArray())
         }
+        this.fleetJSON.push(shipJSON);
+        this.fleetJSON.push(this.activeShip);
         return this.fleetJSON;
     }
 
@@ -104,47 +178,33 @@ class Fleet {
 
     }*/
 
-    createShip (shipType, ship) {
-        // ship will either be an Array (pulled from database), or a string (name of a new ship)
-        let type;
-        let baseStats;
-        switch(shipType) {
-            case "cruiser":
-                type = Cruiser;
-                baseStats = {type: 'cruiser', hp: 10, cargoCapacity: 3, inventory: [], armor: 3, speed: 4,
-                modules: [], modCapacity: 2, attack: '1d8'};
-                break;
-            case "freighter":
-                type = Freighter;
-                baseStats = {type: 'freighter', hp: 10, cargoCapacity: 3, inventory: [], armor: 3, speed: 4,
-                modules: [], modCapacity: 2, attack: '1d8'};
-                break;
-            case "scout":
-                type = Scout;
-                baseStats = {type: 'scout', hp: 10, cargoCapacity: 3, inventory: [], armor: 3, speed: 4,
-                modules: [], modCapacity: 2, attack: '1d8'};
-                break;
-            case "science vessel":
-                baseStats = {type: 'science vessel', hp: 10, cargoCapacity: 3, inventory: [], armor: 3, speed: 4,
-                modules: [], modCapacity: 2, attack: '1d8'};
-                type = ScienceVessel;
-                break;
-        }
-        // if we're recreating ship from the database
-        if (typeof ship === "object") {
-            // console.log('recreating ship from database');
-            const s = new type(ship['type'], `${ship['name']}`, ship['hp'], ship['cargoCapacity'],
-                ship['inventory'] , ship['armor'], ship['speed'], ship['modules'], ship['modCapacity'], ship['attack']);
-            this.fleet.push(s);
-            return s;
+    // create a new ship
+    createShip(shipType, nameOrArray, manufacturer) {
+        const ShipClass = shipClasses[shipType];
+        const stats = defaultStats[shipType];
 
-        } else { // creating brand new ship
-            // console.log('creating new ship');
-            const s = new type(baseStats['type'], `U.C.S. ${capitalize(ship)}`, baseStats['hp'], baseStats['cargoCapacity'],
-                baseStats['inventory'], baseStats['armor'], baseStats['speed'], baseStats['modules'],
-                baseStats['modCapacity'], baseStats['attack']);
-            this.fleet.push(s);
-            return s;
+        if (ShipClass && stats && nameOrArray) {
+            let ship;
+            if ((typeof nameOrArray === "object")) {
+                // recreate an existing ship with json object
+                ship = new ShipClass({
+                    ...nameOrArray
+                })
+            } else {
+                // create a brand new ship
+                ship = new ShipClass({
+                    type: shipType,
+                    name: nameOrArray,
+                    manufacturer: manufacturer,
+                    ...stats
+                });
+            }
+
+            this.fleet.push(ship);
+            return ship;
+
+        } else {
+            throw new Error("Invalid ship type");
         }
     }
 }
@@ -157,6 +217,10 @@ class Freighter extends Ship {
 
 }
 
+class MiningShip extends Ship {
+
+}
+
 class Scout extends Ship {
 
 }
@@ -165,8 +229,30 @@ class ScienceVessel extends Ship {
 
 }
 
-function capitalize(string) {
-    return string.replace(/(^\w|\s\w)(\S*)/g, (_,m1,m2) => m1.toUpperCase()+m2.toLowerCase());
+
+const shipClasses = {
+    cruiser: Cruiser,
+    freighter: Freighter,
+    mining_ship: MiningShip,
+    scout: Scout,
+    scienceVessel: ScienceVessel
 }
+
+const defaultStats = {
+    cruiser: { hp: 16, cargoCapacity: 1000, armor: 4, speed: 3, modCapacity: 4, modules: [], inventory: [], capabilities: [] },
+    mining_ship: { hp: 10, cargoCapacity: 1500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"] },
+    freighter: { hp: 10, cargoCapacity: 4000, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: [] },
+    scout: { hp: 6, cargoCapacity: 500, armor: 2, speed: 4, modCapacity: 1, modules: [], inventory: [], capabilities: [] },
+    science_vessel: { hp: 8, cargoCapacity: 500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"] },
+};
+
+function capitalize(string) {
+    return string
+        // Replace underscores with spaces
+        .replace(/_/g, ' ')
+        // Capitalize the first letter of each word
+        .replace(/(^\w|\s\w)/g, (match) => match.toUpperCase());
+}
+
 
 module.exports = { Ship, Fleet, capitalize };

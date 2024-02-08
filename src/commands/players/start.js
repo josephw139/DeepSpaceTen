@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
 const { Fleet, capitalize } = require('../../modules/ships/base');
+const { sectors } = require('../../locations/locations.js')
 const db = require('../../database/db.js');
 
 /* TO DO
@@ -11,25 +12,21 @@ const db = require('../../database/db.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 	.setName("start")
-	.setDescription('Create your ship fleet')
+	.setDescription('Create your first ship!')
     .addStringOption(option =>
-        option.setName("flagship")
-            .setDescription('Name your flagship Cruiser')
-            .setRequired(true))
-    .addStringOption(option =>
-        option.setName("secondary")
-            .setDescription("Choose your fleet's secondary ship")
+        option.setName("ship")
+            .setDescription("Each type of ship has different benefits")
             .setRequired(true)
             .addChoices(
-                { name: 'Freighter', value: 'freighter' },
-                { name: 'Scout', value: 'scout' },
-                { name: 'Science Vessel', value: 'science vessel' },
+                { name: 'Scout Corvette', value: 'scout' },
+                { name: 'Mining Ship', value: 'mining_ship' },
+                { name: 'Science Vessel', value: 'science_vessel' },
             ))
     .addStringOption(option =>
         option.setName("name")
             .setDescription('Name your new ship!')
             .setRequired(true))
-    .addStringOption(option =>
+    /*.addStringOption(option =>
         option.setName("drone")
             .setDescription("Choose your fleet's Drone Ship")
             .setRequired(true)
@@ -56,26 +53,26 @@ module.exports = {
                 // { name: 'Hangar Bay', value: 'hanger bay' },
                 { name: 'Flagship', value: 'flagship' },
                 { name: 'Secondary', value: 'secondary' },
-            ))
+            ))*/
 	,
 	async execute(interaction) {
         const member = interaction.member.id;
-        const flagshipName = interaction.options.get('flagship').value;
-        const starterShip = interaction.options.get('secondary').value;
-        const secondName = interaction.options.get('name').value;
-        const drone = capitalize(interaction.options.get('drone').value);
-        const module = capitalize(interaction.options.get('module').value);
-        const upgrade = interaction.options.get('upgrade').value;
+        //const flagshipName = interaction.options.get('flagship').value;
+        const shipType = interaction.options.get('ship').value;
+        const name = interaction.options.get('name').value;
+        //const drone = capitalize(interaction.options.get('drone').value);
+        //const module = capitalize(interaction.options.get('module').value);
+        //const upgrade = interaction.options.get('upgrade').value;
 
         // TESTING
         //const test = Fleet.createShip("cruiser", `${flagshipName}`);
         //test.toArray();
 
         // Check to see if they already have ships
-        if ((db.squadrons.get(`${member}`, "fleet"))) {
-            await interaction.reply({content: "You've already created your fleet!", ephemeral: true});
+        /* if ((db.player.get(`${member}`, "fleet"))) {
+            await interaction.reply({content: "You've already created your ship!", ephemeral: true});
             return;
-        }
+        } */
 
         // const channel = interaction.guild.channels.cache.get('1121842315229675610');
 
@@ -90,25 +87,31 @@ module.exports = {
             // Create starting fleet loadout
             // console.log(`${flagshipName}`)
 
-            const flagship = fleet.createShip("cruiser", `${flagshipName}`); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
-            const secondShip = fleet.createShip(`${starterShip}`, `${secondName}`);
+            const flagship = fleet.createShip(`${shipType}`, `${name}`, 'Atlas Exploration'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            fleet.setActiveShip(`${name}`);
 
+            // const secondShip = fleet.createShip(`${starterShip}`, `${secondName}`);
+
+            /*
             if (upgrade === 'flagship') {
                 flagship.modules.push(module);
             } else {
                 secondShip.modules.push(module);
             }
+            */
 
-            db.squadrons.set(`${member}`, fleet.fleetSave(), "fleet");
+            db.player.set(`${member}`, false, "engaged");
+            db.player.set(`${member}`, fleet.fleetSave(), "fleet");
+            db.player.set(`${member}`, {currentSector: 'Southeast', currentSystem: sectors.Southeast[0], currentLocation: sectors.Southeast[0].locations[0]}, "location")
 
 
-            //db.squadrons.push(`${member}`, cruiser.toArray(), "ships");
-            //db.squadrons.push(`${member}`, secondShip.toArray(), "ships");
-            //db.squadrons.push(`${member}`, `${module}`, "modules");
-            db.squadrons.set(`${member}`, `${drone}`, "drones");
+            //db.player.push(`${member}`, cruiser.toArray(), "ships");
+            //db.player.push(`${member}`, secondShip.toArray(), "ships");
+            //db.player.push(`${member}`, `${module}`, "modules");
+            // db.player.set(`${member}`, `${drone}`, "drones");
         }
 
         // Obligatory reply
-        await interaction.reply({content: `Flagship Cruiser U.C.S. ${capitalize(flagshipName)} has been deployed, alongside U.C.S. ${capitalize(starterShip)} ${capitalize(secondName)}`, ephemeral: false});
+        await interaction.reply({content: `${capitalize(shipType)} ${name} has been deployed! Welcome to Frontier Space, and may the suns shine on you.`, ephemeral: false});
 	}
 };

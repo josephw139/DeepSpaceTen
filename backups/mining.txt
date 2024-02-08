@@ -1,0 +1,176 @@
+const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { Fleet } = require('../../modules/ships/base.js');
+const sectors = require('../../locations/locations.js');
+const db = require('../../database/db.js');
+const { getPlayerData } = require('../../database/utilityFuncs.js');
+const schedule = require('node-schedule');
+
+
+module.exports = {
+	data: new SlashCommandBuilder()
+	.setName('mine')
+	.setDescription('Start or cancel mining jobs')
+	,
+	async execute(interaction) {
+        const member = interaction.member;
+		const channel = interaction.channel;
+		const playerId = member.id;
+
+		const playerData = getPlayerData(playerId);
+		const fleet = playerData.fleet;
+		const location = playerData.location;
+		const locationDisplay = playerData.locationDisplay;
+		const activeShip = playerData.activeShip;
+
+		const canMine = location.currentLocation.activities.includes('Mine');
+		const isMiningShip = activeShip.type === 'mining_ship';
+	
+		if (canMine && isMiningShip) {
+			startMining(member.id, activeShip, fleet);
+			await interaction.reply({ content: `You've started mining`, ephemeral: false });
+		} else if (!canMine) {
+			await interaction.reply({ content: `You can't mine at this location`, ephemeral: false });
+		} else {
+			await interaction.reply({ content: `This ship doesn't have mining capability`, ephemeral: false });
+		}
+		
+
+	}
+};
+
+function startMining(playerId, activeShip, fleet) {
+    const startTime = new Date();
+    db.player.set(`${playerId}`, startTime, "mining.startTime");
+
+    // Schedule a job to run every 1 minutes
+    const job = schedule.scheduleJob(`*/1 * * * *`, function() {
+		const shipName = activeShip.name;
+        const ship = getShipFromFleet(shipName, fleet);
+		console.log(ship);
+		const location = db.player.get(`${playerId}`, "location");
+
+        if (ship) {
+            try {
+				console.log('line 54');
+                const oreToAdd = calculateMinerals(ship, location.currentLocation);
+                const totalWeight = getTotalWeight(ship.inventory);
+                const oreWeight = calculateWeight('Ore', oreToAdd); // Calculate the weight of the ore to be added
+
+                if (totalWeight + oreWeight <= ship.cargoCapacity) {
+                    updateShipInventory(playerId, shipName, oreToAdd, oreWeight, fleet);
+					//console.log(ship);
+                } else {
+                    this.cancel(); // Cancel the scheduled job
+                    db.player.delete(`${playerId}`, "mining.startTime");
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        } else {
+			console.log('here again');
+			console.log(activeShip);
+			console.log(ship);
+		}
+    });
+}
+
+function getTotalOre(inventory) {
+    return inventory.reduce((total, item) => {
+        if (item.name === 'Ore') {
+            return total + item.quantity;
+        }
+        return total;
+    }, 0);
+}
+
+
+function updateShipInventory(playerId, shipName, oreToAdd, oreWeight, fleet) {
+	console.log('line 88');
+	// console.log(fleet);
+    const shipIndex = fleet.fleet.findIndex(s => s.name === shipName);
+	console.log(shipIndex + shipName + oreToAdd + oreWeight);
+
+    if (shipIndex !== -1) {
+        const ship = fleet.fleet[shipIndex];
+		console.log('line 95');
+		// console.log(ship);
+        const oreEntry = ship.inventory.find(item => item.name === 'Ore');
+
+        if (oreEntry) {
+			console.log('line 100');
+            oreEntry.quantity += oreToAdd; // Increment existing Ore quantity
+            oreEntry.weight += oreWeight;  // Increment the weight
+        } else {
+			console.log('line 104');
+            ship.inventory.push({ name: 'Ore', quantity: oreToAdd, weight: oreWeight, description: 'Mined ore' });
+        }
+        fleet[shipIndex] = ship; // Update the ship in the fleet array
+		console.log(fleet);
+        db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+    } else {
+        console.error(`Ship with name ${shipName} not found in the fleet.`);
+    }
+}
+
+
+function calculateWeight(type, quantity) {
+    // Define how the weight is calculated based on quantity
+	console.log('line 116');
+	if (type === 'Ore') {
+		console.log('line 118');
+		return quantity; // 1 unit of quantity equals 1 unit of weight
+	}
+}
+
+function getTotalWeight(inventory) {
+    return inventory.reduce((total, item) => total + (item.weight || 0), 0);
+}
+
+function getShipFromFleet(shipName, fleet) {
+    return fleet.fleet.find(s => s.name === shipName);
+}
+
+
+function calculateMinerals(location) {
+    // Define ranges for each mining level
+    const ranges = {
+        Low: { min: 70, max: 130 },
+        Medium: { min: 120, max: 220 },
+        High: { min: 180, max: 300 }
+    };
+
+    // Randomly select a mining type (Ore, Gas, Adamantium) based on weights
+    const miningTypes = Object.keys(location.mining);
+    const selectedType = weightedRandom(miningTypes, location.mining);
+
+    // Get the range for the selected mining type
+    const { min, max } = ranges[location.mining[selectedType]];
+
+    // Randomly choose a value between min and max for the selected type
+    return {
+        type: selectedType,
+        quantity: Math.floor(Math.random() * (max - min + 1)) + min
+    };
+}
+
+// Helper function to randomly select a mining type based on weights
+function weightedRandom(types, weights) {
+    let totalWeight = types.reduce((total, type) => total + weightScale(weights[type]), 0);
+    let random = Math.random() * totalWeight;
+    for (let type of types) {
+        random -= weightScale(weights[type]);
+        if (random < 0) {
+            return type;
+        }
+    }
+}
+
+// Helper function to scale weights (Low: 1, Medium: 2, High: 3)
+function weightScale(level) {
+    switch (level) {
+        case "Low": return 1;
+        case "Medium": return 2;
+        case "High": return 3;
+        default: return 1;
+    }
+}
