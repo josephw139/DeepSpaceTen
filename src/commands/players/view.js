@@ -44,7 +44,7 @@ module.exports = {
 			if (interaction.options.get('ship')) {
 				let target = interaction.options.get('ship').value;
 				try {
-					target = fleet.fleet[target - 1];
+					target = fleet.ships[target - 1];
 				} catch (err) {
 					// console.log(err);
 					await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});

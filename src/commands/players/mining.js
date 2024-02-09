@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = re
 const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../locations/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData } = require('../../database/utilityFuncs.js');
+const { getPlayerData, calculateWeight } = require('../../database/utilityFuncs.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -31,8 +31,7 @@ module.exports = {
 		const location = playerData.location;
 		const locationDisplay = playerData.locationDisplay;
 		const activeShip = playerData.activeShip;
-
-		const isEngaged = db.player.get(`${playerId}`, "engaged");
+		const isEngaged = playerData.isEngaged;
 
 		if (job === "start") {
 			if (!isEngaged) {
@@ -143,9 +142,9 @@ function getTotalOre(inventory) {
 
 
 function updateShipInventory(playerId, shipName, resource, fleet) {
-    const shipIndex = fleet.fleet.findIndex(s => s.name === shipName);
+    const shipIndex = fleet.ships.findIndex(s => s.name === shipName);
     if (shipIndex !== -1) {
-        const ship = fleet.fleet[shipIndex];
+        const ship = fleet.ships[shipIndex];
         const resourceEntry = ship.inventory.find(item => item.name === resource.type);
         const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
@@ -168,19 +167,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
     }
 }
 
-function calculateWeight(type, quantity) {
-    // Define how weight is calculated based on type and quantity
-    switch (type) {
-        case 'Ore':
-            return quantity; // Example: 1 unit of quantity equals 1 unit of weight
-        case 'Gas':
-            return quantity * 0.5; // Example: Gas is lighter
-        case 'Adamantium':
-            return quantity * 2; // Example: Adamantium is heavier
-        default:
-            return quantity; // Default case
-    }
-}
+
 
 
 function getTotalWeight(inventory) {
@@ -188,7 +175,7 @@ function getTotalWeight(inventory) {
 }
 
 function getShipFromFleet(shipName, fleet) {
-    return fleet.fleet.find(s => s.name === shipName);
+    return fleet.ships.find(s => s.name === shipName);
 }
 
 

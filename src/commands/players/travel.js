@@ -69,7 +69,7 @@ function calculateTravelTime(playerData, selectedLocation) {
 	const locationExists = currentSystem.locations.some(location => location.name === selectedLocation);
 
 	if (locationExists) {
-        let travelTime = 60;
+        let travelTime = 2;
         return travelTime;
     }
 }

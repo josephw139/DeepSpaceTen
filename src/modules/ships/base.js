@@ -97,7 +97,7 @@ class Ship {
 // Fleet contains all the information for a player's ships
 class Fleet {
     constructor(array=null) {
-        this.fleet = [];
+        this.ships = [];
         this.fleetJSON = [];
         this.fleetSpecs = [];
         this.activeShip = null;
@@ -127,9 +127,9 @@ class Fleet {
     setActiveShip(shipName) {
         let ship = null;
         if (typeof shipName === 'string') {
-            ship = this.fleet.find(s => s.name === shipName);
+            ship = this.ships.find(s => s.name === shipName);
         } else {
-            ship = this.fleet.find(s => s.name === shipName.name);
+            ship = this.ships.find(s => s.name === shipName.name);
         }
         if (ship) {
             this.activeShip = ship;
@@ -144,17 +144,17 @@ class Fleet {
 
     // display a list of all ships owned by a player
     showAllShips() {
-        // console.log(this.fleet);
+        // console.log(this.ships);
         let shipDisplay = ``;
-        for (let i = 0; i < this.fleet.length; i++) {
-            if (this.fleet[i] === this.activeShip) {
+        for (let i = 0; i < this.ships.length; i++) {
+            if (this.ships[i] === this.activeShip) {
                 shipDisplay += `**`;
             }
-            shipDisplay += `${i + 1} - ${this.fleet[i].shipDisplay()}`;
-            if (this.fleet[i] === this.activeShip) {
+            shipDisplay += `${i + 1} - ${this.ships[i].shipDisplay()}`;
+            if (this.ships[i] === this.activeShip) {
                 shipDisplay += `**\n`;
             }
-            if (this.fleet[i] === this.activeShip) {
+            if (this.ships[i] === this.activeShip) {
                 shipDisplay += `STATUS: ACTIVE\n\n`;
             } else {
                 shipDisplay += `STATUS: INACTIVE\n\n`;
@@ -166,8 +166,8 @@ class Fleet {
     // convert fleet to JSON to save to database
     fleetSave() {
         let shipJSON = [];
-        for (let i = 0; i < this.fleet.length; i++) {
-            shipJSON.push(this.fleet[i].toArray())
+        for (let i = 0; i < this.ships.length; i++) {
+            shipJSON.push(this.ships[i].toArray())
         }
         this.fleetJSON.push(shipJSON);
         this.fleetJSON.push(this.activeShip);
@@ -200,7 +200,7 @@ class Fleet {
                 });
             }
 
-            this.fleet.push(ship);
+            this.ships.push(ship);
             return ship;
 
         } else {
@@ -247,11 +247,13 @@ const defaultStats = {
 };
 
 function capitalize(string) {
-    return string
+    if (string) {
+        return string
         // Replace underscores with spaces
         .replace(/_/g, ' ')
         // Capitalize the first letter of each word
         .replace(/(^\w|\s\w)/g, (match) => match.toUpperCase());
+    }
 }
 
 

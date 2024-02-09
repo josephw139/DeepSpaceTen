@@ -56,7 +56,7 @@ module.exports = {
             ))*/
 	,
 	async execute(interaction) {
-        const member = interaction.member.id;
+        const playerId = interaction.member.id;
         //const flagshipName = interaction.options.get('flagship').value;
         const shipType = interaction.options.get('ship').value;
         const name = interaction.options.get('name').value;
@@ -69,7 +69,7 @@ module.exports = {
         //test.toArray();
 
         // Check to see if they already have ships
-        /* if ((db.player.get(`${member}`, "fleet"))) {
+        /* if ((db.player.get(`${playerId}`, "fleet"))) {
             await interaction.reply({content: "You've already created your ship!", ephemeral: true});
             return;
         } */
@@ -100,18 +100,36 @@ module.exports = {
             }
             */
 
-            db.player.set(`${member}`, false, "engaged");
-            db.player.set(`${member}`, fleet.fleetSave(), "fleet");
-            db.player.set(`${member}`, {currentSector: 'Southeast', currentSystem: sectors.Southeast[0], currentLocation: sectors.Southeast[0].locations[0]}, "location")
+            // Set up Database file for the player
+            db.player.set(`${playerId}`, false, "engaged");
+            db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+            db.player.set(`${playerId}`, {currentSector: 'Southeast', currentSystem: sectors.Southeast[0], currentLocation: sectors.Southeast[0].locations[0]}, "location")
+            db.player.set(`${playerId}`, [], "hangar");
+            initializeNewPlayer(playerId);
 
 
-            //db.player.push(`${member}`, cruiser.toArray(), "ships");
-            //db.player.push(`${member}`, secondShip.toArray(), "ships");
-            //db.player.push(`${member}`, `${module}`, "modules");
-            // db.player.set(`${member}`, `${drone}`, "drones");
+            //db.player.push(`${playerId}`, cruiser.toArray(), "ships");
+            //db.player.push(`${playerId}`, secondShip.toArray(), "ships");
+            //db.player.push(`${playerId}`, `${module}`, "modules");
+            // db.player.set(`${playerId}`, `${drone}`, "drones");
         }
 
         // Obligatory reply
         await interaction.reply({content: `${capitalize(shipType)} ${name} has been deployed! Welcome to Frontier Space, and may the suns shine on you.`, ephemeral: false});
 	}
 };
+
+function initializeNewPlayer(playerId) {
+    const defaultDiscovery = {
+        discoveredSectors: [
+            "Southeast", // starter sector is discovered by default
+        ],
+        discoveredSystems: [
+            "StarterSystem" // starter system is discovered by default
+        ]
+    };
+
+    // Other player initialization code...
+
+    db.player.set(`${playerId}`, defaultDiscovery, "discoveries");
+}

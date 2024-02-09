@@ -52,7 +52,7 @@ module.exports = {
             specs: [],*/
         };
 
-        db.player.set(`${member.id}`, newSquadron);
+        // db.player.set(`${member.id}`, newSquadron);
 
         // Obligatory reply
         await interaction.reply({content: `${member.displayName} has been promoted to ${role.name}!`, ephemeral: true});
