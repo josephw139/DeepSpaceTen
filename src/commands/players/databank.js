@@ -1,9 +1,9 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const { Fleet } = require('../../modules/ships/base.js');
-const sectorsData = require('../../locations/locations.js');
+const sectorsData = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const schedule = require('node-schedule');
-const { getPlayerData } = require('../../database/utilityFuncs.js');
+const { getPlayerData } = require('../../database/playerFuncs.js');
 
 
 module.exports = {
@@ -50,7 +50,7 @@ module.exports = {
                         { name: 'Travel Commands', value: `Use /travel to select a known location within your current System to travel to.
                         Ships with higher Speeds take less time to reach their destinations.`},
                     );
-            channel.send({ embeds: [helpEmbed] });
+            interaction.reply({ embeds: [helpEmbed] });
         } else if (lore === 'ships') {
             const shipsEmbed = new EmbedBuilder()
                     .setTitle('U.C.S. Information Center')
@@ -63,7 +63,7 @@ module.exports = {
                         __Scouts__ - Using highly specialized Abacus Retracers and warp facilities, these ships are the fastest for exploring the unknown regions of space.\n
                         __Freighters__ - Large cargo ships designed to carry enormous amounts of materials to their destinations.\n`},
                     );
-            channel.send({ embeds: [shipsEmbed] });
+            interaction.reply({ embeds: [shipsEmbed] });
         } else if (lore === 'ucs') {
             const ucsEmbed = new EmbedBuilder()
                     .setTitle('U.C.S. Information Center')
@@ -73,7 +73,7 @@ module.exports = {
                     .addFields(
                         { name: 'Lore', value: `Lore moment`},
                     );
-            channel.send({ embeds: [ucsEmbed] });
+            interaction.reply({ embeds: [ucsEmbed] });
         } else if (lore === 'sectors') {
             const sectorsEmbed = new EmbedBuilder()
                 .setTitle('Frontier Space')

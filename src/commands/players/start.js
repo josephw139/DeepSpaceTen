@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
 const { Fleet, capitalize } = require('../../modules/ships/base');
-const { sectors } = require('../../locations/locations.js')
+const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
 
 /* TO DO
@@ -100,11 +100,19 @@ module.exports = {
             }
             */
 
+            const starterSystem = sectors.Southeast.systems.find(system => system.name === "StarterSystem");
+            const starterLocation = starterSystem ? starterSystem.locations[0] : null;
+
             // Set up Database file for the player
             db.player.set(`${playerId}`, false, "engaged");
             db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-            db.player.set(`${playerId}`, {currentSector: 'Southeast', currentSystem: sectors.Southeast[0], currentLocation: sectors.Southeast[0].locations[0]}, "location")
+            db.player.set(`${playerId}`, {
+                currentSector: 'Southeast',
+                currentSystem: starterSystem,
+                currentLocation: starterLocation
+            }, "location");
             db.player.set(`${playerId}`, [], "hangar");
+            db.player.set(`${playerId}`, 50000, "credits");
             initializeNewPlayer(playerId);
 
 

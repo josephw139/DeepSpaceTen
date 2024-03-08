@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1176.42 1146.74">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: 0em;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        font-family: Rig-BoldOutline, 'Rig Solid';
+        font-size: 123.48px;
+        font-weight: 700;
+      }
+
+      .cls-3 {
+        fill-rule: evenodd;
+        stroke: #f70000;
+        stroke-miterlimit: 10;
+        stroke-width: 6px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <polygon class="cls-3" points="290.71 451.17 172.05 401.44 52.98 450.17 3.25 568.83 51.98 687.9 170.64 737.63 289.71 688.9 339.44 570.24 290.71 451.17"/>
+    <polygon class="cls-3" points="418.82 736.74 300.16 687.01 181.09 735.75 131.36 854.41 180.1 973.47 298.75 1023.21 417.82 974.47 467.56 855.81 418.82 736.74"/>
+    <polygon class="cls-3" points="705.81 857.03 587.15 807.29 468.08 856.03 418.35 974.69 467.08 1093.76 585.74 1143.49 704.81 1094.75 754.54 976.1 705.81 857.03"/>
+    <polygon class="cls-3" points="1004.52 750.51 885.86 700.78 766.79 749.52 717.06 868.18 765.79 987.25 884.45 1036.98 1003.52 988.24 1053.25 869.58 1004.52 750.51"/>
+    <polygon class="cls-3" points="1124.44 464.38 1005.78 414.65 886.71 463.39 836.98 582.05 885.72 701.11 1004.38 750.85 1123.45 702.11 1173.18 583.45 1124.44 464.38"/>
+    <polygon class="cls-3" points="992.39 173.26 873.73 123.53 754.66 172.27 704.93 290.93 753.67 409.99 872.33 459.73 991.39 410.99 1041.13 292.33 992.39 173.26"/>
+    <polygon class="cls-3" points="705.4 52.98 586.75 3.25 467.68 51.98 417.94 170.64 466.68 289.71 585.34 339.44 704.41 290.71 754.14 172.05 705.4 52.98"/>
+    <polygon class="cls-3" points="413.08 175.5 294.43 125.76 175.36 174.5 125.62 293.16 174.36 412.23 293.02 461.96 412.09 413.22 461.82 294.57 413.08 175.5"/>
+    <polygon class="cls-3" points="719.26 461.23 600.6 411.5 481.53 460.23 431.8 578.89 480.53 697.96 599.19 747.69 718.26 698.95 767.99 580.3 719.26 461.23"/>
+    <text class="cls-2" transform="translate(550.44 200.13)"><tspan x="0" y="0">N</tspan></text>
+    <text class="cls-2" transform="translate(801.33 323.47)"><tspan x="0" y="0">NE</tspan></text>
+    <text class="cls-2" transform="translate(983.04 623.47)"><tspan x="0" y="0">E</tspan></text>
+    <text class="cls-2" transform="translate(820.87 899.47)"><tspan x="0" y="0">SE</tspan></text>
+    <text class="cls-2" transform="translate(556.33 1005.47)"><tspan x="0" y="0">S</tspan></text>
+    <text class="cls-2" transform="translate(120.18 611.47)"><tspan x="0" y="0">W</tspan></text>
+    <text class="cls-2" transform="translate(183.9 335.47)"><tspan x="0" y="0">NW</tspan></text>
+    <text class="cls-2" transform="translate(206.51 890.47)"><tspan class="cls-1" x="0" y="0">S</tspan><tspan x="71.42" y="0">W</tspan></text>
+    <text class="cls-2" transform="translate(555.9 611.47)"><tspan x="0" y="0">C</tspan></text>
+  </g>
+</svg>

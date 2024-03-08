@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { Fleet } = require('../../modules/ships/base.js');
-const sectors = require('../../locations/locations.js');
+const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData } = require('../../database/utilityFuncs.js');
+const { getPlayerData } = require('../../database/playerFuncs.js');
 const schedule = require('node-schedule');
 
 

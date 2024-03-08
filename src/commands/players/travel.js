@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const { Fleet } = require('../../modules/ships/base.js');
-const sectors = require('../../locations/locations.js');
+const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const schedule = require('node-schedule');
 
@@ -8,22 +8,29 @@ const schedule = require('node-schedule');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('travel')
-        .setDescription('Sail through the stars'),
+        .setDescription('Sail through the stars')
+        .addStringOption(option =>
+            option.setName("system")
+                .setDescription("Choose a system, or leave blank for your current system.")
+                .setRequired(false))
+    ,
     async execute(interaction) {
 		const member = interaction.member;
         const playerId = member.id;
 		const channel = interaction.channel;
         const playerData = db.player.get(`${member.id}`, "location");
-        const currentSystem = playerData.currentSystem;
+        const discoveries = db.player.get(`${playerId}`, "discoveries");
+        const currentSystemName = playerData.currentSystem.name;
+        const systemNameToTravel = interaction.options.getString('system') || currentSystemName;
+        
+        const systemToTravel = findSystemByName(systemNameToTravel, discoveries);
 
+        if (!systemToTravel) {
+            await interaction.reply({ content: `System "${systemNameToTravel}" not found.`, ephemeral: true });
+            return;
+        }
 
-		function getLocationsForSystem(currentSystem, currentLocationName) {
-			// Filter out the current location from the system's locations
-			console.log('getLocations function:' + currentLocationName)
-			return currentSystem.locations.filter(location => location.name !== currentLocationName);
-		}
-
-		const locations = getLocationsForSystem(currentSystem, playerData.currentLocation.name);
+		const locations = getLocationsForSystem(systemToTravel, playerData.currentLocation.name);
 
         // Create a dropdown menu with locations as options
         const row = new ActionRowBuilder()
@@ -57,9 +64,36 @@ module.exports = {
                     i.channel.send({ content: `You're already engaged in another activity`, components: [] });
                 }
             })
+            .catch(e => {
+                if (e.code === 'InteractionCollectorError') {
+                    channel.send({ content: `Travel selection has timed out. Please select your destination again.` });
+                } else {
+                    // Log other errors for debugging
+                    console.error('Error in awaitMessageComponent:', e);
+                }
+            });
             
     },
 };
+
+function findSystemByName(systemName, discoveries) {
+    const sectorsData = sectors.sectors;
+
+    for (const sector of Object.values(sectorsData)) {
+        for (const system of sector.systems) {
+            if (system.name === systemName && discoveries.discoveredSystems.includes(systemName)) {
+                return system;
+            }
+        }
+    }
+    return null;
+}
+
+function getLocationsForSystem(systemToTravel, currentLocationName) {
+    // Filter out the current location from the system's locations
+    console.log('getLocations function:' + currentLocationName)
+    return systemToTravel.locations.filter(location => location.name !== currentLocationName);
+}
 
 function calculateTravelTime(playerData, selectedLocation) {
 	const currentSector = playerData.currentSector;

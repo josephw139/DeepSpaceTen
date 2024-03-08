@@ -29,6 +29,9 @@ function getPlayerData(playerId) {
         // Retrieve discoveries
         const discoveries = db.player.get(`${playerId}`, "discoveries");
 
+        // Retrieve credits
+        const credits = db.player.get(`${playerId}`, "credits");
+
         // Return the aggregated data
         return {
             fleet,
@@ -38,6 +41,7 @@ function getPlayerData(playerId) {
             locationDisplay,
             hangar,
             discoveries,
+            credits,
         };
     } catch (e) {
         console.error(e);
@@ -79,6 +83,8 @@ function isDiscovered(playerId, type, name) {
     }
     return false;
 }
+
+
 
 
 module.exports = { getPlayerData, calculateWeight, updateDiscovery, isDiscovered };

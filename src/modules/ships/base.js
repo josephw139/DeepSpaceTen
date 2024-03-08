@@ -2,11 +2,12 @@
 
 
 class Ship {
-    constructor({ type, capabilities, name, manufacturer, hp, cargoCapacity, armor, speed, modCapacity, modules, inventory }) {
+    constructor({ type, capabilities, name, manufacturer, desc, hp, cargoCapacity, armor, speed, modCapacity, modules, inventory }) {
         this.type = type;
         this.capabilities = capabilities;
         this.name = name;
         this.manufacturer = manufacturer;
+        this.desc = desc;
         this.hp = hp;
         this.cargoCapacity = cargoCapacity;
         this.armor = armor;
@@ -33,7 +34,8 @@ class Ship {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
             const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight})`).join(', ');
     
-            return `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\n` +
+            return `*${this.desc}*\n\n` +
+                    `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\n` +
                     `Capabilities: ${this.capabilities.join(', ')}\n\n` +
                    `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${this.modules.join(', ')}\n` +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
@@ -52,6 +54,7 @@ class Ship {
             name: this.name,
             hp: this.hp,
             manufacturer: this.manufacturer,
+            desc: this.desc,
             cargoCapacity: this.cargoCapacity,
             inventory: this.inventory,
             armor: this.armor, 
@@ -239,11 +242,11 @@ const shipClasses = {
 }
 
 const defaultStats = {
-    cruiser: { hp: 16, cargoCapacity: 1000, armor: 4, speed: 3, modCapacity: 4, modules: [], inventory: [], capabilities: [] },
-    mining_ship: { hp: 10, cargoCapacity: 1500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"] },
-    freighter: { hp: 10, cargoCapacity: 4000, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: [] },
-    scout: { hp: 6, cargoCapacity: 500, armor: 2, speed: 4, modCapacity: 1, modules: [], inventory: [], capabilities: [] },
-    science_vessel: { hp: 8, cargoCapacity: 500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"] },
+    cruiser: { desc: 'This is a Cruiser', hp: 16, cargoCapacity: 1000, armor: 4, speed: 3, modCapacity: 4, modules: [], inventory: [], capabilities: [] },
+    mining_ship: { desc: 'This is a Mining Ship', hp: 10, cargoCapacity: 1500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"] },
+    freighter: { desc: 'This is a Freighter', hp: 10, cargoCapacity: 4000, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: [] },
+    scout: { desc: 'This is a Scout', hp: 6, cargoCapacity: 500, armor: 2, speed: 4, modCapacity: 1, modules: [], inventory: [], capabilities: [] },
+    science_vessel: { desc: 'This is a Science Vessel', hp: 8, cargoCapacity: 500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"] },
 };
 
 function capitalize(string) {

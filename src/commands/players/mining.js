@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { Fleet } = require('../../modules/ships/base.js');
-const sectors = require('../../locations/locations.js');
+const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData, calculateWeight } = require('../../database/utilityFuncs.js');
+const { getPlayerData, calculateWeight } = require('../../database/playerFuncs.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -22,16 +22,14 @@ module.exports = {
 	,
 	async execute(interaction) {
         const member = interaction.member;
+        const playerId = member.id;
 		const channel = interaction.channel;
 		const job = interaction.options.get('job').value;
-		const playerId = member.id;
 
 		const playerData = getPlayerData(playerId);
-		const fleet = playerData.fleet;
-		const location = playerData.location;
-		const locationDisplay = playerData.locationDisplay;
-		const activeShip = playerData.activeShip;
-		const isEngaged = playerData.isEngaged;
+        const {
+            fleet, location, locationDisplay, activeShip, isEngaged
+        } = playerData;
 
 		if (job === "start") {
 			if (!isEngaged) {
@@ -40,7 +38,7 @@ module.exports = {
 
 				if (canMine && isMiningShip) {
 					startMining(member.id, activeShip, fleet);
-					await interaction.reply({ content: `You've started mining`, ephemeral: false });
+					await interaction.reply({ content: `You've started mining!`, ephemeral: false });
 				} else if (!canMine) {
 					await interaction.reply({ content: `You can't mine at this location`, ephemeral: true });
 				} else {
@@ -156,7 +154,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
                 name: resource.type,
                 quantity: resource.quantity,
                 weight: resourceWeight,
-                description: 'Mined ' + resource.type
+                description: 'Mined ' + resource.type,
             });
         }
 

@@ -25,6 +25,7 @@ module.exports = {
   *   engaged: false,
   *   fleet: [fleetArray],
   *   hangar: [],
+  *   credits: 500,
   *   discoveries: {
   *     discoveredSectors: [
   *         "Southeast", // starter sector is discovered by default
@@ -34,11 +35,21 @@ module.exports = {
   *     ]
   *   }
   * 
-  *   location: { // sectors is a variable containing all locations in locations.js //
-  *               currentSector: 'Southeast',
-  *               currentSystem: sectors.Southeast[0], 
-  *               currentLocation: sectors.Southeast[0].locations[0]
-  *             },
+  *   location: {
+          currentSector: 'Southeast',
+          currentSystem: {
+            name: 'StarterSystem',
+            description: 'The starting point for all new adventurers, offering a safe haven and opportunities for those willing to explore.',
+            locations: [ [Object], [Object], [Object] ]
+          },
+          currentLocation: {
+            name: 'G-357 Asteroid Belt',
+            description: 'A mineral-rich belt of asteroids, promising wealth to those who dare to mine it.',
+            activities: [ 'Mine', 'Research' ],
+            mining: { Ore: 'Medium', Gas: 'Low', Adamantium: 'Very_Low' },
+            research: 'Low'
+          }
+        }
   *   location.destination: "location.name", // deleted on completion //
   *   location.arrivalTime: Date(), // deleted on completion //
   *   location.channelId: channel.id, // deleted on completion //

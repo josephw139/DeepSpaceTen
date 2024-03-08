@@ -1,8 +1,10 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
 const { Fleet, capitalize } = require('../../modules/ships/base.js');
-const { sectors } = require('../../locations/locations.js')
+const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
-const { getPlayerData, calculateWeight } = require('../../database/utilityFuncs.js');
+const { getPlayerData, calculateWeight } = require('../../database/playerFuncs.js');
+const { removeItemFromShipInventory, updateHangar, withdrawItemFromHangar, addItemToShipInventory } = require('../../database/hangerFuncs.js')
+
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -45,6 +47,7 @@ module.exports = {
 		const locationDisplay = playerData.locationDisplay;
 		const activeShip = playerData.activeShip;
 		const isEngaged = playerData.isEngaged;
+        const credits = playerData.credits;
 
         const isHangar = location.currentLocation.activities.includes('Hangar');
         if (!isHangar && subcommand != "view") {
@@ -93,7 +96,8 @@ module.exports = {
                 // Create an embed for the hangar view
                 const hangarEmbed = new EmbedBuilder()
                     .setTitle(`${interaction.member.displayName}'s Hangar`)
-                    .setDescription('Here are the items and goods stored in your hangar:')
+                    .setDescription(`Here are the items and goods stored in your hangar:
+                    Bank: ${credits}C`)
                     .setColor('#0099ff');
 
                     // Check if the hangar is empty
@@ -103,7 +107,7 @@ module.exports = {
                         // Iterate through each item in the hangar array and add it to the embed
                         hangar.forEach(item => {
                             const itemInfo = `Quantity: ${item.quantity} | Weight: ${item.weight}\nDescription: ${item.description}`;
-                            hangarEmbed.addFields({ name: item.name, value: itemInfo });
+                            hangarEmbed.addFields({ name: `${item.name} (${item.price}C)`, value: itemInfo });
                         });
                     }
 
@@ -115,106 +119,3 @@ module.exports = {
         }
     }
 };
-
-// DEPOSIT 
-function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quantityToRemove) {
-    // Find the ship and item
-    const shipIndex = fleet.ships.findIndex(s => s.name === activeShip.name);
-    const ship = fleet.ships[shipIndex];
-    const itemIndex = ship.inventory.findIndex(i => i.name === itemName);
-    if (itemIndex === -1) return null; // Item not found
-    
-    const item = ship.inventory[itemIndex];
-
-    const quantity = quantityToRemove !== null ? quantityToRemove : item.quantity;
-
-    if (item.quantity < quantity) return null; // Not enough quantity
-    console.log("Fleet:");
-    // Adjust quantity or remove item from inventory
-    if (item.quantity > quantity) {
-        ship.inventory[itemIndex] = {
-            ...item,
-            quantity: item.quantity - quantity,
-            weight: calculateWeight(item.name, item.quantity - quantity)
-        };
-        
-        console.log(fleet);
-        db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-        // Return a new object representing the removed portion
-        return {
-            ...item,
-            quantity: quantity,
-            weight: calculateWeight(item.name, quantity)
-        };
-    } else {
-        // Remove the item entirely if quantity matches
-        fleet.ships[shipIndex].inventory.splice(itemIndex, 1);
-        console.log(fleet);
-        db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-        return item; // Item matches the quantity to remove, so return it as is
-    }
-}
-
-function updateHangar(playerId, hangar, itemToAdd) {
-    // Check if the item already exists in the hangar
-    const itemIndex = hangar.findIndex(item => item.name === itemToAdd.name);
-
-    if (itemIndex !== -1) {
-        // Item exists, update its quantity and weight
-        hangar[itemIndex].quantity += itemToAdd.quantity;
-        hangar[itemIndex].weight += itemToAdd.weight;
-    } else {
-        // Item does not exist, add it as a new entry
-        hangar.push(itemToAdd);
-    }
-
-    console.log("Updated Hangar:");
-    console.log(hangar);
-    db.player.set(`${playerId}`, hangar, "hangar");
-}
-
-// WITHDRAW
-
-function withdrawItemFromHangar(playerId, hangar, itemName, quantityToRemove) {
-    // Check if the item exists in the hangar
-    const itemIndex = hangar.findIndex(item => item.name === itemName);
-    if (itemIndex === -1) return null; // Item not found
-
-    const item = hangar[itemIndex];
-
-    // Determine the quantity to withdraw
-    const quantity = quantityToRemove !== null ? Math.min(quantityToRemove, item.quantity) : item.quantity;
-
-    // Adjust or remove item from hangar
-    if (item.quantity > quantity) {
-        hangar[itemIndex].quantity -= quantity;
-        hangar[itemIndex].weight -= calculateWeight(item.name, quantity);
-    } else {
-        hangar.splice(itemIndex, 1); // Remove the item if all of it is withdrawn
-    }
-
-    // Update the hangar in the database
-    db.player.set(`${playerId}`, hangar, "hangar");
-
-    return {
-        ...item,
-        quantity, // Return the actual quantity withdrawn
-    };
-}
-
-function addItemToShipInventory(playerId, fleet, activeShip, itemToAdd) {
-    const ship = fleet.ships.find(s => s.name === activeShip.name);
-    const itemIndex = ship.inventory.findIndex(i => i.name === itemToAdd.name);
-
-    if (itemIndex !== -1) {
-        // Item exists in ship's inventory, update quantity
-        ship.inventory[itemIndex].quantity += itemToAdd.quantity;
-        ship.inventory[itemIndex].weight += itemToAdd.weight;
-    } else {
-        // Item does not exist, add it
-        ship.inventory.push(itemToAdd);
-    }
-
-    // Update the fleet in the database
-    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-}

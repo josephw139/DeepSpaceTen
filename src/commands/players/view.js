@@ -1,8 +1,8 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const { Fleet } = require('../../modules/ships/base.js');
-const sectors = require('../../locations/locations.js');
+const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData } = require('../../database/utilityFuncs.js');
+const { getPlayerData } = require('../../database/playerFuncs.js');
 
 
 module.exports = {
@@ -36,6 +36,7 @@ module.exports = {
 		const location = playerData.location;
 		const locationDisplay = playerData.locationDisplay;
 		const activeShip = playerData.activeShip;
+		const credits = playerData.credits;
 
 		// VIEW FLEET
 		if (interaction.options.getSubcommand() === 'fleet') {
@@ -70,7 +71,7 @@ module.exports = {
 				
 				const fleetDisplay = new EmbedBuilder()
 				.setTitle(`Exploration Team ${member.displayName}`)
-				.setDescription(`Fleet Overview`)
+				.setDescription(`Fleet Overview\nBank: ${credits}C\n`)
 				.addFields(
 					{ name: 'Location', value: `${locationDisplay}`},
 					{ name: 'Ships', value: `${shipDisplay}` },
