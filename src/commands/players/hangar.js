@@ -40,6 +40,11 @@ module.exports = {
         const playerId = interaction.member.id;
         const subcommand = interaction.options.getSubcommand();
         const playerData = getPlayerData(playerId);
+
+        if (typeof playerData === 'string') {
+            interaction.reply(playerData);
+        }
+        
 		const fleet = playerData.fleet;
         const hangar = playerData.hangar;
         // console.log(hangar);

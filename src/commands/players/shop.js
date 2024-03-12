@@ -34,6 +34,9 @@ module.exports = {
 		//console.log(item);
 
 		const playerData = getPlayerData(playerId);
+		if (typeof playerData === 'string') {
+            interaction.reply(playerData);
+        }
 		const { isEngaged, hangar, fleet, location,	locationDisplay, activeShip, credits } = playerData;
 
 		const canShop = location.currentLocation.activities.includes('Shop');

@@ -27,6 +27,10 @@ module.exports = {
 		const job = interaction.options.get('job').value;
 
 		const playerData = getPlayerData(playerId);
+        if (typeof playerData === 'string') {
+            interaction.reply(playerData);
+        }
+        
         const {
             fleet, location, locationDisplay, activeShip, isEngaged
         } = playerData;

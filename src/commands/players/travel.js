@@ -18,6 +18,7 @@ module.exports = {
 		const member = interaction.member;
         const playerId = member.id;
 		const channel = interaction.channel;
+        // rework to use playerData function
         const playerData = db.player.get(`${member.id}`, "location");
         const discoveries = db.player.get(`${playerId}`, "discoveries");
         const currentSystemName = playerData.currentSystem.name;

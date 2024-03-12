@@ -15,7 +15,6 @@ module.exports = {
                 .setDescription("Query the local databanks")
                 .setRequired(true)
                 .addChoices(
-                    { name: 'Game Help', value: 'help' },
                     { name: 'Ships', value: 'ships' },
                     { name: 'United Confederacy of Systems', value: 'ucs' },
                     { name: 'Sectors', value: 'sectors' },
@@ -32,26 +31,18 @@ module.exports = {
 		const channel = interaction.channel;
         const lore = interaction.options.getString('lore');
         const searchTerm = interaction.options.getString('search') || null;
+        
         const playerData = getPlayerData(playerId);
         const discoveredSectors = playerData.discoveries.discoveredSectors;
         const discoveredSystems = playerData.discoveries.discoveredSystems;
+        
+
+        if (typeof playerData === 'string') {
+            interaction.reply(playerData);
+        }
 
 
-        if (lore === 'help') {
-            const helpEmbed = new EmbedBuilder()
-                    .setTitle('U.C.S. Information Center')
-                    .setDescription(`Welcome to Frontier Space!\n
-                    Use /start to begin playing. Select a ship and name it.
-                    `)
-                    .addFields(
-                        { name: 'View Commands', value: `Use /view fleet to see a list of ships you own.
-                        Use /view fleet ship # to view the specfics
-                        Use /view map to see a map of your current System.`},
-                        { name: 'Travel Commands', value: `Use /travel to select a known location within your current System to travel to.
-                        Ships with higher Speeds take less time to reach their destinations.`},
-                    );
-            interaction.reply({ embeds: [helpEmbed] });
-        } else if (lore === 'ships') {
+        if (lore === 'ships') {
             const shipsEmbed = new EmbedBuilder()
                     .setTitle('U.C.S. Information Center')
                     .setDescription(`Welcome to Frontier Space!\n
@@ -182,14 +173,6 @@ module.exports = {
             
             await interaction.reply({ embeds: [locationsEmbed] });
         }
-        
-        
-
-
-
-
-
-
 
         // Obligatory reply
 		// await interaction.reply({content: `Use the /databank command to learn more about the Frontier`, ephemeral: true});

@@ -46,7 +46,7 @@ function getPlayerData(playerId) {
     } catch (e) {
         console.error(e);
         // Handle the error appropriately
-        throw new Error("Player data retrieval failed");
+        return `Please use /start to gain access to commands, or /help to learn about the game!`
     }
 }
 

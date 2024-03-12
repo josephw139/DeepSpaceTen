@@ -32,6 +32,9 @@ module.exports = {
 		const channel = interaction.channel;
 
 		const playerData = getPlayerData(member.id);
+		if (typeof playerData === 'string') {
+            interaction.reply(playerData);
+        }
 		const fleet = playerData.fleet;
 		const location = playerData.location;
 		const locationDisplay = playerData.locationDisplay;
