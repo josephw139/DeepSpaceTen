@@ -2,16 +2,19 @@
 
 
 class Ship {
-    constructor({ type, capabilities, name, manufacturer, desc, hp, cargoCapacity, armor, speed, modCapacity, modules, inventory }) {
+    constructor({ type, capabilities, name, manufacturer, desc, hp, attack, armor, speed, crew, crewCapacity, cargoCapacity, modCapacity, modules, inventory }) {
         this.type = type;
         this.capabilities = capabilities;
         this.name = name;
         this.manufacturer = manufacturer;
         this.desc = desc;
         this.hp = hp;
-        this.cargoCapacity = cargoCapacity;
+        this.attack = attack;
         this.armor = armor;
         this.speed = speed;
+        this.crew = crew;
+        this.crewCapacity = crewCapacity;
+        this.cargoCapacity = cargoCapacity;
         this.modules = modules;
         this.modCapacity = modCapacity;
         this.inventory = inventory;
@@ -25,6 +28,13 @@ class Ship {
             }
         }
 
+        // determine ship morale
+        let morale = 0;
+        for (let i = 0; i < crew.length; i++) {
+            morale += crew[i].morale;
+        }
+        this.morale = morale / crew.length;
+
         this.deploy = `${this.name} is operational and ready to deploy!`;
     }
 
@@ -35,8 +45,9 @@ class Ship {
             const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight})`).join(', ');
     
             return `*${this.desc}*\n\n` +
-                    `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\n` +
-                    `Capabilities: ${this.capabilities.join(', ')}\n\n` +
+                    `Crew (${this.crew.length}/${this.crewCapacity[1]}) - Minimum ${this.crewCapacity[0]}\nMorale: ${this.morale}\n\n` +
+                    `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\nAttack: ${this.attack}\n\n` +
+                    `__Capabilities:__ ${this.capabilities.join(', ')}\n\n` +
                    `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${this.modules.join(', ')}\n` +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
@@ -52,13 +63,16 @@ class Ship {
             type: this.type,
             capabilities: this.capabilities,
             name: this.name,
-            hp: this.hp,
             manufacturer: this.manufacturer,
             desc: this.desc,
-            cargoCapacity: this.cargoCapacity,
-            inventory: this.inventory,
+            hp: this.hp,
+            attack: this.attack,
             armor: this.armor, 
             speed: this.speed,
+            crew: this.crew,
+            crewCapacity: this.crewCapacity,
+            cargoCapacity: this.cargoCapacity,
+            inventory: this.inventory,
             modules: this.modules,
             modCapacity: this.modCapacity
         };
@@ -155,7 +169,7 @@ class Fleet {
             }
             shipDisplay += `${i + 1} - ${this.ships[i].shipDisplay()}`;
             if (this.ships[i] === this.activeShip) {
-                shipDisplay += `**\n`;
+                shipDisplay += `**\nCrew: ${this.ships[i].crew.length}/${this.ships[i].crewCapacity[1]} | Morale: ${this.ships[i].morale}\n`;
             }
             if (this.ships[i] === this.activeShip) {
                 shipDisplay += `STATUS: ACTIVE\n\n`;
@@ -242,11 +256,11 @@ const shipClasses = {
 }
 
 const defaultStats = {
-    cruiser: { desc: 'This is a Cruiser', hp: 16, cargoCapacity: 1000, armor: 4, speed: 3, modCapacity: 4, modules: [], inventory: [], capabilities: [] },
-    mining_ship: { desc: 'This is a Mining Ship', hp: 10, cargoCapacity: 1500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"] },
-    freighter: { desc: 'This is a Freighter', hp: 10, cargoCapacity: 4000, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: [] },
-    scout: { desc: 'This is a Scout', hp: 6, cargoCapacity: 500, armor: 2, speed: 4, modCapacity: 1, modules: [], inventory: [], capabilities: [] },
-    science_vessel: { desc: 'This is a Science Vessel', hp: 8, cargoCapacity: 500, armor: 2, speed: 2, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"] },
+    cruiser: { desc: 'This is a Cruiser', hp: 16, attack: '1d6', armor: 4, speed: 3, crew: [], crewCapacity: [6, 12], cargoCapacity: 1000, modCapacity: 4, modules: [], inventory: [], capabilities: [] },
+    mining_ship: { desc: 'This is a Mining Ship', hp: 10, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [4, 7], cargoCapacity: 1500,  modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"] },
+    freighter: { desc: 'This is a Freighter', hp: 10, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [2, 5], cargoCapacity: 4000,  modCapacity: 2, modules: [], inventory: [], capabilities: [] },
+    scout: { desc: 'This is a Scout', hp: 6, attack: '1d2', armor: 2, speed: 4, crew: [], crewCapacity: [2, 4], cargoCapacity: 500,  modCapacity: 1, modules: [], inventory: [], capabilities: [] },
+    science_vessel: { desc: 'This is a Science Vessel', hp: 8, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [6, 10], cargoCapacity: 500, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"] },
 };
 
 function capitalize(string) {

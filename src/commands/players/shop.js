@@ -10,7 +10,7 @@ const { updateHangar } = require('../../database/hangerFuncs.js');
 module.exports = {
 	data: new SlashCommandBuilder()
 	.setName('shop')
-	.setDescription('Purchase and sell items')
+	.setDescription('Purchase and sell items. Leave blank to view shop.')
 	.addStringOption(option =>
         option.setName("goal")
             .setDescription("Leave blank to view shop")
@@ -54,7 +54,7 @@ module.exports = {
 			const itemToBuyResult = findItemInShop(item);
 			// Check if item exists
 			if (!itemToBuyResult) {
-				await interaction.reply({ content: `Item '${item}' not found in the shop.`, ephemeral: true });
+				await interaction.reply({ content: `'${item}' not found in the shop.`, ephemeral: true });
 				return;
 			}
 			const itemToBuy = itemToBuyResult.item;
@@ -75,7 +75,7 @@ module.exports = {
 				fleet.ships.push(createNewShip(itemToBuy));
 				// Save the updated fleet or hangar
 				db.player.set(`${playerId}`, fleet, "fleet");
-			} else if (itemToBuyResult.type === 'upgrade') {
+			} else if (itemToBuyResult.type === 'upgrade' || itemToBuyResult.type === 'furnishing') {
 				updateHangar(playerId, hangar, itemToBuy);
 			}
 		
@@ -87,15 +87,32 @@ module.exports = {
 
 
 		} else { // SHOW ALL 
-			const shipsForSale = generateListString(shopList.shopList.ships);
-			const upgradesForSale = generateListString(shopList.shopList.upgrades);
+			const locationName = location.currentLocation.name;
+			updateShopInventory(locationName);
+			const inventory = shopInventories[locationName];
+
+			const shipsForSale = generateListString(inventory.ships);
+			const upgradesForSale = generateListString(inventory.upgrades);
+			const furnishingsForSale = generateListString(inventory.furnishings);
+
+			let shopDesc = ``;
+			let shopName = ``;
+
+			switch (location.currentLocation.name) {
+				case 'Orion Station':
+					shopDesc = orionString + orionShop[Math.floor(Math.random() * orionShop.length)];
+					shopName = `Wixzys' Wares - Orion Station`;
+			}
 
 			const shopView = new EmbedBuilder()
-				.setTitle(`Shop`)
-				.setDescription(`This is a shop`)
+				.setTitle(`${shopName}`)
+				.setDescription(`${shopDesc}`)
 				.addFields(
-					{ name: 'Ships for Sale', value: shipsForSale},
-					{ name: 'Upgrades for Sale', value: upgradesForSale },
+					{ name: 'Ships for Sale', value: shipsForSale || 'None available' },
+					{ name: '\u200B', value: '\u200B' },
+					{ name: 'Upgrades for Sale', value: `${upgradesForSale}` || 'None available' },
+					{ name: '\u200B', value: '\u200B' },
+					{ name: 'Furnishings for Sale', value: `${furnishingsForSale}` || 'None available' }
 				)
 			await interaction.reply({ embeds: [shopView] });
 		}
@@ -105,15 +122,69 @@ module.exports = {
 
 // Function to generate list strings for embed fields
 const generateListString = (items) => {
-    // Check if items is null, undefined, or empty
-    if (!items || Object.keys(items).length === 0) {
+    if (!items || items.length === 0) {
         return 'None available';
     }
 
-    return Object.entries(items).map(([key, item]) => {
-        return `__${item.name} - ${item.price}C__\n${item.desc}`;
+    return items.map(item => {
+        return `__${item.name} - ${item.price}C__\n${item.description}`;
     }).join('\n\n');
 };
+
+
+
+let lastUpdateTime = null;
+
+let shopInventories = {
+	"Orion Station": {
+		ships: [],
+		upgrades: [],
+		furnishings: [],
+		lastUpdateTime: null
+	},
+	"Kaysatha": {
+        ships: [],
+        upgrades: [],
+        furnishings: [],
+        lastUpdateTime: null
+    }
+}
+
+
+function updateShopInventory(location) {
+    const now = new Date();
+	let inventory = shopInventories[location];
+
+	if (!inventory) {
+        console.error(`No inventory found for location: ${location}`);
+        return;
+    }
+
+    if (!inventory.lastUpdateTime || now - inventory.lastUpdateTime >= 3 * 24 * 60 * 60 * 1000) { // 3 days in milliseconds
+        inventory.ships.length = 0;
+		inventory.upgrades.length = 0;
+		inventory.furnishings.length = 0;
+
+		inventory.ships = [];
+		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, 4);
+		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, 4);
+
+        inventory.lastUpdateTime = now;
+    }
+}
+
+function generateRandomItemsFromObject(itemsObj, count) {
+    const keys = Object.keys(itemsObj);
+    let selectedItems = [];
+    for (let i = 0; i < count; i++) {
+        if(keys.length === 0) break; // Avoid infinite loop if no items
+        const randomIndex = Math.floor(Math.random() * keys.length);
+        const key = keys[randomIndex];
+        selectedItems.push(itemsObj[key]);
+        keys.splice(randomIndex, 1); // Remove selected key to avoid duplicates
+    }
+    return selectedItems;
+}
 
 // Function to find an item in the shop list by name, ignoring case
 const findItemInShop = (itemName) => {
@@ -129,6 +200,22 @@ const findItemInShop = (itemName) => {
         return { item: foundItem, type: 'upgrade' };
     }
 
+	// Check furnishings if not found in ships
+    foundItem = Object.values(shopList.shopList.furnishings).find(furnishing => furnishing.name.toLowerCase() === itemName.toLowerCase());
+    if (foundItem) {
+        return { item: foundItem, type: 'furnishing' };
+    }
+
     // Return null if not found
     return null;
 };
+
+
+// Shopkeepers
+
+const orionShop = [
+	`Stay away from the lower levels tonight, word around is things are getting rowdy."`,
+	`How goes the Exploration? Find any neat planets, alien life, robots? There's gotta be robots out there somewhere, man."`,
+	`Did you hear about the Conglomerate assassination? People are pointing fingers at the Martians."`
+]
+const orionString = `A large gray-skinned humanoid greets you with a great smile, "Welcome to Wixzys' Wares, Orion Station's premier shopping outlet! `

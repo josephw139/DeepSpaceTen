@@ -3,6 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const schedule = require('node-schedule');
+const { getPlayerData } = require('../../database/playerFuncs.js');
 
 
 module.exports = {
@@ -19,6 +20,13 @@ module.exports = {
         const playerId = member.id;
 		const channel = interaction.channel;
         // rework to use playerData function
+        const actualPlayerData = getPlayerData(playerId);
+        if (typeof actualPlayerData === 'string') {
+            interaction.reply(actualPlayerData);
+        }
+        
+        const { activeShip } = actualPlayerData;
+
         const playerData = db.player.get(`${member.id}`, "location");
         const discoveries = db.player.get(`${playerId}`, "discoveries");
         const currentSystemName = playerData.currentSystem.name;
@@ -30,6 +38,12 @@ module.exports = {
             await interaction.reply({ content: `System "${systemNameToTravel}" not found.`, ephemeral: true });
             return;
         }
+
+        const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
+        if (!minCrew) {
+            interaction.channel.send({ content: `WARNING: ${activeShip.name} does not meet minimum crew thresholds. Traveling will take longer and be less safe, and certain operations will not be doable.`, ephemeral: true })
+        }
+
 
 		const locations = getLocationsForSystem(systemToTravel, playerData.currentLocation.name);
 

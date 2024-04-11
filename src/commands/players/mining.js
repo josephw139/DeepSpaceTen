@@ -39,15 +39,18 @@ module.exports = {
 			if (!isEngaged) {
 				const canMine = location.currentLocation.activities.includes('Mine');
 				const isMiningShip = activeShip.capabilities.includes("Mining");
+                const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
 
-				if (canMine && isMiningShip) {
+				if (canMine && isMiningShip && minCrew ) {
 					startMining(member.id, activeShip, fleet);
 					await interaction.reply({ content: `You've started mining!`, ephemeral: false });
 				} else if (!canMine) {
 					await interaction.reply({ content: `You can't mine at this location`, ephemeral: true });
-				} else {
+				} else if (!isMiningShip) {
 					await interaction.reply({ content: `This ship doesn't have mining capability`, ephemeral: true });
-				}
+				} else if (!minCrew) {
+                    await interaction.reply({ content: `You don't have enough crew staffing the ship`, ephemeral: true });
+                }
 			} else {
 				await interaction.reply({ content: `You're already engaged in another activity`, ephemeral: true });
 			}
