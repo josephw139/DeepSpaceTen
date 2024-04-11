@@ -89,7 +89,7 @@ function startMining(playerId, activeShip, fleet) {
 
         if (ship) {
             try {
-                const resource = calculateMinerals(location.currentLocation);
+                const resource = calculateMinerals(location.currentLocation, activeShip.morale);
                 const totalWeight = getTotalWeight(ship.inventory);
                 const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
@@ -184,7 +184,7 @@ function getShipFromFleet(shipName, fleet) {
 }
 
 
-function calculateMinerals(location) {
+function calculateMinerals(location, morale) {
     // Define ranges for each resource type and mining level
     const ranges = {
         Ore: {
@@ -219,9 +219,25 @@ function calculateMinerals(location) {
     const { min, max } = ranges[selectedType][miningLevel];
 
     // Randomly choose a value between min and max for the selected type
+    let oreQuantity = Math.floor(Math.random() * (max - min + 1)) + min;
+
+    if (morale == 10) {
+        oreQuantity *= 1.3;
+    } else if (morale >= 7 && morale < 10) {
+        oreQuantity *= 1.15;
+    } else if (morale == 6 || activeShip.morale == 5) {
+        oreQuantity *= 1;
+    } else if (morale < 5 && activeShip.morale > 1) {
+        oreQuantity *= 0.8;
+    } else if (morale <= 1) {
+        oreQuantity *= 0.7;
+    }
+
+    oreQuantity = Math.round(oreQuantity);
+
     return {
         type: selectedType,
-        quantity: Math.floor(Math.random() * (max - min + 1)) + min
+        quantity: oreQuantity,
     };
 }
 

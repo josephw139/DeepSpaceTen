@@ -69,7 +69,7 @@ module.exports = {
                 const isEngaged = db.player.get(`${playerId}`, "engaged");
                 if (!isEngaged) {
                     const selectedLocation = i.values[0];
-                    const travelTime = calculateTravelTime(playerData, selectedLocation); // Implement your logic to calculate travel time
+                    const travelTime = calculateTravelTime(playerData, selectedLocation, minCrew, activeShip); // Implement your logic to calculate travel time
 
                     // Schedule the completion of the travel
                     scheduleTravel(member.id, selectedLocation, travelTime, channel);
@@ -110,7 +110,7 @@ function getLocationsForSystem(systemToTravel, currentLocationName) {
     return systemToTravel.locations.filter(location => location.name !== currentLocationName);
 }
 
-function calculateTravelTime(playerData, selectedLocation) {
+function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) {
 	const currentSector = playerData.currentSector;
 	const currentSystem = playerData.currentSystem;
 	const currentLocation = playerData.currentLocation;
@@ -119,6 +119,19 @@ function calculateTravelTime(playerData, selectedLocation) {
 
 	if (locationExists) {
         let travelTime = 2;
+        if (!minCrew) {
+            travelTime *= 1.5;
+        }
+        if (activeShip.morale == 10) {
+            travelTime *= 0.8;
+        } else if (activeShip.morale == 6 || activeShip.morale == 5) {
+            travelTime *= 1.1;
+        } else if (activeShip.morale < 5 && activeShip.morale > 1) {
+            travelTime *= 1.3;
+        } else if (activeShip.morale <= 1) {
+            travelTime *= 1.5;
+        }
+
         return travelTime;
     }
 }
