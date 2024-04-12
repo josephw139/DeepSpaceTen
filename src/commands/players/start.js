@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
-const { Fleet, capitalize } = require('../../modules/ships/base');
+const { Fleet, capitalize, createShip } = require('../../modules/ships/base');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
 const { generateRandomCrewMember } = require('../../database/crewFuncs.js');
@@ -89,9 +89,11 @@ module.exports = {
             // Create starting fleet loadout
             // console.log(`${flagshipName}`)
 
-            const flagship = fleet.createShip(`${shipType}`, `${name}`, 'Atlas Exploration'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            const flagship = createShip(`${shipType}`, `${name}`, 'Atlas Exploration'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            fleet.saveShipToFleet(flagship);
             fleet.setActiveShip(`${name}`);
             const activeShip = fleet.getActiveShip();
+            console.log(activeShip);
 
             for (let i = 0; i < activeShip.crewCapacity[0]; i++) {
                 activeShip.crew.push(generateRandomCrewMember());

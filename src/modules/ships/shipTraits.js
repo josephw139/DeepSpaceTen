@@ -1,0 +1,74 @@
+const defaultStats = {
+    cruiser: { 
+        description: 'Cruisers are good all-rounder ships, sturdier and more versatile, but much more expensive.',
+        hp: 16, attack: '1d6', armor: 4, speed: 3, crew: [], crewCapacity: [8, 16],
+        cargoCapacity: 1000, modCapacity: 4, modules: [], inventory: [], capabilities: [], price: 50000,
+    },
+    mining_ship: { 
+        description: 'Outfitted with drills, ore storage, mineral scanners.',
+        hp: 10, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [4, 7],
+        cargoCapacity: 1500,  modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"], price: 30000,
+    },
+    freighter: { 
+        description: 'Designed to haul as much cargo as possible.',
+        hp: 10, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [2, 5],
+        cargoCapacity: 4000,  modCapacity: 2, modules: [], inventory: [], capabilities: [], price: 30000,
+    },
+    scout: { 
+        description: 'Fast and nimble, equipped with probes and advanced scanning hardware',
+        hp: 8, attack: '1d2', armor: 2, speed: 4, crew: [], crewCapacity: [2, 4],
+        cargoCapacity: 500,  modCapacity: 1, modules: [], inventory: [], capabilities: ["Light Scan"], price: 25000,
+    },
+    science_vessel: {
+        description: 'Equipped with state of the art laboraties and facilities to study exotic material and other life.',
+        hp: 6, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [6, 10],
+        cargoCapacity: 500, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"], price: 30000,
+    },
+};
+
+const manufacturerModifiers = {
+    "Atlas Exploration": {
+        speed: +1, // Adds 1 to speed
+    },
+    "Martian Manufacturing LLC": {
+        armor: +1,
+    },
+    "Wright-Yuan Corporation": {
+        price: 1.2,
+    },
+    "Voidway Aeronautics": {
+        cargoCapacity: 1.2,
+    },
+    "Bright Future Industries": {
+        price: 1.6,
+        modCapacity: +1,
+    },
+    "Conglomerate of Liberated Peoples' Steelworks": {
+        crewCapacity: { min: -1, max: +1 },
+    }
+
+};
+
+const classModifiers = {
+    Light: {
+        speed: +2,
+        price: 0.8, // Reduce price by 20%
+        crewCapacity: { min: -1, max: -1 },
+        hp: -1,
+        armor: -1,
+        cargoCapacity: 0.9, // Reduce cargo capacity by 10%
+    },
+    Heavy: {
+        speed: -1,
+        price: 1.2, // Increase price by 20%
+        crewCapacity: { min: +1, max: +1 },
+        hp: +1,
+        armor: +1,
+        cargoCapacity: 1.1, // Increase cargo capacity by 10%
+    },
+};
+
+
+
+
+module.exports = { classModifiers, manufacturerModifiers, defaultStats }

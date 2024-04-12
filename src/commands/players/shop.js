@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const { Fleet } = require('../../modules/ships/base.js');
+const { Fleet, generateRandomShip } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const shopList = require('../../database/shopList.js');
 const db = require('../../database/db.js');
@@ -91,7 +91,7 @@ module.exports = {
 			updateShopInventory(locationName);
 			const inventory = shopInventories[locationName];
 
-			const shipsForSale = generateListString(inventory.ships);
+			const shipsForSale = generateListString(inventory.ships, true);
 			const upgradesForSale = generateListString(inventory.upgrades);
 			const furnishingsForSale = generateListString(inventory.furnishings);
 
@@ -121,14 +121,23 @@ module.exports = {
 };
 
 // Function to generate list strings for embed fields
-const generateListString = (items) => {
+function generateListString(items, isShip = false) {
     if (!items || items.length === 0) {
         return 'None available';
     }
 
-    return items.map(item => {
-        return `__${item.name} - ${item.price}C__\n${item.description}`;
-    }).join('\n\n');
+	if (!isShip) {
+		return items.map(item => {
+			return `__${item.name} - ${item.price}C__\n${item.description}`;
+		}).join('\n\n');
+	} else {
+		return items.map(item => {
+			const classType = item.classType ? `${item.classType} ` : ""; // If classType is null, use an empty string
+			return `__${classType}${item.name} (${item.manufacturer})- ${item.price}C__\n${item.description}`;
+		}).join('\n\n');
+		
+	}
+    
 };
 
 
@@ -161,11 +170,16 @@ function updateShopInventory(location) {
     }
 
     if (!inventory.lastUpdateTime || now - inventory.lastUpdateTime >= 3 * 24 * 60 * 60 * 1000) { // 3 days in milliseconds
-        inventory.ships.length = 0;
+        inventory.ships = [];
 		inventory.upgrades.length = 0;
 		inventory.furnishings.length = 0;
 
-		inventory.ships = [];
+		// Generate two new random ships and add them to the inventory
+        for (let i = 0; i < 2; i++) {
+            const newShip = generateRandomShip();
+            inventory.ships.push(newShip);
+        }
+
 		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, 4);
 		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, 4);
 

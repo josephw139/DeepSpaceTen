@@ -1,13 +1,16 @@
 // class for a Ship
+const { classModifiers, manufacturerModifiers, defaultStats } = require('./shipTraits')
 
 
 class Ship {
-    constructor({ type, capabilities, name, manufacturer, desc, hp, attack, armor, speed, crew, crewCapacity, cargoCapacity, modCapacity, modules, inventory }) {
+    constructor({ type, capabilities, classType, name, manufacturer, description, hp, attack, armor, speed,
+                crew, crewCapacity, cargoCapacity, modCapacity, modules, inventory, price }) {
         this.type = type;
         this.capabilities = capabilities;
+        this.classType = classType;
         this.name = name;
         this.manufacturer = manufacturer;
-        this.desc = desc;
+        this.description = description;
         this.hp = hp;
         this.attack = attack;
         this.armor = armor;
@@ -18,6 +21,7 @@ class Ship {
         this.modules = modules;
         this.modCapacity = modCapacity;
         this.inventory = inventory;
+        this.price = price;
 
         // modify stats based on modules equipped
         for (let i = 0; i < modules.length; i++) {
@@ -40,18 +44,25 @@ class Ship {
 
     // function to call in the Fleet command to show ship details
     shipDisplay(detailed = false) {
+        let classTypeString;
+        if (!this.classType) {
+            classTypeString = "";
+        } else {
+            classTypeString = this.classType;
+        }
+
         if (detailed) {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
             const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight})`).join(', ');
     
-            return `*${this.desc}*\n\n` +
+            return `*${this.description}*\n\n` +
                     `Crew (${this.crew.length}/${this.crewCapacity[1]}) - Minimum ${this.crewCapacity[0]}\nMorale: ${this.morale}\n\n` +
                     `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\nAttack: ${this.attack}\n\n` +
                     `__Capabilities:__ ${this.capabilities.join(', ')}\n\n` +
                    `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${this.modules.join(', ')}\n` +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
-        return `${this.name}, ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
+        return `${this.name}, ${classTypeString} ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
     }
     
     
@@ -62,9 +73,10 @@ class Ship {
         const array = {
             type: this.type,
             capabilities: this.capabilities,
+            classType: this.classType,
             name: this.name,
             manufacturer: this.manufacturer,
-            desc: this.desc,
+            description: this.description,
             hp: this.hp,
             attack: this.attack,
             armor: this.armor, 
@@ -74,7 +86,8 @@ class Ship {
             cargoCapacity: this.cargoCapacity,
             inventory: this.inventory,
             modules: this.modules,
-            modCapacity: this.modCapacity
+            modCapacity: this.modCapacity,
+            price: this.price,
         };
 
         //console.log('base(54) toArray:\n' + array);
@@ -129,7 +142,7 @@ class Fleet {
             // but it saves as the full object for some reason which works for me
             const specs =['scout'];
             for (let i = 0; i < array[0].length; i++) {
-                this.createShip(array[0][i].type, array[0][i]);
+                this.saveShipToFleet(createShip(array[0][i].type, array[0][i]));
                 if (specs.includes(array[0][i].type)) {
                     this.fleetSpecs.push(array[0][i].type)
                 }
@@ -195,34 +208,9 @@ class Fleet {
 
     }*/
 
-    // create a new ship
-    createShip(shipType, nameOrArray, manufacturer) {
-        const ShipClass = shipClasses[shipType];
-        const stats = defaultStats[shipType];
-
-        if (ShipClass && stats && nameOrArray) {
-            let ship;
-            if ((typeof nameOrArray === "object")) {
-                // recreate an existing ship with json object
-                ship = new ShipClass({
-                    ...nameOrArray
-                })
-            } else {
-                // create a brand new ship
-                ship = new ShipClass({
-                    type: shipType,
-                    name: nameOrArray,
-                    manufacturer: manufacturer,
-                    ...stats
-                });
-            }
-
+    // save ship to Fleet
+    saveShipToFleet(ship) {
             this.ships.push(ship);
-            return ship;
-
-        } else {
-            throw new Error("Invalid ship type");
-        }
     }
 }
 
@@ -255,13 +243,94 @@ const shipClasses = {
     scienceVessel: ScienceVessel
 }
 
-const defaultStats = {
-    cruiser: { desc: 'This is a Cruiser', hp: 16, attack: '1d6', armor: 4, speed: 3, crew: [], crewCapacity: [6, 12], cargoCapacity: 1000, modCapacity: 4, modules: [], inventory: [], capabilities: [] },
-    mining_ship: { desc: 'This is a Mining Ship', hp: 10, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [4, 7], cargoCapacity: 1500,  modCapacity: 2, modules: [], inventory: [], capabilities: ["Mining"] },
-    freighter: { desc: 'This is a Freighter', hp: 10, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [2, 5], cargoCapacity: 4000,  modCapacity: 2, modules: [], inventory: [], capabilities: [] },
-    scout: { desc: 'This is a Scout', hp: 6, attack: '1d2', armor: 2, speed: 4, crew: [], crewCapacity: [2, 4], cargoCapacity: 500,  modCapacity: 1, modules: [], inventory: [], capabilities: [] },
-    science_vessel: { desc: 'This is a Science Vessel', hp: 8, attack: '1d2', armor: 2, speed: 2, crew: [], crewCapacity: [6, 10], cargoCapacity: 500, modCapacity: 2, modules: [], inventory: [], capabilities: ["Research"] },
-};
+
+// create a new ship
+function createShip(shipType, nameOrArray, manufacturer, shipClass = null) {
+    const ShipClass = shipClasses[shipType];
+    const stats = JSON.parse(JSON.stringify(defaultStats[shipType])); // Deep copy to avoid mutating the original
+
+    // Apply manufacturer modifiers
+    if (manufacturer && manufacturerModifiers[manufacturer]) {
+        Object.keys(manufacturerModifiers[manufacturer]).forEach(stat => {
+            if (stat === 'crewCapacity' && typeof stats[stat] === 'object') {
+                // Assuming crewCapacity adjustments need special handling
+                stats[stat][0] += manufacturerModifiers[manufacturer][stat].min || 0;
+                stats[stat][1] += manufacturerModifiers[manufacturer][stat].max || 0;
+            } else if (['price', 'cargoCapacity'].includes(stat) && typeof stats[stat] === 'number') {
+                // Apply percentage modifiers directly for price and cargoCapacity
+                stats[stat] *= manufacturerModifiers[manufacturer][stat];
+            } else if (typeof stats[stat] === 'number') {
+                // Apply flat modifiers for other stats
+                stats[stat] += manufacturerModifiers[manufacturer][stat];
+            }
+        });
+    }
+    
+    // Apply Class modifiers (Light, Heavy)
+    if (shipClass && classModifiers[shipClass]) {
+        Object.keys(classModifiers[shipClass]).forEach(stat => {
+            if (stat === 'crewCapacity') {
+                // Directly applying min and max adjustments to both elements of the crewCapacity array
+                stats[stat][0] += classModifiers[shipClass][stat].min; // Adjust minimum capacity
+                stats[stat][1] += classModifiers[shipClass][stat].max; // Adjust maximum capacity
+            } else if (['price', 'cargoCapacity'].includes(stat)) {
+                // Apply percentage modifiers directly
+                stats[stat] *= classModifiers[shipClass][stat];
+            } else {
+                // Apply flat modifiers
+                stats[stat] += classModifiers[shipClass][stat];
+            }
+        });
+    }
+
+    if (ShipClass && stats && nameOrArray) {
+        let ship;
+        if ((typeof nameOrArray === "object")) {
+            // recreate an existing ship with json object
+            ship = new ShipClass({
+                ...nameOrArray
+            })
+        } else {
+            // create a brand new ship
+            ship = new ShipClass({
+                type: shipType,
+                name: nameOrArray,
+                manufacturer: manufacturer,
+                classType: shipClass,
+                ...stats
+            });
+        }
+        return ship;
+
+    } else {
+        throw new Error("Invalid ship type");
+    }
+}
+
+function generateRandomShip() {
+    // Example lists of ship types and manufacturers
+    const shipTypes = Object.keys(defaultStats);
+    const manufacturers = Object.keys(manufacturerModifiers);
+    // Add a chance for the Class to be null
+    const classes = [...Object.keys(classModifiers), null]; // Adding null to the classes array
+
+    // Randomly select a ship type and manufacturer
+    const shipType = shipTypes[Math.floor(Math.random() * shipTypes.length)];
+    const manufacturer = manufacturers[Math.floor(Math.random() * manufacturers.length)];
+    // Randomly select a class, allowing for the possibility of null
+    const shipClass = classes[Math.floor(Math.random() * classes.length)];
+
+    // Generate a random name for the ship
+    const shipName = `${capitalize(shipType)} ${Math.floor(Math.random() * 1000)}`;
+
+    // Use your existing createShip function to generate the ship, handling null Class appropriately
+    const randomShip = createShip(shipType, shipName, manufacturer, shipClass);
+
+    console.log(`Generated ship: ${shipName}, Type: ${shipType}, Manufacturer: ${manufacturer}, Class: ${shipClass ? shipClass : "Standard"}`);
+    console.log(randomShip);
+    return randomShip;
+}
+
 
 function capitalize(string) {
     if (string) {
@@ -274,4 +343,4 @@ function capitalize(string) {
 }
 
 
-module.exports = { Ship, Fleet, capitalize };
+module.exports = { Ship, Fleet, capitalize, createShip, generateRandomShip };
