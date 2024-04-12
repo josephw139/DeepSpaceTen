@@ -240,12 +240,12 @@ const shipClasses = {
     freighter: Freighter,
     mining_ship: MiningShip,
     scout: Scout,
-    scienceVessel: ScienceVessel
+    science_vessel: ScienceVessel
 }
 
 
 // create a new ship
-function createShip(shipType, nameOrArray, manufacturer, shipClass = null) {
+function createShip(shipType, nameOrArray, manufacturer, lightHeavy = null) {
     const ShipClass = shipClasses[shipType];
     const stats = JSON.parse(JSON.stringify(defaultStats[shipType])); // Deep copy to avoid mutating the original
 
@@ -267,22 +267,22 @@ function createShip(shipType, nameOrArray, manufacturer, shipClass = null) {
     }
     
     // Apply Class modifiers (Light, Heavy)
-    if (shipClass && classModifiers[shipClass]) {
-        Object.keys(classModifiers[shipClass]).forEach(stat => {
+    if (lightHeavy && classModifiers[lightHeavy]) {
+        Object.keys(classModifiers[lightHeavy]).forEach(stat => {
             if (stat === 'crewCapacity') {
                 // Directly applying min and max adjustments to both elements of the crewCapacity array
-                stats[stat][0] += classModifiers[shipClass][stat].min; // Adjust minimum capacity
-                stats[stat][1] += classModifiers[shipClass][stat].max; // Adjust maximum capacity
+                stats[stat][0] += classModifiers[lightHeavy][stat].min; // Adjust minimum capacity
+                stats[stat][1] += classModifiers[lightHeavy][stat].max; // Adjust maximum capacity
             } else if (['price', 'cargoCapacity'].includes(stat)) {
                 // Apply percentage modifiers directly
-                stats[stat] *= classModifiers[shipClass][stat];
+                stats[stat] *= classModifiers[lightHeavy][stat];
             } else {
                 // Apply flat modifiers
-                stats[stat] += classModifiers[shipClass][stat];
+                stats[stat] += classModifiers[lightHeavy][stat];
             }
         });
     }
-
+    console.log(ShipClass + stats + nameOrArray);
     if (ShipClass && stats && nameOrArray) {
         let ship;
         if ((typeof nameOrArray === "object")) {
@@ -296,7 +296,7 @@ function createShip(shipType, nameOrArray, manufacturer, shipClass = null) {
                 type: shipType,
                 name: nameOrArray,
                 manufacturer: manufacturer,
-                classType: shipClass,
+                classType: lightHeavy,
                 ...stats
             });
         }
@@ -324,6 +324,7 @@ function generateRandomShip() {
     const shipName = `${capitalize(shipType)} ${Math.floor(Math.random() * 1000)}`;
 
     // Use your existing createShip function to generate the ship, handling null Class appropriately
+    console.log(shipType + shipName + manufacturer + shipClass);
     const randomShip = createShip(shipType, shipName, manufacturer, shipClass);
 
     console.log(`Generated ship: ${shipName}, Type: ${shipType}, Manufacturer: ${manufacturer}, Class: ${shipClass ? shipClass : "Standard"}`);

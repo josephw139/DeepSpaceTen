@@ -5,6 +5,7 @@ const shopList = require('../../database/shopList.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
 const { updateHangar } = require('../../database/hangerFuncs.js');
+const { shopDialogue } = require('../../database/npcs/shopDialogues.js');
 
 
 module.exports = {
@@ -51,7 +52,7 @@ module.exports = {
 				await interaction.reply({ content: `Please specify an item to buy.`, ephemeral: true });
 				return;
 			}
-			const itemToBuyResult = findItemInShop(item);
+			const itemToBuyResult = findItemInShop(item, location.currentLocation.name);
 			// Check if item exists
 			if (!itemToBuyResult) {
 				await interaction.reply({ content: `'${item}' not found in the shop.`, ephemeral: true });
@@ -72,7 +73,7 @@ module.exports = {
 			// Use itemToBuyResult.type to determine action
 			if (itemToBuyResult.type === 'ship') {
 				// Add ship to fleet
-				fleet.ships.push(createNewShip(itemToBuy));
+				fleet.ships.push(itemToBuy);
 				// Save the updated fleet or hangar
 				db.player.set(`${playerId}`, fleet, "fleet");
 			} else if (itemToBuyResult.type === 'upgrade' || itemToBuyResult.type === 'furnishing') {
@@ -95,18 +96,11 @@ module.exports = {
 			const upgradesForSale = generateListString(inventory.upgrades);
 			const furnishingsForSale = generateListString(inventory.furnishings);
 
-			let shopDesc = ``;
-			let shopName = ``;
-
-			switch (location.currentLocation.name) {
-				case 'Orion Station':
-					shopDesc = orionString + orionShop[Math.floor(Math.random() * orionShop.length)];
-					shopName = `Wixzys' Wares - Orion Station`;
-			}
+			const shopNameDesc = shopDialogue(location.currentLocation.name);
 
 			const shopView = new EmbedBuilder()
-				.setTitle(`${shopName}`)
-				.setDescription(`${shopDesc}`)
+				.setTitle(`${shopNameDesc[0]}`)
+				.setDescription(`${shopNameDesc[1]}`)
 				.addFields(
 					{ name: 'Ships for Sale', value: shipsForSale || 'None available' },
 					{ name: '\u200B', value: '\u200B' },
@@ -141,9 +135,6 @@ function generateListString(items, isShip = false) {
 };
 
 
-
-let lastUpdateTime = null;
-
 let shopInventories = {
 	"Orion Station": {
 		ships: [],
@@ -159,13 +150,32 @@ let shopInventories = {
     }
 }
 
+const shopConfigurations = {
+    "Orion Station": {
+        ships: 2,
+        upgrades: 3,
+        furnishings: 2,  // Example of no furnishings
+    },
+    "Kaysatha": {
+        ships: 1,
+        upgrades: 2,
+        furnishings: 6,  // Example of more furnishings
+    }
+};
+
+
 
 function updateShopInventory(location) {
     const now = new Date();
 	let inventory = shopInventories[location];
+	let config = shopConfigurations[location];
 
 	if (!inventory) {
         console.error(`No inventory found for location: ${location}`);
+        return;
+    }
+	if (!config) {
+        console.error(`No configuration found for location: ${location}`);
         return;
     }
 
@@ -175,61 +185,61 @@ function updateShopInventory(location) {
 		inventory.furnishings.length = 0;
 
 		// Generate two new random ships and add them to the inventory
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < config.ships; i++) {
             const newShip = generateRandomShip();
             inventory.ships.push(newShip);
         }
 
-		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, 4);
-		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, 4);
+		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, config.upgrades);
+		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, config.furnishings);
 
         inventory.lastUpdateTime = now;
     }
 }
 
 function generateRandomItemsFromObject(itemsObj, count) {
-    const keys = Object.keys(itemsObj);
-    let selectedItems = [];
+    const itemsWithWeights = [];
+    Object.entries(itemsObj).forEach(([key, item]) => {
+        // Calculate the inverse of rarity as weight; more common items have higher weights
+        const weight = 1 / (item.rarity || 1);
+        for (let i = 0; i < weight * 10; i++) { // Multiply by 10 or other factor to adjust granularity
+            itemsWithWeights.push(item);
+        }
+    });
+
+    const selectedItems = [];
     for (let i = 0; i < count; i++) {
-        if(keys.length === 0) break; // Avoid infinite loop if no items
-        const randomIndex = Math.floor(Math.random() * keys.length);
-        const key = keys[randomIndex];
-        selectedItems.push(itemsObj[key]);
-        keys.splice(randomIndex, 1); // Remove selected key to avoid duplicates
+        if (itemsWithWeights.length === 0) break;
+        const randomIndex = Math.floor(Math.random() * itemsWithWeights.length);
+        selectedItems.push(itemsWithWeights[randomIndex]);
+        // Remove selected item to avoid duplicates
+        itemsWithWeights.splice(randomIndex, 1);
     }
     return selectedItems;
 }
 
 // Function to find an item in the shop list by name, ignoring case
-const findItemInShop = (itemName) => {
-    // Check ships first
-    let foundItem = Object.values(shopList.shopList.ships).find(ship => ship.name.toLowerCase() === itemName.toLowerCase());
-    if (foundItem) {
-        return { item: foundItem, type: 'ship' };
+const findItemInShop = (itemName, locationName) => {
+	const inventory = shopInventories[locationName];
+	if (!inventory) {
+        console.log(`No inventory found for location: ${locationName}`);
+        return null;
     }
 
-    // Check upgrades if not found in ships
-    foundItem = Object.values(shopList.shopList.upgrades).find(upgrade => upgrade.name.toLowerCase() === itemName.toLowerCase());
-    if (foundItem) {
-        return { item: foundItem, type: 'upgrade' };
-    }
+    // Search ships
+    const foundShip = inventory.ships.find(ship => ship.name.toLowerCase() === itemName.toLowerCase());
+    if (foundShip) return { item: foundShip, type: 'ship' };
 
-	// Check furnishings if not found in ships
-    foundItem = Object.values(shopList.shopList.furnishings).find(furnishing => furnishing.name.toLowerCase() === itemName.toLowerCase());
-    if (foundItem) {
-        return { item: foundItem, type: 'furnishing' };
-    }
+    // Search upgrades
+    const foundUpgrade = inventory.upgrades.find(upgrade => upgrade.name.toLowerCase() === itemName.toLowerCase());
+    if (foundUpgrade) return { item: foundUpgrade, type: 'upgrade' };
+
+    // Search furnishings
+    const foundFurnishing = inventory.furnishings.find(furnishing => furnishing.name.toLowerCase() === itemName.toLowerCase());
+    if (foundFurnishing) return { item: foundFurnishing, type: 'furnishing' };
 
     // Return null if not found
     return null;
 };
 
 
-// Shopkeepers
-
-const orionShop = [
-	`Stay away from the lower levels tonight, word around is things are getting rowdy."`,
-	`How goes the Exploration? Find any neat planets, alien life, robots? There's gotta be robots out there somewhere, man."`,
-	`Did you hear about the Conglomerate assassination? People are pointing fingers at the Martians."`
-]
-const orionString = `A large gray-skinned humanoid greets you with a great smile, "Welcome to Wixzys' Wares, Orion Station's premier shopping outlet! `

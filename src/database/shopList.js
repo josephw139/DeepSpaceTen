@@ -2,10 +2,9 @@
 
 const { Fleet, capitalize } = require('../modules/ships/base');
 
+// rarity: 1 - common, 2 - uncommon, 3 - rare, 4 - extra rare, - 5 super extra rare
+
 const shopList = {
-    ships: {
-        
-    },
     upgrades: {
         cargo_storage: {
             name: `Exterior Cargo Bay`,
@@ -13,6 +12,7 @@ const shopList = {
             price: 10000,
             quantity: 1,
             weight: 500,
+            rarity: 1
         },
         deep_range_scanner: {
             name: `Deep Range Scanner`,
@@ -20,6 +20,7 @@ const shopList = {
             price: 7000,
             quantity: 1,
             weight: 200,
+            rarity: 4,
         },
         security_team: {
             name: `Security Team`,
@@ -27,6 +28,7 @@ const shopList = {
             price: 30000,
             quantity: 1,
             weight: 0,
+            rarity: 2,
         },
         stealth_drive: {
             name: `Stealth Drive`,
@@ -34,6 +36,7 @@ const shopList = {
             price: 20000,
             quantity: 1,
             weight: 400,
+            rarity: 4
         }
     },
     furnishings: {
@@ -43,6 +46,7 @@ const shopList = {
             price: 2000,
             quantity: 1,
             weight: 0,
+            rarity: 1,
         },
         luxury_housing: {
             name: `Luxury Housing`,
@@ -50,13 +54,15 @@ const shopList = {
             price: 5000,
             quantity: 1,
             weight: 0,
+            rarity: 1,
         },
         casino: {
             name: `Casino`,
             description: `Not a real casino, but as close as you can get on a small spaceship.`,
             price: 1700,
             quantity: 1,
-            weight: 0
+            weight: 0,
+            rarity: 1,
         },
         indoor_pool: {
             name: "Indoor Pool",
@@ -64,6 +70,7 @@ const shopList = {
             price: 3000,
             quantity: 1,
             weight: 0,
+            rarity: 1,
         }
     },
 }
