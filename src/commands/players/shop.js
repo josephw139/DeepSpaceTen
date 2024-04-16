@@ -75,7 +75,7 @@ module.exports = {
 				// Add ship to fleet
 				fleet.ships.push(itemToBuy);
 				// Save the updated fleet or hangar
-				db.player.set(`${playerId}`, fleet, "fleet");
+				db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 			} else if (itemToBuyResult.type === 'upgrade' || itemToBuyResult.type === 'furnishing') {
 				updateHangar(playerId, hangar, itemToBuy);
 			}
@@ -136,30 +136,27 @@ function generateListString(items, isShip = false) {
 
 
 let shopInventories = {
-	"Orion Station": {
-		ships: [],
-		upgrades: [],
-		furnishings: [],
-		lastUpdateTime: null
-	},
-	"Kaysatha": {
+    "Orion Station": {
         ships: [],
         upgrades: [],
         furnishings: [],
-        lastUpdateTime: null
-    }
-}
-
-const shopConfigurations = {
-    "Orion Station": {
-        ships: 2,
-        upgrades: 3,
-        furnishings: 2,  // Example of no furnishings
+        lastUpdateTime: null,
+        config: {
+            ships: 2,
+            upgrades: 3,
+            furnishings: 2,
+        }
     },
     "Kaysatha": {
-        ships: 1,
-        upgrades: 2,
-        furnishings: 6,  // Example of more furnishings
+        ships: [],
+        upgrades: [],
+        furnishings: [],
+        lastUpdateTime: null,
+        config: {
+            ships: 1,
+            upgrades: 2,
+            furnishings: 6,
+        }
     }
 };
 
@@ -168,14 +165,9 @@ const shopConfigurations = {
 function updateShopInventory(location) {
     const now = new Date();
 	let inventory = shopInventories[location];
-	let config = shopConfigurations[location];
 
 	if (!inventory) {
         console.error(`No inventory found for location: ${location}`);
-        return;
-    }
-	if (!config) {
-        console.error(`No configuration found for location: ${location}`);
         return;
     }
 
@@ -185,38 +177,53 @@ function updateShopInventory(location) {
 		inventory.furnishings.length = 0;
 
 		// Generate two new random ships and add them to the inventory
-        for (let i = 0; i < config.ships; i++) {
+        for (let i = 0; i < inventory.config.ships; i++) {
             const newShip = generateRandomShip();
             inventory.ships.push(newShip);
         }
 
-		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, config.upgrades);
-		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, config.furnishings);
+		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, inventory.config.upgrades);
+		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, inventory.config.furnishings);
 
         inventory.lastUpdateTime = now;
     }
 }
 
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+    }
+}
+
 function generateRandomItemsFromObject(itemsObj, count) {
-    const itemsWithWeights = [];
+    let itemsWithWeights = [];
     Object.entries(itemsObj).forEach(([key, item]) => {
-        // Calculate the inverse of rarity as weight; more common items have higher weights
         const weight = 1 / (item.rarity || 1);
-        for (let i = 0; i < weight * 10; i++) { // Multiply by 10 or other factor to adjust granularity
+        for (let i = 0; i < weight * 10; i++) {
             itemsWithWeights.push(item);
         }
     });
 
+    // Shuffle the entire array to randomize item positions
+    shuffleArray(itemsWithWeights);
+
     const selectedItems = [];
-    for (let i = 0; i < count; i++) {
-        if (itemsWithWeights.length === 0) break;
-        const randomIndex = Math.floor(Math.random() * itemsWithWeights.length);
-        selectedItems.push(itemsWithWeights[randomIndex]);
-        // Remove selected item to avoid duplicates
-        itemsWithWeights.splice(randomIndex, 1);
+    while (selectedItems.length < count && itemsWithWeights.length > 0) {
+        // Always take the first item from the shuffled array
+        const selectedItem = itemsWithWeights.shift();
+        selectedItems.push(selectedItem);
+
+        // Remove all other instances of the selected item
+        itemsWithWeights = itemsWithWeights.filter(item => item !== selectedItem);
     }
+
     return selectedItems;
 }
+
+
+
+
 
 // Function to find an item in the shop list by name, ignoring case
 const findItemInShop = (itemName, locationName) => {

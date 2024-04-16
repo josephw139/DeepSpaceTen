@@ -7,31 +7,26 @@ const { getPlayerData } = require('../../database/playerFuncs.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
-	.setName('view')
-	.setDescription('View your fleet, ships, maps, lore & more')
-		/*.addIntegerOption(option =>
-			option.setName('ship')
-			.setDescription('Which ship to view')
-			)*/
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('fleet')
-				.setDescription('Show details of a specific ship. Leave blank to see them all.')
-				.addIntegerOption(option => option.setName('ship').setDescription('Which ship to view'))
-				)
-		.addSubcommand(subcommand =>
-			subcommand
-				.setName('map')
-				.setDescription('Consult the star charts')
-				)
+	.setName('fleet')
+	.setDescription('Manage your fleet')
+	.addStringOption(option =>
+        option.setName("manage")
+            .setDescription("View by itself will show all ships. Use ships' number to select individual ships.")
+            .setRequired(true)
+            .addChoices(
+                { name: 'view', value: 'view' },
+                { name: 'active', value: 'active' },
+                { name: 'rename', value: 'rename' },
+            ))
+	.addIntegerOption(option => option.setName('ship').setDescription('Select a ship'))
+	.addStringOption(option => option.setName('name').setDescription("Your new ship's name")
+	)
 	,
 	async execute(interaction) {
         const member = interaction.member;
-		// const modules = db.player.get(`${member.id}`, "modules");
-		// const drones = db.player.get(`${member.id}`, "drones");
+		const playerId = member.id
 		const channel = interaction.channel;
-
-		const playerData = getPlayerData(member.id);
+		const playerData = getPlayerData(playerId);
 		if (typeof playerData === 'string') {
             interaction.reply(playerData);
         }
@@ -41,14 +36,18 @@ module.exports = {
 		const activeShip = playerData.activeShip;
 		const credits = playerData.credits;
 
-		// VIEW FLEET
-		if (interaction.options.getSubcommand() === 'fleet') {
+		const manageOption = interaction.options.getString('manage');
+        const shipOption = interaction.options.getInteger('ship');
+		const nameOption = interaction.options.getString('name');
+
+		// FLEET VIEW 
+		if (manageOption === 'view') {
 
 			// VIEW SPECIFIC SHIP
-			if (interaction.options.get('ship')) {
-				let target = interaction.options.get('ship').value;
+			if (shipOption) {
+				let target;
 				try {
-					target = fleet.ships[target - 1];
+					target = fleet.ships[shipOption - 1];
 				} catch (err) {
 					// console.log(err);
 					await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});
@@ -66,7 +65,7 @@ module.exports = {
 					{ name: 'Stats', value: `${target.shipDisplay(true)}` },
 				)
 				channel.send({ embeds: [shipView] });
-				await interaction.reply({content: `Use /view fleet to see all your ships`, ephemeral: true});
+				await interaction.reply({content: `Use /fleet view to see all your ships`, ephemeral: true});
 
 			// SHOW ALL SHIPS
 			} else {
@@ -90,26 +89,47 @@ module.exports = {
 
 			}
 
-		} else if (interaction.options.getSubcommand() === 'map') {
-			let locationsDisplay = ``;
+		} else if (manageOption === 'active') {
+			if (!shipOption) {
+				await interaction.reply({content: `Specify a # to select your ship`, ephemeral: true});
+				return;
+			}
 
-			location.currentSystem.locations.forEach((location, index) => {
-				// Append details of each location to the display string
-				locationsDisplay += `${index + 1}. __${location.name}__\n`;
-				locationsDisplay += `   Description: ${location.description}\n`;
-				locationsDisplay += `   Activities: ${location.activities.join(', ')}\n\n`; // Join the activities array into a comma-separated string
-			  });
-			const file = new AttachmentBuilder('./assets/StartingSystem.png');
-			const exampleEmbed = new EmbedBuilder()
-				.setTitle('Map')
-				.setDescription(`woah`)
-				.addFields(
-					{ name: 'Current Location', value: `${location.currentLocation.name}`},
-					{ name: `${location.currentSystem.name}`, value: `${locationsDisplay}`},
-				)
-				.setImage('attachment://discordjs.png');
+			let target;
+			try {
+				target = fleet.ships[shipOption - 1];
+			} catch (err) {
+				// console.log(err);
+				await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});
+				return;
+			}
 
-			channel.send({ embeds: [exampleEmbed], files: [file] });
+			fleet.setActiveShip(target);
+			db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+			await interaction.reply({content: `${fleet.getActiveShip().name} is set to ACTIVE.`, ephemeral: true});
+
+		} else if (manageOption === 'rename') {
+			if (!shipOption) {
+				await interaction.reply({content: `Specify a # to select your ship`, ephemeral: true});
+				return;
+			}
+			if (!nameOption) {
+				await interaction.reply({content: `Please specify a name`, ephemeral: true});
+				return;
+			}
+
+			let target;
+			try {
+				target = fleet.ships[shipOption - 1];
+			} catch (err) {
+				// console.log(err);
+				await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});
+				return;
+			}
+			const oldName = target.name;
+			target.name = nameOption;
+			db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+			await interaction.reply({content: `${oldName} has been rechristened as ${target.name}`, ephemeral: true});
 		}
 
 		// TESTS

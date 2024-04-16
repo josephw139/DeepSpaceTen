@@ -4,7 +4,7 @@ const { classModifiers, manufacturerModifiers, defaultStats } = require('./shipT
 
 class Ship {
     constructor({ type, capabilities, classType, name, manufacturer, description, hp, attack, armor, speed,
-                crew, crewCapacity, cargoCapacity, modCapacity, modules, inventory, price }) {
+                crew, crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity, furnishings, inventory, price }) {
         this.type = type;
         this.capabilities = capabilities;
         this.classType = classType;
@@ -20,6 +20,8 @@ class Ship {
         this.cargoCapacity = cargoCapacity;
         this.modules = modules;
         this.modCapacity = modCapacity;
+        this.furnishingsCapacity = furnishingsCapacity;
+        this.furnishings = furnishings;
         this.inventory = inventory;
         this.price = price;
 
@@ -60,6 +62,7 @@ class Ship {
                     `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\nAttack: ${this.attack}\n\n` +
                     `__Capabilities:__ ${this.capabilities.join(', ')}\n\n` +
                    `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${this.modules.join(', ')}\n` +
+                   `__Furnishings (${this.furnishings.length}/${this.furnishingsCapacity}):__\n${this.furnishings.join(', ')}\n` +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
         return `${this.name}, ${classTypeString} ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
@@ -85,8 +88,10 @@ class Ship {
             crewCapacity: this.crewCapacity,
             cargoCapacity: this.cargoCapacity,
             inventory: this.inventory,
-            modules: this.modules,
             modCapacity: this.modCapacity,
+            modules: this.modules,
+            furnishingsCapacity: this.furnishingsCapacity,
+            furnishings: this.furnishings,
             price: this.price,
         };
 
@@ -172,26 +177,24 @@ class Fleet {
         return this.activeShip;
     }
 
-    // display a list of all ships owned by a player
+    // Display a list of all ships owned by a player
     showAllShips() {
-        // console.log(this.ships);
-        let shipDisplay = ``;
+        let shipDisplay = "";
         for (let i = 0; i < this.ships.length; i++) {
-            if (this.ships[i] === this.activeShip) {
-                shipDisplay += `**`;
-            }
-            shipDisplay += `${i + 1} - ${this.ships[i].shipDisplay()}`;
-            if (this.ships[i] === this.activeShip) {
-                shipDisplay += `**\nCrew: ${this.ships[i].crew.length}/${this.ships[i].crewCapacity[1]} | Morale: ${this.ships[i].morale}\n`;
-            }
-            if (this.ships[i] === this.activeShip) {
-                shipDisplay += `STATUS: ACTIVE\n\n`;
-            } else {
-                shipDisplay += `STATUS: INACTIVE\n\n`;
-            }
+            const ship = this.ships[i];
+            const isActive = ship === this.activeShip;
+            const statusLine = `STATUS: ${isActive ? 'ACTIVE' : 'INACTIVE'}`;
+
+            // Format ship line with or without bold based on active status
+            const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
+            const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
+            const formattedLine = isActive ? `**${shipLineOne}**` : shipLineOne;
+
+            shipDisplay += `${formattedLine}\n${shipLineTwo}\n${statusLine}\n\n`;
         }
         return shipDisplay;
     }
+
 
     // convert fleet to JSON to save to database
     fleetSave() {
@@ -282,7 +285,7 @@ function createShip(shipType, nameOrArray, manufacturer, lightHeavy = null) {
             }
         });
     }
-    console.log(ShipClass + stats + nameOrArray);
+
     if (ShipClass && stats && nameOrArray) {
         let ship;
         if ((typeof nameOrArray === "object")) {
@@ -324,7 +327,6 @@ function generateRandomShip() {
     const shipName = `${capitalize(shipType)} ${Math.floor(Math.random() * 1000)}`;
 
     // Use your existing createShip function to generate the ship, handling null Class appropriately
-    console.log(shipType + shipName + manufacturer + shipClass);
     const randomShip = createShip(shipType, shipName, manufacturer, shipClass);
 
     console.log(`Generated ship: ${shipName}, Type: ${shipType}, Manufacturer: ${manufacturer}, Class: ${shipClass ? shipClass : "Standard"}`);
