@@ -8,7 +8,7 @@ const shopList = {
     upgrades: {
         cargo_storage: {
             name: `Exterior Cargo Bay`,
-            description: `Increase your ship's cargo capacity by 750.\n*Special: Multiple stack*`,
+            description: `Increase your ship's cargo capacity by 750.\nSpecial: Stacks`,
             price: 10000,
             quantity: 1,
             weight: 500,
@@ -17,7 +17,7 @@ const shopList = {
         },
         mining_apparatus: {
             name: `Mining Apparatus`,
-            description: `Allows your ship to mine. If it already had the capability, further increases mining outputs.\n*Special: Multiple stack*`,
+            description: `Allows your ship to mine. If it already had the capability, further increases mining outputs.\nSpecial: Stacks`,
             price: 15000,
             quantity: 1,
             weight: 500,
@@ -26,7 +26,7 @@ const shopList = {
         },
         science_lab: {
             name: `Science Lab`,
-            description: `Allows your ship to research. If it already had the capability, further increases research outputs.\n*Special: Multiple stack*`,
+            description: `Allows your ship to research. If it already had the capability, further increases research outputs.\nSpecial: Stacks`,
             price: 15000,
             quantity: 1,
             weight: 500,

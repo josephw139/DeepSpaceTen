@@ -1,8 +1,9 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const { Fleet } = require('../../modules/ships/base.js');
+const { Fleet, capitalize } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
+const { removeItemFromShipInventory, updateHangar, withdrawItemFromHangar, addItemToShipInventory } = require('../../database/hangerFuncs.js');
 
 
 module.exports = {
@@ -17,9 +18,11 @@ module.exports = {
                 { name: 'view', value: 'view' },
                 { name: 'active', value: 'active' },
                 { name: 'rename', value: 'rename' },
+				{ name: 'equip', value: 'equip' },
+				{ name: 'unequip', value: 'unequip' },
             ))
 	.addIntegerOption(option => option.setName('ship').setDescription('Select a ship'))
-	.addStringOption(option => option.setName('name').setDescription("Your new ship's name")
+	.addStringOption(option => option.setName('name').setDescription("Name of a ship, module, or furnishing")
 	)
 	,
 	async execute(interaction) {
@@ -35,6 +38,7 @@ module.exports = {
 		const locationDisplay = playerData.locationDisplay;
 		const activeShip = playerData.activeShip;
 		const credits = playerData.credits;
+		const hangar = playerData.hangar;
 
 		const manageOption = interaction.options.getString('manage');
         const shipOption = interaction.options.getInteger('ship');
@@ -130,6 +134,84 @@ module.exports = {
 			target.name = nameOption;
 			db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 			await interaction.reply({content: `${oldName} has been rechristened as ${target.name}`, ephemeral: true});
+
+		} else if (manageOption === 'equip') {
+			if (!shipOption) {
+				await interaction.reply({content: `Specify a # to select your ship`, ephemeral: true});
+				return;
+			}
+			if (!nameOption) {
+				await interaction.reply({content: `Please specify a module or furnishing in your Hangar`, ephemeral: true});
+				return;
+			}
+			const isHangar = location.currentLocation.activities.includes('Hangar');
+			if (!isHangar) {
+				await interaction.reply(`You can't access your hangar here.`);
+				return;
+			}
+
+			let target;
+			try {
+				target = fleet.ships[shipOption - 1];
+			} catch (err) {
+				// console.log(err);
+				await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});
+				return;
+			}
+
+			if (target.modules.length >= target.modCapacity) {
+				await interaction.reply({content: `You don't have the capacity to add more modules to this ship.`, ephemeral: true});
+				return;
+			}
+
+			const moduleToEquip = withdrawItemFromHangar(playerId, hangar, capitalize(nameOption), 1);
+			if (!moduleToEquip) {
+				await interaction.reply({content: `Module not found`, ephemeral: true});
+			}
+			target.modules.push(moduleToEquip);
+			db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+			await interaction.reply({content: `${target.name} has been equipped with ${nameOption}`, ephemeral: true});
+
+		} else if (manageOption === 'unequip') {
+			if (!shipOption) {
+				await interaction.reply({content: `Specify a # to select your ship`, ephemeral: true});
+				return;
+			}
+			if (!nameOption) {
+				await interaction.reply({content: `Please specify a module or furnishing on your ship`, ephemeral: true});
+				return;
+			}
+			const isHangar = location.currentLocation.activities.includes('Hangar');
+			if (!isHangar) {
+				await interaction.reply(`You can't access your hangar here.`);
+				return;
+			}
+
+			let target;
+			try {
+				target = fleet.ships[shipOption - 1];
+			} catch (err) {
+				// console.log(err);
+				await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});
+				return;
+			}
+
+			// Find the index of the first module with the specified name
+			const index = target.modules.findIndex(module => module.name.toLowerCase() === nameOption.toLowerCase());
+    
+			// Check if the module was found
+			if (index !== -1) {
+				// Remove the module from the array
+				const moduleToUnequip = target.modules[index];
+				target.modules.splice(index, 1);
+
+				db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+				updateHangar(playerId, hangar, moduleToUnequip);
+
+				await interaction.reply(`Module ${nameOption} has been removed from ${target.name} and stored in your Hangar.`);
+			} else {
+				await interaction.reply(`Module ${nameOption} not found on ${target.name}.`);
+			}
 		}
 
 		// TESTS

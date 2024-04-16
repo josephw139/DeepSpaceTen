@@ -56,13 +56,33 @@ class Ship {
         if (detailed) {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
             const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight})`).join(', ');
-    
+            
+            // Prepare module details, consolidate duplicates, and format description
+            const moduleCounts = this.modules.reduce((acc, module) => {
+                const name = module.name;
+                if (!acc[name]) {
+                    // Removing 'Special:' and anything after it using a regular expression
+                    const description = module.description.replace(/(\s*Special:.*)/i, '');
+                    acc[name] = { 
+                        count: 0, 
+                        description
+                    }; 
+                }
+                acc[name].count += 1;
+                return acc;
+            }, {});
+
+            const modulesInfo = Object.entries(moduleCounts).map(([name, data]) => {
+                // Formatting output to meet the specified requirements
+                return `${name}${data.count > 1 ? ` x${data.count}` : ''}\n${data.description}`;
+            }).join('\n\n');
+
             return `*${this.description}*\n\n` +
                     `Crew (${this.crew.length}/${this.crewCapacity[1]}) - Minimum ${this.crewCapacity[0]}\nMorale: ${this.morale}\n\n` +
                     `HP: ${this.hp} | Armor: ${this.armor} | Speed: ${this.speed}\nAttack: ${this.attack}\n\n` +
                     `__Capabilities:__ ${this.capabilities.join(', ')}\n\n` +
-                   `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${this.modules.join(', ')}\n` +
-                   `__Furnishings (${this.furnishings.length}/${this.furnishingsCapacity}):__\n${this.furnishings.join(', ')}\n` +
+                   `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${modulesInfo}\n\n` +
+                   `__Furnishings (${this.furnishings.length}/${this.furnishingsCapacity}):__\n${this.furnishings.join(', ')}\n\n` +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
         return `${this.name}, ${classTypeString} ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
