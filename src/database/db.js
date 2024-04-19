@@ -31,14 +31,14 @@ module.exports = {
   *         "Southeast", // starter sector is discovered by default
   *     ],
   *     discoveredSystems: [
-  *         "StarterSystem" // starter system is discovered by default
+  *         "Argus' Beacon" // starter system is discovered by default
   *     ]
   *   }
   * 
   *   location: {
           currentSector: 'Southeast',
           currentSystem: {
-            name: 'StarterSystem',
+            name: "Argus' Beacon",
             description: 'The starting point for all new adventurers, offering a safe haven and opportunities for those willing to explore.',
             locations: [ [Object], [Object], [Object] ]
           },
