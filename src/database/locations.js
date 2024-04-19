@@ -1,5 +1,9 @@
-// Mining Levels: None, Very_Low, Low, Medium, High, Very_High
-// Activities: Shop, Build, Hangar, Mine, Research
+// Activities: Shop, Build, Hangar, Mine, Research, Light_Scan, Deep_Scan
+// Mining & Research Levels: None, Very_Low, Low, Medium, High, Very_High
+// Mining: Ore, Gas, Adamantium
+// Research: Tech, Bio, Cosmic, Exotic
+// Danger: Hazards - ["Crime", "Environmental", "Atmospheric", "Pirates", "Fauna", "Asteroids"]
+// Danger Levels: 0 - 5
 
 const sectors = {
   North: {
@@ -23,29 +27,87 @@ const sectors = {
       systems: []
   },
   Southeast: {
-      description: "The cradle of civilization where the first interstellar jump was made, marking the dawn of a new era.",
+      description: "Multiple lightyears away from the fringes of U.C.S. space, the beginning of Frontier space to explore.",
       systems: [
           {
-              name: "StarterSystem",
-              description: "The starting point for all new adventurers, offering a safe haven and opportunities for those willing to explore.",
+              name: "Argus' Beacon",
+              description: "The closest region to civilized space, just on the edge of the Frontier. Named after Captain Argus, his ship lost in an FTL jump decades ago, only recently discovered by the U.C.S.",
               locations: [
                   {
                       name: "Orion Station",
-                      description: "A bustling trade hub orbiting a vibrant jungle planet.",
-                      activities: ["Shop", "Build", "Hangar"]
+                      description: "The first station built on the Frontier, serving as a refueling and jumping point for explorers.",
+                      activities: ["Shop", "Build", "Hangar"],
+                      light_scan: [],
+                      deep_scan: [],
+                      danger: {
+                        level: 0,
+                        hazards: [],
+                      }
                   },
                   {
-                      name: "Epsilon Outpost",
-                      description: "A remote research facility on a desolate moon.",
-                      activities: ["Research", "Mine"],
-                      mining: {Ore: "Very_Low", Gas: "None", Adamantium: "None"},
-                  },
-                  {
-                      name: "G-357 Asteroid Belt",
-                      description: "A mineral-rich belt of asteroids, promising wealth to those who dare to mine it.",
+                      name: "Vaxas",
+                      description: "A windswept and barren planet, the only one in the system with moons.",
                       activities: ["Mine", "Research"],
-                      mining: {Ore: "Medium", Gas: "Low", Adamantium: "Very_Low"},
-                      research: "Low",
+                      mining: {Ore: "Very_Low", Gas: "None", Adamantium: "Low"},
+                      research: {Tech: "None", Bio: "None", Cosmic: "Very_Low", Exotic: "None"},
+                      light_scan: [],
+                      deep_scan: [],
+                      danger: {
+                        level: 1,
+                        hazards: ["Environmental"],
+                      }
+                  },
+                  {
+                    name: "Vaxas II",
+                    description: "A forested moon orbiting Vaxas, with no apparant sapient life.",
+                    activities: ["Research", "Mine"],
+                    mining: {Ore: "Very_Low", Gas: "None", Adamantium: "None"},
+                    research: {Tech: "None", Bio: "Medium", Cosmic: "Very_Low", Exotic: "None"},
+                    light_scan: [],
+                    deep_scan: [],
+                    danger: {
+                      level: 1,
+                      hazards: ["Fauna"],
+                    }
+                  },
+                  {
+                    name: "Epsilon Outpost",
+                    description: "A research facility set up by the U.C.S. on Vaxas V, orbiting Vaxas.",
+                    activities: ["Research", "Mine"],
+                    mining: {Ore: "Very_Low", Gas: "None", Adamantium: "None"},
+                    research: {Tech: "Very_Low", Bio: "None", Cosmic: "Medium", Exotic: "None"},
+                    light_scan: [],
+                    deep_scan: [],
+                    danger: {
+                      level: 0,
+                      hazards: [],
+                    }
+                  },
+                  {
+                    name: "G7",
+                    description: "A gas giant, seventh planet from the Sun. A neverending storm crawls across a fifth of the planet.",
+                    activities: ["Mine", "Research", ],
+                    mining: {Ore: "None", Gas: "High", Adamantium: "None"},
+                    research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Very_Low"},
+                    light_scan: [],
+                    deep_scan: [],
+                    danger: {
+                      level: 2,
+                      hazards: ["Atmospheric"],
+                    }
+                  },
+                  {
+                    name: "A-357 Asteroid Belt",
+                    description: "A mineral-rich belt of asteroids, orbiting the central Sun in the Beacon.",
+                    activities: ["Mine", "Research"],
+                    mining: {Ore: "Medium", Gas: "Low", Adamantium: "Very_Low"},
+                    research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Very_Low"},
+                    light_scan: [],
+                    deep_scan: [],
+                    danger: {
+                      level: 1,
+                      hazards: ["Asteroids"],
+                    }
                   }
               ]
           }

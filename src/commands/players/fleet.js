@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const { Fleet, capitalize } = require('../../modules/ships/base.js');
+const { Fleet, capitalize, applyModule, removeModule } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
@@ -57,6 +57,7 @@ module.exports = {
 					await interaction.reply({content: `This ship doesn't exist`, ephemeral: true});
 					return;
 				}
+				console.log(target);
 				let activeShipString = '';
 				if (target === activeShip) {
 					activeShipString += 'STATUS: ACTIVE';
@@ -167,8 +168,14 @@ module.exports = {
 			const moduleToEquip = withdrawItemFromHangar(playerId, hangar, capitalize(nameOption), 1);
 			if (!moduleToEquip) {
 				await interaction.reply({content: `Module not found`, ephemeral: true});
+				return;
 			}
-			target.modules.push(moduleToEquip);
+
+			const moduleApplied = applyModule(target, moduleToEquip);
+			if (!moduleApplied) {
+				await interaction.reply({content: `${nameOption} is not stackable.`, ephemeral: true});
+			}
+			
 			db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 			await interaction.reply({content: `${target.name} has been equipped with ${nameOption}`, ephemeral: true});
 
@@ -196,22 +203,15 @@ module.exports = {
 				return;
 			}
 
-			// Find the index of the first module with the specified name
-			const index = target.modules.findIndex(module => module.name.toLowerCase() === nameOption.toLowerCase());
-    
-			// Check if the module was found
-			if (index !== -1) {
-				// Remove the module from the array
-				const moduleToUnequip = target.modules[index];
-				target.modules.splice(index, 1);
-
-				db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-				updateHangar(playerId, hangar, moduleToUnequip);
-
-				await interaction.reply(`Module ${nameOption} has been removed from ${target.name} and stored in your Hangar.`);
-			} else {
-				await interaction.reply(`Module ${nameOption} not found on ${target.name}.`);
+			const removedModule = removeModule(target, capitalize(nameOption));
+			if (!removedModule) {
+				await interaction.reply({content: `Module ${nameOption} was not found on the ship`, ephemeral: true});
 			}
+
+			db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+			updateHangar(playerId, hangar, removedModule);
+
+			await interaction.reply({content: `Module ${nameOption} has been removed from ${target.name} and stored in your Hangar.`, ephemeral: true});
 		}
 
 		// TESTS

@@ -68,7 +68,7 @@ module.exports = {
         } else if (lore === 'sectors') {
             const sectorsEmbed = new EmbedBuilder()
                 .setTitle('Frontier Space')
-                .setDescription(`This region of Frontier Space has been divided into 9 sectors.\n\nOrion Station, the established jump-point from the Outer Rim, is in the Southeast Sector, in the StarterSystem.`);
+                .setDescription(`This region of Frontier Space has been divided into 9 sectors.\n\nOrion Station, the established jump-point from the Outer Rim, is in the Southeast Sector, in Argus' Beacon.`);
             
             if (searchTerm) {
                 // If a search term is provided, find and display only the matching sector

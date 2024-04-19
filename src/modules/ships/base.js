@@ -1,10 +1,13 @@
 // class for a Ship
-const { classModifiers, manufacturerModifiers, defaultStats } = require('./shipTraits')
+const { classModifiers, manufacturerModifiers, defaultStats } = require('./shipTraits'); 
 
 
 class Ship {
-    constructor({ type, capabilities, classType, name, manufacturer, description, hp, attack, armor, speed,
-                crew, crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity, furnishings, inventory, price }) {
+    constructor({ type, capabilities, classType, name, manufacturer, description,
+                    hp, attack, armor, speed, miningPower, researchPower, stealth, travelSpeed,
+                    crew ,crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
+                    furnishings, inventory, price, }) {
+
         this.type = type;
         this.capabilities = capabilities;
         this.classType = classType;
@@ -15,6 +18,10 @@ class Ship {
         this.attack = attack;
         this.armor = armor;
         this.speed = speed;
+        this.miningPower = miningPower;
+        this.researchPower = researchPower;
+        this.stealth = stealth;
+        this.travelSpeed = travelSpeed;
         this.crew = crew;
         this.crewCapacity = crewCapacity;
         this.cargoCapacity = cargoCapacity;
@@ -24,15 +31,6 @@ class Ship {
         this.furnishings = furnishings;
         this.inventory = inventory;
         this.price = price;
-
-        // modify stats based on modules equipped
-        for (let i = 0; i < modules.length; i++) {
-            switch(modules[i]) {
-                case "Cargo Storage":
-                    this.cargoCapacity += 2;
-                    break;
-            }
-        }
 
         // determine ship morale
         let morale = 0;
@@ -104,6 +102,10 @@ class Ship {
             attack: this.attack,
             armor: this.armor, 
             speed: this.speed,
+            miningPower: this.miningPower,
+            researchPower: this.researchPower,
+            stealth: this.stealth,
+            travelSpeed: this.travelSpeed,
             crew: this.crew,
             crewCapacity: this.crewCapacity,
             cargoCapacity: this.cargoCapacity,
@@ -266,69 +268,143 @@ const shipClasses = {
     science_vessel: ScienceVessel
 }
 
-
-// create a new ship
-function createShip(shipType, nameOrArray, manufacturer, lightHeavy = null) {
+// new version
+function createShip(shipType, nameOrArray, manufacturer, classType = null, modules = []) {
     const ShipClass = shipClasses[shipType];
-    const stats = JSON.parse(JSON.stringify(defaultStats[shipType])); // Deep copy to avoid mutating the original
 
-    // Apply manufacturer modifiers
-    if (manufacturer && manufacturerModifiers[manufacturer]) {
-        Object.keys(manufacturerModifiers[manufacturer]).forEach(stat => {
-            if (stat === 'crewCapacity' && typeof stats[stat] === 'object') {
-                // Assuming crewCapacity adjustments need special handling
-                stats[stat][0] += manufacturerModifiers[manufacturer][stat].min || 0;
-                stats[stat][1] += manufacturerModifiers[manufacturer][stat].max || 0;
-            } else if (['price', 'cargoCapacity'].includes(stat) && typeof stats[stat] === 'number') {
-                // Apply percentage modifiers directly for price and cargoCapacity
-                stats[stat] *= manufacturerModifiers[manufacturer][stat];
-            } else if (typeof stats[stat] === 'number') {
-                // Apply flat modifiers for other stats
-                stats[stat] += manufacturerModifiers[manufacturer][stat];
-            }
+    if (typeof nameOrArray === "string") {
+        // New ship creation
+        const stats = JSON.parse(JSON.stringify(defaultStats[shipType]));
+        applyAllModifiers(stats, manufacturer, classType, modules);
+        let ship = new ShipClass({
+            type: shipType,
+            name: nameOrArray,
+            manufacturer: manufacturer,
+            classType: classType,
+            ...stats
         });
-    }
-    
-    // Apply Class modifiers (Light, Heavy)
-    if (lightHeavy && classModifiers[lightHeavy]) {
-        Object.keys(classModifiers[lightHeavy]).forEach(stat => {
-            if (stat === 'crewCapacity') {
-                // Directly applying min and max adjustments to both elements of the crewCapacity array
-                stats[stat][0] += classModifiers[lightHeavy][stat].min; // Adjust minimum capacity
-                stats[stat][1] += classModifiers[lightHeavy][stat].max; // Adjust maximum capacity
-            } else if (['price', 'cargoCapacity'].includes(stat)) {
-                // Apply percentage modifiers directly
-                stats[stat] *= classModifiers[lightHeavy][stat];
-            } else {
-                // Apply flat modifiers
-                stats[stat] += classModifiers[lightHeavy][stat];
-            }
-        });
-    }
-
-    if (ShipClass && stats && nameOrArray) {
-        let ship;
-        if ((typeof nameOrArray === "object")) {
-            // recreate an existing ship with json object
-            ship = new ShipClass({
-                ...nameOrArray
-            })
-        } else {
-            // create a brand new ship
-            ship = new ShipClass({
-                type: shipType,
-                name: nameOrArray,
-                manufacturer: manufacturer,
-                classType: lightHeavy,
-                ...stats
-            });
-        }
         return ship;
-
     } else {
-        throw new Error("Invalid ship type");
+        // Recreating a ship from saved data; no need to reapply modifiers
+        return new ShipClass({...nameOrArray});
     }
 }
+
+function applyAllModifiers(stats, manufacturer, classType, modules) {
+    // Apply Class modifiers
+    if (classType && classModifiers[classType]) {
+        applyModifiers(stats, classModifiers[classType]);
+    }
+    
+    // Apply manufacturer modifiers
+    if (manufacturer && manufacturerModifiers[manufacturer]) {
+        applyModifiers(stats, manufacturerModifiers[manufacturer]);
+    }
+
+}
+
+function applyModifiers(stats, modifiers) {
+    Object.keys(modifiers).forEach(stat => {
+        if (stat === 'crewCapacity' && typeof modifiers[stat] === 'object') {
+            stats[stat][0] += modifiers[stat].min || 0;
+            stats[stat][1] += modifiers[stat].max || 0;
+        } else if (['price', 'cargoCapacity'].includes(stat) && typeof stats[stat] === 'number') {
+            stats[stat] *= modifiers[stat];
+        } else if (typeof stats[stat] === 'number') {
+            stats[stat] += modifiers[stat];
+        }
+    });
+}
+
+function applyModule(ship, module) {
+    console.log(`Applying module: ${module.name}`);
+    // Apply the effects of the module to the ship's stats
+
+    // Check if the module is already equipped
+    const existingModule = ship.modules.find(mod => mod.name === module.name);
+    if (existingModule) {
+        if (module.stacking == false) {
+            console.error(`Module ${module.name} is already equipped and cannot be stacked.`);
+            return null;
+        }
+    }
+
+    if (module.stats) {
+        Object.keys(module.stats).forEach(stat => {
+            if (stat === 'crewCapacity' && typeof module.stats[stat] === 'object') {
+                ship.crewCapacity[0] += module.stats[stat].min || 0;
+                ship.crewCapacity[1] += module.stats[stat].max || 0;
+            // Special case for Martian Manufacturing LLC Synth Crew
+            } else if (module.name === "Martian Manufacturing LLC Synth Crew" && stat === 'crewCapacity') {
+                ship.crewCapacity[0] = 1; // Set the minimum crew capacity to 1
+                console.log(`Minimum crew capacity set to 1 by ${module.name}`);
+            } else if (['price'].includes(stat) && typeof ship[stat] === 'number') {
+                ship[stat] *= module.stats[stat];
+            } else if (typeof ship[stat] === 'number') {
+                ship[stat] += module.stats[stat];
+            }
+        });
+    }
+
+    // Handle capabilities if the module adds any
+    if (module.capabilities) {
+        module.capabilities.forEach(capability => {
+            if (!ship.capabilities.includes(capability)) {
+                ship.capabilities.push(capability);
+                console.log(`Added capability: ${capability}`);
+            } else {
+                console.log(`Capability ${capability} already exists and will not be added again.`);
+            }
+        });
+    }
+
+    ship.modules.push(module); // Add module to ship's module list
+    console.log(`Module ${module.name} applied successfully.`);
+    return true;
+}
+
+// REMOVE MODULE FROM SHIPS
+function removeModule(ship, moduleName) {
+    const moduleIndex = ship.modules.findIndex(mod => mod.name === moduleName);
+    if (moduleIndex === -1) {
+        console.error("Module not found on the ship.");
+        return null;
+    }
+
+    const module = ship.modules[moduleIndex];
+
+    // Reverse the effects of the module on the ship's stats
+    if (module.stats) {
+        Object.keys(module.stats).forEach(stat => {
+            if (stat === 'crewCapacity' && typeof module.stats[stat] === 'object') {
+                ship.crewCapacity[0] -= module.stats[stat].min || 0;
+                ship.crewCapacity[1] -= module.stats[stat].max || 0;
+            } else if (['price',].includes(stat) && typeof ship[stat] === 'number') {
+                ship[stat] /= module.stats[stat]; // Revert percentage changes by dividing
+            } else if (typeof ship[stat] === 'number') {
+                ship[stat] -= module.stats[stat]; // Revert flat modifications
+            }
+        });
+    }
+
+    // Remove capabilities if the module added any
+    if (module.capabilities) {
+        module.capabilities.forEach(capability => {
+            const index = ship.capabilities.indexOf(capability);
+            if (index !== -1) {
+                ship.capabilities.splice(index, 1);
+                console.log(`Removed capability: ${capability}`);
+            }
+        });
+    }
+
+    // Remove the module from the ship's module list
+    ship.modules.splice(moduleIndex, 1);
+    console.log(`Module ${moduleName} removed successfully.`);
+    return module;
+}
+
+
 
 function generateRandomShip() {
     // Example lists of ship types and manufacturers
@@ -366,4 +442,4 @@ function capitalize(string) {
 }
 
 
-module.exports = { Ship, Fleet, capitalize, createShip, generateRandomShip };
+module.exports = { Ship, Fleet, capitalize, createShip, generateRandomShip, applyModule, removeModule, };

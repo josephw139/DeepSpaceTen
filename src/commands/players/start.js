@@ -89,7 +89,7 @@ module.exports = {
             // Create starting fleet loadout
             // console.log(`${flagshipName}`)
 
-            const flagship = createShip(`${shipType}`, `${name}`, 'Atlas Exploration'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            const flagship = createShip(`${shipType}`, `${name}`, "Conglomerate of Liberated Peoples' Steelworks", 'Light'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
             fleet.saveShipToFleet(flagship);
             fleet.setActiveShip(`${name}`);
             const activeShip = fleet.getActiveShip();
@@ -110,7 +110,7 @@ module.exports = {
             }
             */
 
-            const starterSystem = sectors.Southeast.systems.find(system => system.name === "StarterSystem");
+            const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
             const starterLocation = starterSystem ? starterSystem.locations[0] : null;
 
             // Set up Database file for the player
@@ -143,7 +143,7 @@ function initializeNewPlayer(playerId) {
             "Southeast", // starter sector is discovered by default
         ],
         discoveredSystems: [
-            "StarterSystem" // starter system is discovered by default
+            "Argus' Beacon" // starter system is discovered by default
         ]
     };
 
