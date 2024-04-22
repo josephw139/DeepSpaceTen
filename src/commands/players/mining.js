@@ -89,7 +89,7 @@ function startMining(playerId, activeShip, fleet) {
 
         if (ship) {
             try {
-                const resource = calculateMinerals(location.currentLocation, activeShip.morale);
+                const resource = calculateMinerals(location.currentLocation, activeShip.morale, activeShip.miningPower);
                 const totalWeight = getTotalWeight(ship.inventory);
                 const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
@@ -113,7 +113,6 @@ function startMining(playerId, activeShip, fleet) {
                 console.error(e);
             }
         } else {
-			console.log('here again');
 			console.log(activeShip);
 			console.log(ship);
 		}
@@ -184,29 +183,29 @@ function getShipFromFleet(shipName, fleet) {
 }
 
 
-function calculateMinerals(location, morale) {
+function calculateMinerals(location, morale, miningPower) {
     // Define ranges for each resource type and mining level
     const ranges = {
         Ore: {
-			Very_Low: { min: 30, max: 90 },
-            Low: { min: 90, max: 140 },
+			Very_Low: { min: 10, max: 30 },
+            Low: { min: 40, max: 100 },
             Medium: { min: 120, max: 210 },
             High: { min: 180, max: 270 },
 			Very_High: { min: 230, max: 340 },
         },
         Gas: {
-			Very_Low: { min: 20, max: 50 },
-            Low: { min: 50, max: 100 },
-            Medium: { min: 80, max: 130 },
+			Very_Low: { min: 5, max: 20 },
+            Low: { min: 30, max: 60 },
+            Medium: { min: 70, max: 120 },
             High: { min: 100, max: 160 },
-			Very_High: { min: 130, max: 210 },
+			Very_High: { min: 140, max: 220 },
         },
         Adamantium: {
-			Very_Low: { min: 1, max: 20 },
-            Low: { min: 20, max: 50 },
-            Medium: { min: 35, max: 70 },
-            High: { min: 50, max: 100 },
-			Very_High: { min: 70, max: 130 },
+			Very_Low: { min: 1, max: 10 },
+            Low: { min: 10, max: 30 },
+            Medium: { min: 25, max: 50 },
+            High: { min: 40, max: 80 },
+			Very_High: { min: 70, max: 100 },
         }
     };
 
@@ -218,19 +217,19 @@ function calculateMinerals(location, morale) {
     const miningLevel = location.mining[selectedType];
     const { min, max } = ranges[selectedType][miningLevel];
 
-    // Randomly choose a value between min and max for the selected type
-    let oreQuantity = Math.floor(Math.random() * (max - min + 1)) + min;
+    // Randomly choose a value between min and max for the selected type, then multiply by miningPower
+    let oreQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * miningPower;
 
     if (morale == 10) {
-        oreQuantity *= 1.3;
+        oreQuantity *= 1.1;
     } else if (morale >= 7 && morale < 10) {
-        oreQuantity *= 1.15;
+        oreQuantity *= 1.05;
     } else if (morale == 6 || activeShip.morale == 5) {
         oreQuantity *= 1;
     } else if (morale < 5 && activeShip.morale > 1) {
-        oreQuantity *= 0.8;
+        oreQuantity *= 0.94;
     } else if (morale <= 1) {
-        oreQuantity *= 0.7;
+        oreQuantity *= 0.9;
     }
 
     oreQuantity = Math.round(oreQuantity);

@@ -118,20 +118,37 @@ function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) 
 	const locationExists = currentSystem.locations.some(location => location.name === selectedLocation);
 
 	if (locationExists) {
-        let travelTime = 2;
+        let travelTime = 3600; // 3600 = one hour
+
+        // randomly add -5 to 5 minutes to travel time
+        const adjustmentSeconds = Math.floor(Math.random() * 601) - 300; // Generates a number between -300 and 300 (5 minutes)
+        travelTime += adjustmentSeconds;
+
+        // ship's speed
+        const baseSpeed = 10;
+        const speedDifference = activeShip.speed - baseSpeed;
+        travelTime = travelTime * (1 - speedDifference * 0.03);
+
+        // ship's travelTime
+        if (activeShip.travelSpeed > 1) {
+            const travelSpeedAdjustmentFactor = 0.1 * (travelSpeed - 1);
+            adjustedTime *= 1 - travelSpeedAdjustmentFactor;
+        }
+
         if (!minCrew) {
             travelTime *= 1.5;
         }
         if (activeShip.morale == 10) {
-            travelTime *= 0.8;
+            travelTime *= 0.95;
         } else if (activeShip.morale == 6 || activeShip.morale == 5) {
-            travelTime *= 1.1;
+            travelTime *= 1.04;
         } else if (activeShip.morale < 5 && activeShip.morale > 1) {
-            travelTime *= 1.3;
+            travelTime *= 1.08;
         } else if (activeShip.morale <= 1) {
-            travelTime *= 1.5;
+            travelTime *= 1.12;
         }
-
+        travelTime = Math.floor(travelTime);
+        console.log(travelTime);
         return travelTime;
     }
 }

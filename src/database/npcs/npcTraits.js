@@ -1,5 +1,5 @@
 const firstNames = [
-    "Alex", "Jamie", "Sam", "Morgan", "Casey", "Jordan", "Jenry", "Taylor", "Quinn",
+    "Alex", "Jamie", "Sam", "Morgan", "Casey", "Jordan", "Jenry", "Taylor",
     "Avery", "Riley", "Parker", "Sawyer", "Blake", "Hayden", "Dakota", "Reese", "Bailey",
     "Cameron", "Drew", "Elliot", "Charlie", "Skyler", "Spencer", "Emerson", "Finley", "Reagan",
     "Logan", "Alexis", "Micah", "Pat", "Robin", "Sidney", "Andy", "Lee", "Shannon", "Jessie",
@@ -7,7 +7,24 @@ const firstNames = [
     "Kelly", "Leslie", "Dana", "Stacy", "Jamie", "Adrian", "Robin", "Brook", "Dallas", "London",
     "Paris", "Devon", "Kendall", "Payton", "Phoenix", "Ashton", "Beau", "Lane", "Harley", "Rowan",
     "Shiloh", "Winter", "Arden", "Sage", "Lennon", "Remy", "Milan", "Tatum", "Peyton", "Ellen",
-    "Cynthia", "Rebecca", "Tim", "Daniel",
+    "Cynthia", "Rebecca", "Tim", "Daniel", "Aria", "Baxter", "Celeste", "Drake", "Eleni", "Fletcher",
+    "Garnet", "Hazel", "Ianthe", "Zion", "Ashford", "Aaron", "Leo", "Leah", "Raphael",
+    "Jasper", "Kai", "Liora", "Myles", "Nova", "Orion", "Priya", "Quentin", "Rosalind",
+    "Sterling", "Thane", "Una", "Viggo", "Willa", "Xerxes", "Yael", "Zephyr", "Ansel", "Beatrix",
+    "Cyrus", "Daphne", "Evander", "Freya", "Gideon", "Hana", "Isaiah", "Juno", "Kieran", "Luna",
+    "Magnus", "Niamh", "Odette", "Pascal", "Quilla", "Rowena", "Soren", "Thea", "Uriel", "Violet",
+    "Wyatt", "Xanthe", "Yuri", "Zara", "Atlas", "Blythe", "Caspian", "Delilah", "Emrys", "Flora",
+    "Gareth", "Ione", "Jovian", "Kora", "Leif", "Minerva", "Nash", "Olive", "Persephone", "Quade",
+    "Rhea", "Sebastian", "Tristan", "Ursa", "Verity", "Wren", "Xenia", "Yardley", "Zane",
+    "Aidan", "Brielle", "Corin", "Dante", "Elowen", "Finnegan", "Giselle", "Harris", "Isla",
+    "Jovan", "Keira", "Lachlan", "Maeve", "Nolan", "Ophelia", "Pierce", "Quinten", "Rosalie",
+    "Seth", "Thalia", "Ulric", "Vera", "Weston", "Xena", "Yvette", "Zander", "Amos", "Bridget",
+    "Callum", "Della", "Eamon", "Faye", "Griffin", "Helena", "Ivor", "Jada", "Knox", "Leona",
+    "Matteo", "Nadia", "Orla", "Paxton", "Quinn", "Rhys", "Seraphina", "Titus", "Damian",
+    "Uma", "Vance", "Wilhelmina", "Xavier", "Yara", "Astrid", "Bennett", 
+    "Cassia", "Declan", "Esme", "Flynn", "Greta", "Holden", "Ingrid", "Jareth", "Kyra", "Lucius",
+    "Mira", "Nero", "Octavia", "Phoebe", "Quincy", "Renata", "Silas", "Tamsin", "Ulysses", "Vida",
+    "Winston", "Xander", "Yasmine", "Zeke",
 ];
 
 
@@ -15,7 +32,7 @@ const firstNames = [
 
 const lastNames = [
     "Hicks", "Ripley", "Burke", "Dietrich", "Jorden", "Frost", "Crowe", "Apone", "Spunkmeyer",
-    "Hudson", "Gorman", "Bobbinger",
+    "Hudson", "Gorman", "Bobbinger", "Sopher", "Prieto-Torres", "McCree",
     "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
     "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson",
     "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson",
@@ -31,7 +48,33 @@ const lastNames = [
     "Patel", "Myers", "Long", "Ross", "Foster", "Jimenez", "Powell", "Jenkins",
     "Perry", "Russell", "Sullivan", "Bell", "Coleman", "Butler", "Henderson",
     "Barnes", "Gonzales", "Fisher", "Vasquez", "Simmons", "Romero", "Jordan",
-    "Patterson", "Alexander", "Hamilton", "Graham", "Reynolds", "Griffin", "Wallace"
+    "Patterson", "Alexander", "Hamilton", "Graham", "Reynolds", "Griffin", "Wallace",
+    "Bridges", "Charlton", "Dawson", "Evergreen", "Farrow", "Gable", "Harrow", "Irvine",
+    "Jasper", "Kendrick", "Lawson", "Meadow", "North", "Oakley", "Presley", "Quarry",
+    "Redwood", "Sutton", "Travers", "Upton", "Vale", "Westbrook", "Xavier", "Yeats",
+    "Zane", "Alder", "Barron", "Coldwell", "Denton", "Ellsworth", "Fuller", "Grafton",
+    "Harland", "Ingram", "Jennings", "Kilpatrick", "Lindell", "Merrick", "Norton",
+    "Oswald", "Palmer", "Quinn", "Rowland", "Sherwood", "Thatcher", "Upshaw", "Vanderbilt",
+    "Wharton", "Yardley", "Zenith", "Albright", "Bramwell", "Caldwell", "Dunbar", "Eldridge",
+    "Fairfield", "Godfrey", "Hollingsworth", "Irwin", "Joyce", "Kingsford", "Lowell",
+    "Maxwell", "Norcross", "Orion", "Pembroke", "Quint", "Ridgeway", "Somerset", "Thorn",
+    "Underhill", "Vernon", "Wellesley", "Yale", "Zimmerman", "Armstrong", "Blackthorne",
+    "Corbin", "Davenport", "Elmsworth", "Fieldstone", "Greenfield", "Hightower", "Ipswich",
+    "Joyner", "Keystone", "Layton", "Montgomery", "Norfolk", "Oxford", "Pendleton", "Quarles",
+    "Rockwell", "Southgate", "Thornhill", "Underwood", "Vinson", "Westfield", "Youngblood",
+    "Sterling", "Blackwood", "Faulkner", "Morrow", "Knight", "Bright", "Underwood", "Swift",
+    "Norwood", "Fielding", "Whitlock", "Thorne", "Masters", "Fleet", "Hawthorne", "Chamberlain",
+    "Fairfax", "Raven", "Marsden", "Windsor", "Hargrove", "Ashworth", "Little", "Bainbridge",
+    "Harwood", "Doyle", "Mercer", "Bloodworth", "Sylvester", "Greenwood", "Forrester", "Winter",
+    "Christensen", "Blackburn", "Finch", "Carmichael", "Nightingale", "Woolf", "Cunningham",
+    "Prescott", "Langley", "Shepherd", "Willow", "Bracken", "Marlowe", "Whittaker", "Everhart",
+    "Hartley", "Lockwood", "Millington", "Penn", "Ashfield", "Crosby", "Drake", "Farrington",
+    "Yates", "Marston", "Paxton", "Whitfield", "Baxter", "Bloom", "Carver", "Easton",
+    "Archer", "Sawyer", "Booker", "Slate", "Crane", "Blackwell", "Kingsley", "Marlow",
+    "Sparrow", "Peck", "Cobalt", "Ivory", "Frost", "Larkin", "Pike", "Wickham",
+    "Dalton", "Banner", "Granger", "Lovelace", "Roth", "Oakes", "Hollis", "Sterne",
+    "Wardley", "Fletcher", "Lancaster", "Monroe", "Fairchild", "Tanner", "Wainwright", "Poe",
+    "Dusk",
 ];
 
 
@@ -126,10 +169,6 @@ const personalities = [
 ]
 
 
-
-
-
-
 const attitudes = [
     "Cheerful", "Grumpy", "Optimistic", "Pessimistic", "Friendly", "Hostile",
     "Calm", "Anxious", "Energetic", "Lazy", "Curious", "Indifferent", "Ambitious",
@@ -139,5 +178,40 @@ const attitudes = [
     "Reserved", "Passionate", "Dispassionate", "Sincere", "Sarcastic", "Kind", "Cruel",
 ]
 
+const careers = [
+    "Architect", "Biologist", "Chef", "Engineer", "Financial Analyst",
+    "Holographic Designer", "Historian", "Interior Designer", "Journalist",
+    "Kinesthesiologist", "Librarian", "Musician", "Nurse", "Optometrist",
+    "Physiotherapist", "Quantum Physicist", "Researcher",
+    "Teacher", "Urban Planner", "Veterinarian",
+    "Yoga Instructor", "Zoologist", "Art Director", "Cinematographer",
+    "Data Scientist", "Environmental Scientist", "Flight Attendant",
+    "Geologist", "Human Resources Manager", "Investment Banker", "Judge",
+    "Linguist", "Meteorologist", "Neurologist", "Oceanographer", "Pilot",
+    "Quantitative Analyst", "Radiologist", "Statistician", "Toxicologist",
+    "Urologist", "Venture Capitalist", "Wildlife Biologist", "Exobiologist",
+    "Business Consultant",
+    "Clinical Psychologist", "Diplomat", "Ethnographer", "Forensic Scientist",
+    "Geneticist", "Hydrologist", "Immunologist", "Jeweler", "Knitwear Designer",
+    "Logistics Manager", "Marketing Executive", "Nanotechnologist", "Operations Research Analyst",
+    "Performance Artist", "Quality Assurance Manager", "Sommelier",
+    "Theoretical Physicist", "Underwriter", "Virologist",
+    "Asteroid Miner", "Quantum Engineer",
+    "Alien Anthropologist", "Planetary Geologist", "Cyber Security Analyst",
+    "Exoplanet Farmer", "Astrobiologist", "Zero-G Construction Worker",
+    "Stellar Cartographer", "Communication Specialist", "Robotics Technician",
+    "Warp Drive Mechanic", "Artificial Intelligence Programmer", "Ambassador",
+    "Nano-Medicine Doctor", "Gravity Engineer", "Time Dilation Coordinator",
+    "Deep Space Explorer", "Xenolinguist", "Cryonics Technician",
+    "Space Tourism Guide", "Virtual Reality Architect",
+    "Exosuit Designer", "Lawyer", "Genetic Modification Engineer", "Food Scientist",
+    "Cosmic Radiation Therapist", "Extraterrestrial Rights Activist", "Starship Scrubber", "Galactic Historian",
+    "Astrophysics Researcher", "Telepresence Operator", "Off-World Construction Manager",
+    "Space Station Crew Coordinator", "Salesperson", "Interstellar Trade Negotiator",
+    "Spaceport Traffic Controller", "Computing Analyst", "Alien Flora and Fauna Specialist",
+    "Hyperspace Route Planner",
+]
 
-module.exports = { firstNames, lastNames, appearances, personalities, attitudes };
+
+
+module.exports = { firstNames, lastNames, appearances, personalities, attitudes, careers };

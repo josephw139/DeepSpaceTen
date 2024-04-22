@@ -39,7 +39,7 @@ module.exports = {
 
 		if (manage == null) {
 			activeShip.crew.forEach(crewMember => {
-				crewEmbed.addFields({name: `${crewMember.name}`, value: `${crewMember.appearance}\n${crewMember.personality}`})
+				crewEmbed.addFields({name: `${crewMember.name}`, value: `*${crewMember.age} years old. ${crewMember.career}. ${crewMember.attitude}.*\n${crewMember.appearance} ${crewMember.personality}`})
 			});
 			await interaction.reply({ embeds: [crewEmbed] });
 		}

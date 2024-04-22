@@ -1,4 +1,4 @@
-const { firstNames, lastNames, appearances, personalities, attitudes } = require('./npcs/npcTraits.js');
+const { firstNames, lastNames, appearances, personalities, attitudes, careers } = require('./npcs/npcTraits.js');
 
 
 function generateRandomCrewMember() {
@@ -7,6 +7,7 @@ function generateRandomCrewMember() {
     const appearance = appearances[Math.floor(Math.random() * appearances.length)];
     const personality = personalities[Math.floor(Math.random() * personalities.length)];
 	const attitude = attitudes[Math.floor(Math.random() * attitudes.length)];
+	const career = careers[Math.floor(Math.random() * careers.length)];
 	const age = Math.floor(Math.random() * (60 - 18 + 1)) + 18; // Generate a random age between 18 and 60
     const cost = Math.floor(Math.random() * (9000 - 6000 + 1)) + 6000; // Generate a random cost between 6000 and 9000
 	let stats = {
@@ -52,7 +53,52 @@ function generateRandomCrewMember() {
 		]
 	  };
 
+	  const careerStats = {
+		Danger: [
+			"Asteroid Miner", "Exosuit Designer", "Starship Scrubber", "Deep Space Explorer",
+			"Zero-G Construction Worker", "Warp Drive Mechanic", "Extraterrestrial Rights Activist",
+			"Quantum Engineer", "Cryonics Technician", "Wildlife Biologist", "Forensic Scientist"
+		],
+		Tech: [
+			"Quantum Engineer", "Cyber Security Analyst", "Robotics Technician",
+			"Artificial Intelligence Programmer", "Data Scientist", "Nanotechnologist",
+			"Genetic Modification Engineer", "Quantum Physicist", "Theoretical Physicist",
+			"Holographic Designer", "Virtual Reality Architect", "Communication Specialist",
+			"Computing Analyst"
+		],
+		Academic: [
+			"Researcher", "Quantum Physicist", "Exobiologist", "Planetary Geologist",
+			"Astrobiologist", "Historian", "Geologist", "Environmental Scientist",
+			"Geneticist", "Meteorologist", "Oceanographer", "Galactic Historian",
+			"Astrophysics Researcher", "Linguist", "Psychologist"
+		],
+		Leadership: [
+			"Ambassador", "Operations Research Analyst", "Marketing Executive",
+			"Human Resources Manager", "Venture Capitalist", "Lawyer", "Diplomat",
+			"Logistics Manager", "Pilot", "Space Station Crew Coordinator",
+			"Business Consultant", "Chief Executive Officer", "Military General"
+		],
+		Charm: [
+			"Performance Artist", "Sommelier", "Teacher", "Public Relations Specialist",
+			"Flight Attendant", "Salesperson", "Art Director", "Interior Designer",
+			"Space Tourism Guide", "Clinical Psychologist", "Host"
+		],
+		Stealth: [
+			"Cryonics Technician", "Zero-G Construction Worker", "Spy", "Data Analyst",
+			"Investment Banker", "Jeweler", "Security Consultant", "Smuggler"
+		]
+	};
+	
+
 	  const combinedDescription = `${appearance} ${personality}`;
+
+
+	  // Adjust stats based on the selected career
+	  Object.keys(careerStats).forEach(statCategory => {
+        if (careerStats[statCategory].includes(career)) {
+            stats[statCategory] += 1; // Increment the stat by 1 for matching careers
+        }
+      });
 
 	  evaluateAndIncreaseStats(combinedDescription, statKeywords, stats);
 
@@ -63,6 +109,7 @@ function generateRandomCrewMember() {
         appearance,
         personality,
 		attitude,
+		career,
 		age,
 		cost,
 		morale: 7,
