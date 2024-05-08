@@ -22,6 +22,7 @@ module.exports = {
   /*
   * db.player has the following attributes:
   * {
+  *   career: 'Career'
   *   engaged: false,
   *   fleet: [fleetArray],
   *   hangar: [],

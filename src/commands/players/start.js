@@ -1,4 +1,5 @@
-const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, ButtonStyle, ButtonBuilder, EmbedBuilder, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle,
+    StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
 const { Fleet, capitalize, createShip } = require('../../modules/ships/base');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
@@ -7,7 +8,6 @@ const { generateRandomCrewMember } = require('../../database/crewFuncs.js');
 
 /* TO DO
 
-- Add name option subcommand for second ship
 
 */
 
@@ -15,83 +15,171 @@ module.exports = {
 	data: new SlashCommandBuilder()
 	.setName("start")
 	.setDescription('Create your first ship!')
-    .addStringOption(option =>
-        option.setName("ship")
-            .setDescription("Each type of ship has different benefits")
-            .setRequired(true)
-            .addChoices(
-                { name: 'Scout Corvette', value: 'scout' },
-                { name: 'Mining Ship', value: 'mining_ship' },
-                { name: 'Science Vessel', value: 'science_vessel' },
-            ))
-    .addStringOption(option =>
-        option.setName("name")
-            .setDescription('Name your new ship!')
-            .setRequired(true))
-    /*.addStringOption(option =>
-        option.setName("drone")
-            .setDescription("Choose your fleet's Drone Ship")
-            .setRequired(true)
-            .addChoices(
-                { name: 'Mining Platform', value: 'mining platform' },
-                { name: 'Comm Relay', value: 'comm relay' },
-            ))
-    .addStringOption(option =>
-        option.setName("module")
-            .setDescription("Choose a Module to upgrade one of your ships with")
-            .setRequired(true)
-            .addChoices(
-                { name: 'Cargo Storage', value: 'cargo storage' },
-                { name: 'Weapon Silos', value: 'weapon silos' },
-                // { name: 'Shields', value: 'shields' },
-                // { name: 'Hangar Bay', value: 'hanger bay' },
-
-            ))
-    .addStringOption(option =>
-        option.setName("upgrade")
-            .setDescription("Choose which ship to attach your chosen Module to")
-            .setRequired(true)
-            .addChoices(
-                // { name: 'Hangar Bay', value: 'hanger bay' },
-                { name: 'Flagship', value: 'flagship' },
-                { name: 'Secondary', value: 'secondary' },
-            ))*/
 	,
 	async execute(interaction) {
         const playerId = interaction.member.id;
-        //const flagshipName = interaction.options.get('flagship').value;
-        const shipType = interaction.options.get('ship').value;
-        const name = interaction.options.get('name').value;
-        //const drone = capitalize(interaction.options.get('drone').value);
-        //const module = capitalize(interaction.options.get('module').value);
-        //const upgrade = interaction.options.get('upgrade').value;
+        const selections = {};
 
-        // TESTING
-        //const test = Fleet.createShip("cruiser", `${flagshipName}`);
-        //test.toArray();
+        const welcomeEmbed = new EmbedBuilder()
+            .setTitle(`Welcome, ${interaction.member.displayName}`)
+            .setDescription(`You have been approved by the relevant comittee of U.C.S. (United Confederacy of Systems) to join the selected few in exploring the vast unknown regions of space, colloquially referred to as the Frontier.
+            
+            I am General Cordelia, the U.C.S.'s internal ASI (Artifical Sapient Intelligence), here to assist you when needed. I have updated your routes with information on Argus' Beacon, the closest System to civilized space.
+            
+            Orion Station will be your jump point and resupply fallback until construction is approved further inspace.
+            
+            Please confirm your ship's details for U.C.S. records, and sign below.\n\n`)
+            .addFields(
+                // { name: '\u200B', value: '\u200B' },
+                { name: 'Frontier Space', value: `The Frontier is filled with many unexplored planets, moons, relics, and more. Some locations can be dangerous, and there's always the risk of pirates. Scanning and probes will allow you to discover new Locations, Systems, and routes to other Sectors.`},
+                { name: 'Resources', value: `What's the point of exploration without profit? Depending on your ship's capabilities, you may be able to Mine, Research, find valuables, or follow other paths to sell your hard work and time to make your fortune.` },
+                { name: 'Starting Ships', value: `*The Mining Ship* will allow you to mine at Locations rich with minerals and gases, able to be sold for decent prices.
+                
+                *The Science Vessel* comes equipped with a laboratory, and excels at studying foreign and cosmic anomolies. The U.C.S. offers a high price for new information.
+                
+                *The Scout ship* is fast and able to discover hidden details and objects, as well as new Locations and Systems.
+                
+                You'll be able to buy other ship types from the shop, although only one ship can be active at a time.`},
+                { name: 'General Cordelia', value: `Some helpful commands to get started are /help, /fleet, /map, /databanks.`},
+            )
 
-        // Check to see if they already have ships
-        /* if ((db.player.get(`${playerId}`, "fleet"))) {
-            await interaction.reply({content: "You've already created your ship!", ephemeral: true});
-            return;
-        } */
+    
+        // Create a dropdown menu with ships as options
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new StringSelectMenuBuilder()
+                    .setCustomId('select-ship')
+                    .setPlaceholder('Select your starting ship')
+                    .addOptions(
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel('Mining Ship')
+                            .setDescription('Capable of performing mining operations.')
+                            .setValue('mining_ship'),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel('Science Vessel')
+                            .setDescription('Capable of studying and researching planets, stars, and more.')
+                            .setValue('science_vessel'),
+                        new StringSelectMenuOptionBuilder()
+                            .setLabel('Scout Ship')
+                            .setDescription('Small and fast, capable of discovering new places and hidden details.')
+                            .setValue('scout'),
+                    )
+            );
 
-        // const channel = interaction.guild.channels.cache.get('1121842315229675610');
 
+        // Reply with the dropdown menu
+        await interaction.reply({ embeds: [welcomeEmbed], components: [row] });
 
-        // Assign Fleet
-        /* Plan: Get private channel of member, send them first
-        time setup dialogue to pick starter ships & ship modules */
+		// Handle the dropdown selection
+        const filter = (i) => i.user.id === interaction.user.id;
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
-        const fleet = new Fleet();
-        if (true === true) { //role.name === "Squadron Leader"
+        collector.on('collect', async (i) => {
+            
+            selections[i.customId] = i.values[0];
+            await i.deferUpdate(); // Acknowledge the interaction
+        
+            if (i.customId === 'select-ship') {
+                // Respond with sponsor dropdown
+                const sponsorRow = new ActionRowBuilder()
+                    .addComponents(
+                        new StringSelectMenuBuilder()
+                            .setCustomId('select-sponsor')
+                            .setPlaceholder('Which corporation is sponsoring you?')
+                            .addOptions([
+                                {
+                                    label: 'Atlas Exploration',
+                                    description: 'Lighter ships, but faster.',
+                                    value: 'Atlas_Exploration',
+                                },
+                                {
+                                    label: 'Martian Manufacturing LLC',
+                                    description: 'Blocky, made of more durable material.',
+                                    value: 'Martian_Manufacturing_LLC',
+                                },
+                                {
+                                    label: 'Wright-Yuan Corporation',
+                                    description: 'Corporate grays, a touch faster and better material than most ships.',
+                                    value: 'Wright-Yuan_Corporation',
+                                },
+                                {
+                                    label: 'Voidway Aeronautics',
+                                    description: 'Esoteric designs, with more crew and cargo space.',
+                                    value: 'Voidway_Aeronautics',
+                                },
+                                {
+                                    label: 'Bright Future Industries',
+                                    description: 'Expensive ships, pushing the edge of innovation.',
+                                    value: 'Bright_Future_Industries',
+                                },
+                                {
+                                    label: "Conglomerate of Liberated Peoples' Steelworks",
+                                    description: 'Cheaply made, but with an eye for crew comfort.',
+                                    value: "Conglomerate_of_Liberated_Peoples'_Steelworks",
+                                },
+                            ]),
+                    );
+                await i.followUp({ content: 'Ship type verified.', components: [sponsorRow] });
+            } else if (i.customId === 'select-sponsor') {
+                // Respond with career dropdown
+                const careerRow = new ActionRowBuilder()
+                    .addComponents(
+                        new StringSelectMenuBuilder()
+                            .setCustomId('select-career')
+                            .setPlaceholder('Which career do you come from?')
+                            .addOptions([
+                                {
+                                    label: 'Scientist',
+                                    description: 'Science',
+                                    value: 'Scientist',
+                                },
+                                {
+                                    label: 'Bounty Hunter',
+                                    description: 'Pew pew',
+                                    value: 'Bounty_Hunter',
+                                },
+                                {
+                                    label: 'Businessman',
+                                    description: 'An extra percentage',
+                                    value: 'Businessman',
+                                },
+                            ]),
+                    );
 
-            // Create starting fleet loadout
-            // console.log(`${flagshipName}`)
+                await i.followUp({ content: 'Your sponsor has been noted.', components: [careerRow] });
+            } else if (i.customId === 'select-career') {
+                const buttonRow = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('nameShipButton')
+                        .setLabel('Name Your Ship')
+                        .setStyle(ButtonStyle.Primary)
+                );
+        
+                await i.followUp({ content: "The U.C.S. has verified all relevant data. Use /fleet manage: rename to name your ship.", components: [] });
+                collector.stop();
+            } /*
+            } else if (i.isModalSubmit()) {
+                // Currently doesn't work
+                const userInput = i.fields.getTextInputValue('userInput');
+                selections['shipName'] = userInput;
+                await i.reply({ content: `Welcome, Captain of the ${userInput}`, ephemeral: true }); // Respond to the modal submission
+                collector.stop();
+            } */
+        });
 
-            const flagship = createShip(`${shipType}`, `${name}`, "Conglomerate of Liberated Peoples' Steelworks", 'Light'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+        collector.on('end', () => {
+            console.log('Selections:', selections);
+            const selectedShip = selections['select-ship'];
+            const selectedSponsor = selections['select-sponsor'];
+            const shipName = `${interaction.member.nickname}'s ${capitalize(selectedShip)}`
+            //const shipName = interaction.client.userInputs && interaction.client.userInputs[playerId] ? interaction.client.userInputs[playerId]['userInput'] : null;
+            const selectedCareer = selections['select-career'];
+
+            const fleet = new Fleet();
+            const flagship = createShip(`${selectedShip}`, `${shipName}`, `${capitalize(selectedSponsor)}`); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
             fleet.saveShipToFleet(flagship);
-            fleet.setActiveShip(`${name}`);
+            fleet.setActiveShip(`${shipName}`);
             const activeShip = fleet.getActiveShip();
             console.log(activeShip);
 
@@ -99,22 +187,12 @@ module.exports = {
                 activeShip.crew.push(generateRandomCrewMember());
             }
 
-
-            // const secondShip = fleet.createShip(`${starterShip}`, `${secondName}`);
-
-            /*
-            if (upgrade === 'flagship') {
-                flagship.modules.push(module);
-            } else {
-                secondShip.modules.push(module);
-            }
-            */
-
             const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
             const starterLocation = starterSystem ? starterSystem.locations[0] : null;
 
             // Set up Database file for the player
             db.player.set(`${playerId}`, false, "engaged");
+            db.player.set(`${playerId}`, `${selectedCareer}`, "career");
             db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
             db.player.set(`${playerId}`, {
                 currentSector: 'Southeast',
@@ -124,16 +202,64 @@ module.exports = {
             db.player.set(`${playerId}`, [], "hangar");
             db.player.set(`${playerId}`, 50000, "credits");
             initializeNewPlayer(playerId);
+        });
 
 
-            //db.player.push(`${playerId}`, cruiser.toArray(), "ships");
-            //db.player.push(`${playerId}`, secondShip.toArray(), "ships");
-            //db.player.push(`${playerId}`, `${module}`, "modules");
-            // db.player.set(`${playerId}`, `${drone}`, "drones");
-        }
+
+
+
+
+       /* 
+        
+        interaction.channel.awaitMessageComponent({ filter, time: 990000 }) // 990-second wait for response
+            .then(i => {
+                const selectedShip = i.values[0];
+
+                const fleet = new Fleet();
+
+                const flagship = createShip(`${selectedShip}`, `Model K`, "Conglomerate of Liberated Peoples' Steelworks", 'Light'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+                fleet.saveShipToFleet(flagship);
+                fleet.setActiveShip(`Model K`);
+                const activeShip = fleet.getActiveShip();
+                console.log(activeShip);
+
+                for (let i = 0; i < activeShip.crewCapacity[0]; i++) {
+                    activeShip.crew.push(generateRandomCrewMember());
+                }
+
+                const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
+                const starterLocation = starterSystem ? starterSystem.locations[0] : null;
+
+                // Set up Database file for the player
+                db.player.set(`${playerId}`, false, "engaged");
+                db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+                db.player.set(`${playerId}`, {
+                    currentSector: 'Southeast',
+                    currentSystem: starterSystem,
+                    currentLocation: starterLocation
+                }, "location");
+                db.player.set(`${playerId}`, [], "hangar");
+                db.player.set(`${playerId}`, 50000, "credits");
+                initializeNewPlayer(playerId);
+            })
+            .catch(e => {
+                if (e.code === 'InteractionCollectorError') {
+                    channel.send({ content: `Character creation has timed out, please start again.` });
+                } else {
+                    // Log other errors for debugging
+                    console.error('Error in awaitMessageComponent:', e);
+                }
+            });
+
+
+            */
+        // Assign Fleet
+        /* Plan: Get private channel of member, send them first
+        time setup dialogue to pick starter ships & ship modules */
+
 
         // Obligatory reply
-        await interaction.reply({content: `${capitalize(shipType)} ${name} has been deployed! Welcome to Frontier Space, and may the suns shine on you.`, ephemeral: false});
+       //  await interaction.reply({content: `Your ship has been deployed! Welcome to Frontier Space, and may the suns shine on you.`, ephemeral: false});
 	}
 };
 
@@ -151,3 +277,4 @@ function initializeNewPlayer(playerId) {
 
     db.player.set(`${playerId}`, defaultDiscovery, "discoveries");
 }
+
