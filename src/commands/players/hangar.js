@@ -111,8 +111,9 @@ module.exports = {
                     } else {
                         // Iterate through each item in the hangar array and add it to the embed
                         hangar.forEach(item => {
-                            const itemInfo = `Quantity: ${item.quantity} | Weight: ${item.weight}\nDescription: ${item.description}`;
-                            hangarEmbed.addFields({ name: `${item.name} (${item.price}C)`, value: itemInfo });
+                            console.log(item);
+                            const itemInfo = `Quantity: ${item.quantity} | Weight: ${item.weight}kg | Value: ${item.sell_price * item.quantity} C\nDescription: ${item.description}`;
+                            hangarEmbed.addFields({ name: `${item.name}`, value: itemInfo });
                         });
                     }
 

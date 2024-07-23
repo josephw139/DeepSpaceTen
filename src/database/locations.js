@@ -67,10 +67,10 @@ const sectors = {
                   },
                   {
                     name: "Vaxas II",
-                    description: "A forested moon orbiting Vaxas, with no apparant sapient life.",
+                    description: "A forested moon orbiting Vaxas, crawling with undiscovered native fauna.",
                     activities: ["Research", "Mine"],
                     mining: {Ore: "Very_Low", Gas: "None", Titanium: "None"},
-                    research: {Tech: "None", Bio: "Medium", Cosmic: "Very_Low", Exotic: "None"},
+                    research: {Tech: "None", Bio: "High", Cosmic: "Very_Low", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],
                     danger: {
@@ -83,7 +83,7 @@ const sectors = {
                     description: "A research facility set up by the U.C.S. on Vaxas V, orbiting Vaxas.",
                     activities: ["Research", "Mine"],
                     mining: {Ore: "Very_Low", Gas: "None", Titanium: "None"},
-                    research: {Tech: "Very_Low", Bio: "None", Cosmic: "Medium", Exotic: "None"},
+                    research: {Tech: "Low", Bio: "Very_Low", Cosmic: "Medium", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],
                     danger: {
@@ -96,7 +96,7 @@ const sectors = {
                     description: "A gas giant, seventh planet from the Sun. A neverending storm crawls across a fifth of the planet.",
                     activities: ["Mine", "Research", ],
                     mining: {Ore: "None", Gas: "High", Titanium: "None"},
-                    research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Very_Low"},
+                    research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Low"},
                     light_scan: [],
                     deep_scan: [],
                     danger: {
@@ -109,13 +109,13 @@ const sectors = {
                     description: "A mineral-rich belt of asteroids, orbiting the central Sun in the Beacon.",
                     activities: ["Mine", "Research"],
                     mining: {Ore: "Medium", Gas: "Low", Titanium: "Very_Low"},
-                    research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Very_Low"},
+                    research: {Tech: "None", Bio: "None", Cosmic: "Medium", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],
                     unique_items: [
                       {
                         item: uniqueItems.rune_carved_stone,
-                        adjustedChance: 0.05,
+                        adjustedChance: 1,
                       }
                     ],
                     danger: {

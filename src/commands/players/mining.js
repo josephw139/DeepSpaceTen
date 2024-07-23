@@ -159,7 +159,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
                 name: resource.type,
                 quantity: resource.quantity,
                 weight: resourceWeight,
-                description: 'Mined ' + resource.type,
+                description: resource.type,
                 sell_price: resource.sell_price,
             });
         }
