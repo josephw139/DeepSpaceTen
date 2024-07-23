@@ -32,6 +32,9 @@ function getPlayerData(playerId) {
         // Retrieve credits
         const credits = db.player.get(`${playerId}`, "credits");
 
+        // Retrieve career
+        const career = db.player.get(`${playerId}`, "career");
+
         // Return the aggregated data
         return {
             fleet,
@@ -42,6 +45,7 @@ function getPlayerData(playerId) {
             hangar,
             discoveries,
             credits,
+            career,
         };
     } catch (e) {
         console.error(e);
@@ -50,19 +54,6 @@ function getPlayerData(playerId) {
     }
 }
 
-function calculateWeight(type, quantity) {
-    // Define how weight is calculated based on type and quantity
-    switch (type) {
-        case 'Ore':
-            return quantity; // Example: 1 unit of quantity equals 1 unit of weight
-        case 'Gas':
-            return quantity * 0.5; // Example: Gas is lighter
-        case 'Adamantium':
-            return quantity * 2; // Example: Adamantium is heavier
-        default:
-            return quantity; // Default case
-    }
-}
 
 function updateDiscovery(playerId, type, name) {
     const playerData = db.player.get(`${playerId}`, "discoveries");
@@ -87,4 +78,4 @@ function isDiscovered(playerId, type, name) {
 
 
 
-module.exports = { getPlayerData, calculateWeight, updateDiscovery, isDiscovered };
+module.exports = { getPlayerData, updateDiscovery, isDiscovered };

@@ -22,7 +22,7 @@ module.exports = {
 
         const welcomeEmbed = new EmbedBuilder()
             .setTitle(`Welcome, ${interaction.member.displayName}`)
-            .setDescription(`You have been approved by the relevant comittee of U.C.S. (United Confederacy of Systems) to join the selected few in exploring the vast unknown regions of space, colloquially referred to as the Frontier.
+            .setDescription(`You have been approved by the Committee of Space Exploration to join the selected few in exploring the vast unknown regions of space, colloquially referred to as the Frontier.
             
             I am General Cordelia, the U.C.S.'s internal ASI (Artifical Sapient Intelligence), here to assist you when needed. I have updated your routes with information on Argus' Beacon, the closest System to civilized space.
             
@@ -33,13 +33,13 @@ module.exports = {
                 // { name: '\u200B', value: '\u200B' },
                 { name: 'Frontier Space', value: `The Frontier is filled with many unexplored planets, moons, relics, and more. Some locations can be dangerous, and there's always the risk of pirates. Scanning and probes will allow you to discover new Locations, Systems, and routes to other Sectors.`},
                 { name: 'Resources', value: `What's the point of exploration without profit? Depending on your ship's capabilities, you may be able to Mine, Research, find valuables, or follow other paths to sell your hard work and time to make your fortune.` },
-                { name: 'Starting Ships', value: `*The Mining Ship* will allow you to mine at Locations rich with minerals and gases, able to be sold for decent prices.
+                { name: 'Starting Ships', value: `*The Mining Ship* will allow you to mine at locations rich with minerals and gases, able to be sold for decent prices.
                 
                 *The Science Vessel* comes equipped with a laboratory, and excels at studying foreign and cosmic anomolies. The U.C.S. offers a high price for new information.
                 
-                *The Scout ship* is fast and able to discover hidden details and objects, as well as new Locations and Systems.
+                *The Scout ship* is fast and able to discover hidden details and objects, as well as new locations and systems.
                 
-                You'll be able to buy other ship types from the shop, although only one ship can be active at a time.`},
+                You'll be able to buy other ships from the shop, although only one ship can be active at a time.`},
                 { name: 'General Cordelia', value: `Some helpful commands to get started are /help, /fleet, /map, /databanks.`},
             )
 
@@ -85,7 +85,7 @@ module.exports = {
                     .addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId('select-sponsor')
-                            .setPlaceholder('Which corporation is sponsoring you?')
+                            .setPlaceholder('Which manufacturer is your ship registered by?')
                             .addOptions([
                                 {
                                     label: 'Atlas Exploration',
@@ -126,27 +126,32 @@ module.exports = {
                     .addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId('select-career')
-                            .setPlaceholder('Which career do you come from?')
+                            .setPlaceholder('What is your background?')
                             .addOptions([
                                 {
-                                    label: 'Scientist',
-                                    description: 'Science',
+                                    label: 'Academic',
+                                    description: 'Astronomy, Biology, Paleontology, or perhaps another field of science. You want to learn more and bush the bounds of human knowledge.',
                                     value: 'Scientist',
                                 },
                                 {
                                     label: 'Bounty Hunter',
-                                    description: 'Pew pew',
+                                    description: "You have a knack for violence, and you like getting paid for it. Your crew is disciplined, and you're ready for a hunt.",
                                     value: 'Bounty_Hunter',
                                 },
                                 {
                                     label: 'Businessman',
-                                    description: 'An extra percentage',
+                                    description: "An entrapeneur? A corporate man? Exploration equals opportunity, and opportunity equals money. You're good at seeing the bottom line.",
                                     value: 'Businessman',
+                                },
+                                {
+                                    label: 'Pilot',
+                                    description: "The cockpit of a ship is your home. Space is where you belong, and there's no way you'd ever be able to pass up exploring these vast new places.",
+                                    value: 'Pilot',
                                 },
                             ]),
                     );
 
-                await i.followUp({ content: 'Your sponsor has been noted.', components: [careerRow] });
+                await i.followUp({ content: "Your ship's manufacturer been noted.", components: [careerRow] });
             } else if (i.customId === 'select-career') {
                 const buttonRow = new ActionRowBuilder()
                 .addComponents(

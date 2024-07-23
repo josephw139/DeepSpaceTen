@@ -1,11 +1,12 @@
-const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
 const { Fleet, generateRandomShip } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
-const shopList = require('../../database/shopList.js');
+const shopList = require('../../database/shops/shopList.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
 const { updateHangar } = require('../../database/hangerFuncs.js');
 const { shopDialogue } = require('../../database/npcs/shopDialogues.js');
+const shopInventories = require('../../database/shops/shopConfigs.js');
 
 
 module.exports = {
@@ -111,6 +112,7 @@ module.exports = {
 			await interaction.reply({ embeds: [shopView] });
 		}
 
+		
 	}
 };
 
@@ -132,32 +134,6 @@ function generateListString(items, isShip = false) {
 		
 	}
     
-};
-
-
-let shopInventories = {
-    "Orion Station": {
-        ships: [],
-        upgrades: [],
-        furnishings: [],
-        lastUpdateTime: null,
-        config: {
-            ships: 2,
-            upgrades: 3,
-            furnishings: 2,
-        }
-    },
-    "Kaysatha": {
-        ships: [],
-        upgrades: [],
-        furnishings: [],
-        lastUpdateTime: null,
-        config: {
-            ships: 1,
-            upgrades: 2,
-            furnishings: 6,
-        }
-    }
 };
 
 

@@ -11,13 +11,12 @@ module.exports = {
 	.setDescription('Manage your crew, hire, retire.')
 	.addStringOption(option =>
 		option.setName("manage")
-			.setDescription("Leave blank to see all crew, view to see a specific crew.")
+			.setDescription("Leave blank to see all crew, view to see a specific crew member.")
 			.addChoices(
 				{ name: 'view', value: 'view' },
 				{ name: 'assign', value: 'assign' },
 				{ name: 'hire', value: 'hire' },
 				{ name: 'retire', value: 'retire' },
-				{ name: 'marry', value: 'marry' },
 			))
 		,
 	async execute(interaction) {
@@ -39,7 +38,17 @@ module.exports = {
 
 		if (manage == null) {
 			activeShip.crew.forEach(crewMember => {
-				crewEmbed.addFields({name: `${crewMember.name}`, value: `*${crewMember.age} years old. ${crewMember.career}. ${crewMember.attitude}.*\n${crewMember.appearance} ${crewMember.personality}`})
+				// Prepare strings for equipment
+				const weapon = crewMember.equipment.weapon.name || 'None';
+				const armor = crewMember.equipment.armor.name || 'None';
+				const suit = crewMember.equipment.suit.name || 'None';
+				const utility = crewMember.equipment.utility.name || 'None';
+		
+				// Add crew member info and equipment to the embed
+				crewEmbed.addFields({
+					name: `${crewMember.name}`,
+					value: `*${crewMember.age} years old. ${crewMember.career}. ${crewMember.attitude}.*\n${crewMember.appearance} ${crewMember.personality}\n\nWeapon: ${weapon}\nArmor: ${armor}\nSuit: ${suit}\nUtility: ${utility}`
+				});
 			});
 			await interaction.reply({ embeds: [crewEmbed] });
 		}
@@ -130,9 +139,6 @@ module.exports = {
 						console.error('Error in awaitMessageComponent:', e);
 					}
 				});
-		}
-		else if (manage == "marry") {
-			interaction.reply('You do not have Romancing the Stars DLC.');
 		}
 	}
 }

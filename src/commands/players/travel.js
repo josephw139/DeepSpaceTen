@@ -155,7 +155,7 @@ function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) 
 
 function scheduleTravel(playerId, destination, travelTime, channel) {
 	// multiply travelTime by 10000 if travelTime is minutes, 1000 for seconds)
-    const arrivalTime = new Date(new Date().getTime() + travelTime * 1000);
+    const arrivalTime = new Date(new Date().getTime() + travelTime * 10);
     // Schedule a job to update the player's location
     schedule.scheduleJob(arrivalTime, () => {
         completeTravel(playerId, destination, channel);

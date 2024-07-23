@@ -2,7 +2,8 @@ const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = re
 const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData, calculateWeight } = require('../../database/playerFuncs.js');
+const { getPlayerData } = require('../../database/playerFuncs.js');
+const { levelWeights, miningSellPrice, miningResources, calculateWeight } = require('../../database/miningResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -64,7 +65,14 @@ module.exports = {
 					db.player.delete(`${playerId}`, "mining.details"); // Clean up database entries
 					db.player.delete(`${playerId}`, "mining.startTime");
 					db.player.set(`${playerId}`, false, "engaged");
-					await interaction.reply({ content: `Mining job finished`, ephemeral: true });
+					//await interaction.reply({ content: `Mining job finished`, ephemeral: true });
+
+                    if (!interaction.deferred && !interaction.replied) {
+                        await interaction.reply({ content: `Mining job finished`, ephemeral: true });
+                    } else {
+                        await interaction.followUp({ content: `Mining job finished`, ephemeral: true });
+                    }
+                    
 				}
 			} else {
 				await interaction.reply({ content: `You weren't mining. Idiot.`, ephemeral: true });
@@ -93,7 +101,7 @@ function startMining(playerId, activeShip, fleet) {
                 const totalWeight = getTotalWeight(ship.inventory);
                 const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
-				console.log(resource);
+				// console.log(resource);
                 if (totalWeight + resourceWeight <= ship.cargoCapacity) {
                     updateShipInventory(playerId, shipName, resource, fleet);
                 } else {
@@ -135,15 +143,6 @@ function calculateAdjustedResourceAmount(resourceType, quantity, remainingCapaci
     };
 }
 
-function getTotalOre(inventory) {
-    return inventory.reduce((total, item) => {
-        if (item.name === 'Ore') {
-            return total + item.quantity;
-        }
-        return total;
-    }, 0);
-}
-
 
 function updateShipInventory(playerId, shipName, resource, fleet) {
     const shipIndex = fleet.ships.findIndex(s => s.name === shipName);
@@ -161,6 +160,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
                 quantity: resource.quantity,
                 weight: resourceWeight,
                 description: 'Mined ' + resource.type,
+                sell_price: resource.sell_price,
             });
         }
 
@@ -170,8 +170,6 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
         console.error(`Ship with name ${shipName} not found in the fleet.`);
     }
 }
-
-
 
 
 function getTotalWeight(inventory) {
@@ -184,86 +182,73 @@ function getShipFromFleet(shipName, fleet) {
 
 
 function calculateMinerals(location, morale, miningPower) {
-    // Define ranges for each resource type and mining level
-    const ranges = {
-        Ore: {
-			Very_Low: { min: 10, max: 30 },
-            Low: { min: 40, max: 100 },
-            Medium: { min: 120, max: 210 },
-            High: { min: 180, max: 270 },
-			Very_High: { min: 230, max: 340 },
-        },
-        Gas: {
-			Very_Low: { min: 5, max: 20 },
-            Low: { min: 30, max: 60 },
-            Medium: { min: 70, max: 120 },
-            High: { min: 100, max: 160 },
-			Very_High: { min: 140, max: 220 },
-        },
-        Adamantium: {
-			Very_Low: { min: 1, max: 10 },
-            Low: { min: 10, max: 30 },
-            Medium: { min: 25, max: 50 },
-            High: { min: 40, max: 80 },
-			Very_High: { min: 70, max: 100 },
+    // Check for unique items first
+    if (location.unique_items) {
+        for (const unique of location.unique_items) {
+            const chance = unique.adjustedChance || unique.item.baseChance;
+            if (Math.random() <= chance) {
+                return {
+                    type: unique.item.name,
+                    quantity: unique.item.quantity,
+                    weight: unique.item.weight,
+                    sell_price: unique.item.sell_price,
+                    description: unique.item.description,
+                };
+            }
         }
-    };
-
-    // Randomly select a mining type based on weights
-    const miningTypes = Object.keys(location.mining);
-    const selectedType = weightedRandom(miningTypes, location.mining);
-
-    // Get the range for the selected mining type and level
-    const miningLevel = location.mining[selectedType];
-    const { min, max } = ranges[selectedType][miningLevel];
-
-    // Randomly choose a value between min and max for the selected type, then multiply by miningPower
-    let oreQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * miningPower;
-
-    if (morale == 10) {
-        oreQuantity *= 1.1;
-    } else if (morale >= 7 && morale < 10) {
-        oreQuantity *= 1.05;
-    } else if (morale == 6 || activeShip.morale == 5) {
-        oreQuantity *= 1;
-    } else if (morale < 5 && activeShip.morale > 1) {
-        oreQuantity *= 0.94;
-    } else if (morale <= 1) {
-        oreQuantity *= 0.9;
     }
 
-    oreQuantity = Math.round(oreQuantity);
+    // Randomly select a mining type based on weights
+    const selectedType = weightedRandom(location.mining);
+    if (!selectedType) {
+        console.log("No valid mining type selected.");
+        return null; // Handle the case where no type is selected due to filtering or chance
+    }
+    const miningLevel = location.mining[selectedType];
+    if (!miningLevel) {
+        console.log(`No mining level found for type: ${selectedType}`);
+        return null; // Safeguard against undefined mining levels
+    }
 
+    const { min, max } = miningResources[selectedType][miningLevel];
+    let oreQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * miningPower;
+    oreQuantity = applyMoraleEffects(oreQuantity, morale);
+    
     return {
         type: selectedType,
-        quantity: oreQuantity,
+        quantity: Math.round(oreQuantity),
+        sell_price: miningSellPrice[selectedType],
     };
+}
+
+
+
+function applyMoraleEffects(quantity, morale) {
+    if (morale == 10) return quantity * 1.1;
+    else if (morale >= 7 && morale < 10) return quantity * 1.05;
+    else if (morale < 5 && morale > 1) return quantity * 0.94;
+    else if (morale <= 1) return quantity * 0.9;
+    return quantity;
 }
 
 
 // Helper function to randomly select a mining type based on weights
-function weightedRandom(types, weights) {
-    // Filter out types set to "None"
-    const availableTypes = types.filter(type => weights[type] !== "None");
+function weightedRandom(types) {
+    // Filtering out types where mining level is "None" or not defined in levelWeights
+    const availableTypes = Object.keys(types).filter(type => types[type] !== "None" && levelWeights[types[type]] !== undefined);
 
-    let totalWeight = availableTypes.reduce((total, type) => total + weightScale(weights[type]), 0);
+    // Calculating total weight based on the mining level of available types
+    let totalWeight = availableTypes.reduce((total, type) => total + levelWeights[types[type]], 0);
+
+    // Generating a random number within the range of total weight
     let random = Math.random() * totalWeight;
+
+    // Selecting a type based on the accumulated weight
     for (let type of availableTypes) {
-        random -= weightScale(weights[type]);
+        random -= levelWeights[types[type]];
         if (random < 0) {
-            return type;
+            return type;  // Returns the selected resource type
         }
     }
 }
 
-// Helper function to scale weights (Low: 1, Medium: 2, High: 3)
-function weightScale(level) {
-    switch (level) {
-		case "Very_Low": return 1;
-        case "Low": return 2;
-        case "Medium": return 3;
-        case "High": return 4;
-		case "Very_High": return 5;
-        default: return 0;
-    }
-}

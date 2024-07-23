@@ -1,6 +1,8 @@
+const { uniqueItems } = require('./miningResources');
+
 // Activities: Shop, Build, Hangar, Mine, Research, Light_Scan, Deep_Scan
 // Mining & Research Levels: None, Very_Low, Low, Medium, High, Very_High
-// Mining: Ore, Gas, Adamantium
+// Mining: Ore, Gas, Titanium
 // Research: Tech, Bio, Cosmic, Exotic
 // Danger: Hazards - ["Crime", "Environmental", "Atmospheric", "Pirates", "Fauna", "Asteroids"]
 // Danger Levels: 0 - 5
@@ -48,8 +50,14 @@ const sectors = {
                       name: "Vaxas",
                       description: "A windswept and barren planet, the only one in the system with moons.",
                       activities: ["Mine", "Research"],
-                      mining: {Ore: "Very_Low", Gas: "None", Adamantium: "Low"},
+                      mining: {Ore: "Very_Low", Gas: "None", Titanium: "Low"},
                       research: {Tech: "None", Bio: "None", Cosmic: "Very_Low", Exotic: "None"},
+                      unique_items: [
+                        {
+                          item: uniqueItems.rune_carved_stone,
+                          adjustedChance: 1,
+                        }
+                      ],
                       light_scan: [],
                       deep_scan: [],
                       danger: {
@@ -61,7 +69,7 @@ const sectors = {
                     name: "Vaxas II",
                     description: "A forested moon orbiting Vaxas, with no apparant sapient life.",
                     activities: ["Research", "Mine"],
-                    mining: {Ore: "Very_Low", Gas: "None", Adamantium: "None"},
+                    mining: {Ore: "Very_Low", Gas: "None", Titanium: "None"},
                     research: {Tech: "None", Bio: "Medium", Cosmic: "Very_Low", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],
@@ -74,7 +82,7 @@ const sectors = {
                     name: "Epsilon Outpost",
                     description: "A research facility set up by the U.C.S. on Vaxas V, orbiting Vaxas.",
                     activities: ["Research", "Mine"],
-                    mining: {Ore: "Very_Low", Gas: "None", Adamantium: "None"},
+                    mining: {Ore: "Very_Low", Gas: "None", Titanium: "None"},
                     research: {Tech: "Very_Low", Bio: "None", Cosmic: "Medium", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],
@@ -87,7 +95,7 @@ const sectors = {
                     name: "G7",
                     description: "A gas giant, seventh planet from the Sun. A neverending storm crawls across a fifth of the planet.",
                     activities: ["Mine", "Research", ],
-                    mining: {Ore: "None", Gas: "High", Adamantium: "None"},
+                    mining: {Ore: "None", Gas: "High", Titanium: "None"},
                     research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Very_Low"},
                     light_scan: [],
                     deep_scan: [],
@@ -100,10 +108,16 @@ const sectors = {
                     name: "A-357 Asteroid Belt",
                     description: "A mineral-rich belt of asteroids, orbiting the central Sun in the Beacon.",
                     activities: ["Mine", "Research"],
-                    mining: {Ore: "Medium", Gas: "Low", Adamantium: "Very_Low"},
+                    mining: {Ore: "Medium", Gas: "Low", Titanium: "Very_Low"},
                     research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Very_Low"},
                     light_scan: [],
                     deep_scan: [],
+                    unique_items: [
+                      {
+                        item: uniqueItems.rune_carved_stone,
+                        adjustedChance: 0.05,
+                      }
+                    ],
                     danger: {
                       level: 1,
                       hazards: ["Asteroids"],

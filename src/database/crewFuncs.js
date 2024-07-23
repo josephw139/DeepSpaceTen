@@ -114,6 +114,14 @@ function generateRandomCrewMember() {
 		cost,
 		morale: 7,
 		stats: { ...stats },
+		health: 10,
+		armor_rating: 0,
+		equipment: {
+			weapon: {},
+			armor: {},
+			suit: {},
+			utility: {},
+		}
     };
 }
 

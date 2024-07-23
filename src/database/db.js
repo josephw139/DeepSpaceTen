@@ -47,7 +47,7 @@ module.exports = {
             name: 'G-357 Asteroid Belt',
             description: 'A mineral-rich belt of asteroids, promising wealth to those who dare to mine it.',
             activities: [ 'Mine', 'Research' ],
-            mining: { Ore: 'Medium', Gas: 'Low', Adamantium: 'Very_Low' },
+            mining: { Ore: 'Medium', Gas: 'Low', Titanium: 'Very_Low' },
             research: 'Low'
           }
         }
