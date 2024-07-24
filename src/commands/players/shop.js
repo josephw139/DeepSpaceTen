@@ -1,10 +1,10 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
-const { Fleet, generateRandomShip } = require('../../modules/ships/base.js');
+const { Fleet, generateRandomShip, capitalize } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const shopList = require('../../database/shops/shopList.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
-const { updateHangar } = require('../../database/hangerFuncs.js');
+const { updateHangar, withdrawItemFromHangar, removeItemFromShipInventory } = require('../../database/hangerFuncs.js');
 const { shopDialogue } = require('../../database/npcs/shopDialogues.js');
 const shopInventories = require('../../database/shops/shopConfigs.js');
 
@@ -13,26 +13,50 @@ module.exports = {
 	data: new SlashCommandBuilder()
 	.setName('shop')
 	.setDescription('Purchase and sell items. Leave blank to view shop.')
-	.addStringOption(option =>
-        option.setName("goal")
-            .setDescription("Leave blank to view shop")
-            .setRequired(false)
-            .addChoices(
-                { name: 'buy', value: 'buy' },
-                { name: 'sell', value: 'sell' },
-            ))
-	.addStringOption(option =>
-		option.setName("item")
-			.setDescription("Name of item to buy or sell")
-			.setRequired(false)
-	)
+	.addSubcommand(subcommand =>
+		subcommand
+			.setName('buy')
+			.setDescription('View and purchase from the shop')
+			.addStringOption(option =>
+				option.setName("item")
+					.setDescription("Name of item to buy. Blank to view shop.")
+					.setRequired(false)
+			)
+		)
+	.addSubcommand(subcommand =>
+		subcommand
+			.setName('sell')
+			.setDescription('Sell your items')
+			.addStringOption(option =>
+				option.setName('from')
+					.setDescription('Sell from your Hangar or ship')
+					.setRequired(true)
+					.addChoices(
+						{ name: 'Hangar', value: 'hangar' },
+						{ name: 'Ship', value: 'ship' },
+					))
+			.addStringOption(option =>
+				option.setName("item")
+					.setDescription("Name of item to sell.")
+					.setRequired(true)
+			)
+			.addIntegerOption(option =>
+				option.setName("quantity")
+					.setDescription("Leave blank for all.")
+					.setRequired(false)
+			)
+		)
 	,
 	async execute(interaction) {
         const member = interaction.member;
 		const playerId = member.id;
 		const channel = interaction.channel;
-		const goal = interaction.options.getString('goal') || null;
-		const item = interaction.options.getString('item') || null;
+
+		const subcommand = interaction.options.getSubcommand();
+		const item = capitalize(interaction.options.getString('item')) || null;
+		const quantity = interaction.options.getInteger('quantity') || null;
+		const from = interaction.options.getString('from') || null;
+
 		//console.log(item);
 
 		const playerData = getPlayerData(playerId);
@@ -48,7 +72,7 @@ module.exports = {
 		}
 
 		// BUY
-		if (goal === 'buy') {
+		if (subcommand === 'buy') {
 			if (!item) {
 				await interaction.reply({ content: `Please specify an item to buy.`, ephemeral: true });
 				return;
@@ -81,13 +105,27 @@ module.exports = {
 				updateHangar(playerId, hangar, itemToBuy);
 			}
 		
-			await interaction.reply({ content: `Successfully bought '${item}' for ${itemToBuy.price} credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
+			await interaction.reply({ content: `Successfully bought '${item}' for ${itemToBuy.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
 		
 			
-		} else if (goal === 'sell') { // SELL
-				
+		} else if (subcommand === 'sell') { // SELL
+			let itemToSell;
+			if (from == "hangar") {
+				itemToSell = withdrawItemFromHangar(playerId, hangar, item, quantity);
+			} else if (from == "ship") {
+				itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item, quantity);
+			}
 
+			if (!itemToSell) {
+				await interaction.reply({ content: `'${item}' not found.`, ephemeral: true });
+				return;
+			}
 
+			const sellPrice = itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+			db.player.set(playerId, credits + sellPrice, "credits");
+			await interaction.reply({ content: `Sold '${item}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
+
+			
 		} else { // SHOW ALL 
 			const locationName = location.currentLocation.name;
 			updateShopInventory(locationName);

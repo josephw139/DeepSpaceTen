@@ -53,7 +53,7 @@ class Ship {
 
         if (detailed) {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
-            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight})`).join(', ');
+            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight}kg) - ${item.sell_price * item.quantity} C`).join(', ');
             
             // Prepare module details, consolidate duplicates, and format description
             const moduleCounts = this.modules.reduce((acc, module) => {
@@ -208,11 +208,13 @@ class Fleet {
             const statusLine = `STATUS: ${isActive ? 'ACTIVE' : 'INACTIVE'}`;
 
             // Format ship line with or without bold based on active status
+            const inventoryNames = ship.inventory.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
             const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
             const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
+            const shipLineThree = `Cargo: ${inventoryNames}`;
             const formattedLine = isActive ? `**${shipLineOne}**` : shipLineOne;
 
-            shipDisplay += `${formattedLine}\n${shipLineTwo}\n${statusLine}\n\n`;
+            shipDisplay += `${formattedLine}\n${shipLineTwo}\n${shipLineThree}\n${statusLine}\n\n`;
         }
         return shipDisplay;
     }
@@ -434,11 +436,11 @@ function generateRandomShip() {
 function capitalize(string) {
     if (string) {
         return string
-        // Replace underscores with spaces
-        .replace(/_/g, ' ')
-        // Capitalize the first letter of each word
-        .replace(/(^\w|\s\w)/g, (match) => match.toUpperCase());
+            .replace(/_/g, ' ') // Replace underscores with spaces
+            // Capitalize the first letter of each word, considering spaces and hyphens
+            .replace(/(^\w|[\s-]\w)/g, (match) => match.toUpperCase());
     }
+    return '';
 }
 
 

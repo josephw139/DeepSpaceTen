@@ -17,8 +17,16 @@ module.exports = {
 	.setDescription('Create your first ship!')
 	,
 	async execute(interaction) {
-        const playerId = interaction.member.id;
+        const member = interaction.member
+        const playerId = member.id;
         const selections = {};
+
+        // assign Captain role to users who /start
+        const role = interaction.guild.roles.cache.get("1121849015856803881");
+        if (!role) {
+            return interaction.reply('The role does not exist.');
+        }
+        await member.roles.add(role);
 
         const welcomeEmbed = new EmbedBuilder()
             .setTitle(`Welcome, ${interaction.member.displayName}`)
@@ -130,22 +138,22 @@ module.exports = {
                             .addOptions([
                                 {
                                     label: 'Academic',
-                                    description: 'Astronomy, Biology, Paleontology, or perhaps another field of science. You want to learn more and bush the bounds of human knowledge.',
-                                    value: 'Scientist',
+                                    description: 'Astronomy, Biology, or maybe another field. You want to push the bounds of human knowledge.',
+                                    value: 'Academic',
                                 },
                                 {
                                     label: 'Bounty Hunter',
-                                    description: "You have a knack for violence, and you like getting paid for it. Your crew is disciplined, and you're ready for a hunt.",
+                                    description: "Maybe a mercenary. You have a knack for violence, and you like getting paid for it.",
                                     value: 'Bounty_Hunter',
                                 },
                                 {
                                     label: 'Businessman',
-                                    description: "An entrapeneur? A corporate man? Exploration equals opportunity, and opportunity equals money. You're good at seeing the bottom line.",
+                                    description: "An entrapeneur? A corporate man? Exploration is opportunity, and opportunity is money.",
                                     value: 'Businessman',
                                 },
                                 {
                                     label: 'Pilot',
-                                    description: "The cockpit of a ship is your home. Space is where you belong, and there's no way you'd ever be able to pass up exploring these vast new places.",
+                                    description: "The cockpit of a ship is your home, and exploring space is where you belong.",
                                     value: 'Pilot',
                                 },
                             ]),
@@ -207,6 +215,8 @@ module.exports = {
             db.player.set(`${playerId}`, [], "hangar");
             db.player.set(`${playerId}`, 50000, "credits");
             initializeNewPlayer(playerId);
+
+            
         });
 
 

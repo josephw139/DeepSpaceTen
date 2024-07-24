@@ -1,4 +1,4 @@
-const { calculateWeight } = require('./playerFuncs.js');
+const { calculateWeight } = require('./miningResources.js');
 const db = require('./db.js');
 
 
@@ -15,7 +15,7 @@ function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quan
     const quantity = quantityToRemove !== null ? quantityToRemove : item.quantity;
 
     if (item.quantity < quantity) return null; // Not enough quantity
-    console.log("Fleet:");
+    // console.log("Fleet:");
     // Adjust quantity or remove item from inventory
     if (item.quantity > quantity) {
         ship.inventory[itemIndex] = {
@@ -24,7 +24,7 @@ function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quan
             weight: calculateWeight(item.name, item.quantity - quantity)
         };
         
-        console.log(fleet);
+        // console.log(fleet);
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
         // Return a new object representing the removed portion
         return {

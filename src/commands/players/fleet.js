@@ -77,8 +77,8 @@ module.exports = {
 				let shipDisplay = fleet.showAllShips();
 				
 				const fleetDisplay = new EmbedBuilder()
-				.setTitle(`Exploration Team ${member.displayName}`)
-				.setDescription(`Fleet Overview\nBank: ${credits}C\n`)
+				.setTitle(`Captain ${member.displayName}`)
+				.setDescription(`__Fleet Overview__\nBank: ${credits} C\n`)
 				.addFields(
 					{ name: 'Location', value: `${locationDisplay}`},
 					{ name: 'Ships', value: `${shipDisplay}` },
