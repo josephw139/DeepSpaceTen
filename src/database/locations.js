@@ -49,13 +49,12 @@ const sectors = {
                   {
                       name: "Vaxas",
                       description: "A windswept and barren planet, the only one in the system with moons.",
-                      activities: ["Mine", "Research"],
+                      activities: ["Mine", "Research", "Scan"],
                       mining: {Ore: "Very_Low", Gas: "None", Titanium: "Low"},
                       research: {Tech: "None", Bio: "None", Cosmic: "Very_Low", Exotic: "None"},
                       unique_items: [
                         {
-                          item: uniqueItems.rune_carved_stone,
-                          adjustedChance: 1,
+                          item: uniqueItems.pulsating_rock,
                         }
                       ],
                       light_scan: [],
@@ -68,9 +67,17 @@ const sectors = {
                   {
                     name: "Vaxas II",
                     description: "A forested moon orbiting Vaxas, crawling with undiscovered native fauna.",
-                    activities: ["Research", "Mine"],
+                    activities: ["Research", "Mine", "Scan"],
                     mining: {Ore: "Very_Low", Gas: "None", Titanium: "None"},
                     research: {Tech: "None", Bio: "High", Cosmic: "Very_Low", Exotic: "None"},
+                    unique_items: [
+                      {
+                        item: uniqueItems.pulsating_rock,
+                      },
+                      {
+                        item: uniqueItems.hidden_message,
+                      },
+                    ],
                     light_scan: [],
                     deep_scan: [],
                     danger: {
@@ -81,9 +88,20 @@ const sectors = {
                   {
                     name: "Epsilon Outpost",
                     description: "A research facility set up by the U.C.S. on Vaxas V, orbiting Vaxas.",
-                    activities: ["Research", "Mine"],
+                    activities: ["Research", "Mine", "Scan"],
                     mining: {Ore: "Very_Low", Gas: "None", Titanium: "None"},
                     research: {Tech: "Low", Bio: "Very_Low", Cosmic: "Medium", Exotic: "None"},
+                    unique_items: [
+                      {
+                        item: uniqueItems.pulsating_rock,
+                      },
+                      {
+                        item: uniqueItems.lightless_stone,
+                      },
+                      {
+                        item: uniqueItems.hidden_mesage,
+                      },
+                    ],
                     light_scan: [],
                     deep_scan: [],
                     danger: {
@@ -94,9 +112,14 @@ const sectors = {
                   {
                     name: "G7",
                     description: "A gas giant, seventh planet from the Sun. A neverending storm crawls across a fifth of the planet.",
-                    activities: ["Mine", "Research", ],
+                    activities: ["Mine", "Research", "Scan"],
                     mining: {Ore: "None", Gas: "High", Titanium: "None"},
                     research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Low"},
+                    unique_items: [
+                      {
+                        item: uniqueItems.g7_cloud_manta,
+                      },
+                    ],
                     light_scan: [],
                     deep_scan: [],
                     danger: {
@@ -107,15 +130,14 @@ const sectors = {
                   {
                     name: "A-357 Asteroid Belt",
                     description: "A mineral-rich belt of asteroids, orbiting the central Sun in the Beacon.",
-                    activities: ["Mine", "Research"],
+                    activities: ["Mine", "Research", "Scan"],
                     mining: {Ore: "Medium", Gas: "Low", Titanium: "Very_Low"},
                     research: {Tech: "None", Bio: "None", Cosmic: "Medium", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],
                     unique_items: [
                       {
-                        item: uniqueItems.rune_carved_stone,
-                        adjustedChance: 1,
+                        item: uniqueItems.lightless_stone,
                       }
                     ],
                     danger: {

@@ -53,7 +53,7 @@ class Ship {
 
         if (detailed) {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
-            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight}kg) - ${item.sell_price * item.quantity} C`).join(', ');
+            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight}kg) - ${item.sell_price * item.quantity} C\n*${item.description}*`).join('\n\n');
             
             // Prepare module details, consolidate duplicates, and format description
             const moduleCounts = this.modules.reduce((acc, module) => {

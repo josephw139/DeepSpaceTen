@@ -44,18 +44,34 @@ const miningResources = {
 };
 
 const uniqueItems = {
-    rune_carved_stone: { 
-        name: "Rune-Carved Stone",
-        quantity: 1, weight: 2, sell_price: 1000, baseChance: 0.05,
-        description: "A very old stone, with carvings predating any language you're aware of."},
-    unfathomable_rock: {
-        name: "Unfathomable Rock",
+    pulsating_rock: { 
+        name: "Pulsating Rock",
+        quantity: 1, weight: 5, sell_price: 1000, baseChance: 0.02,
+        description: "It beats, almost like a heart. You can feel it pulsing in your grip. Is it alive?"},
+    lightless_stone: {
+        name: "Lightless Stone",
         baseChance: 0.01, 
         quantity: 1,
-        weight: 5,
+        weight: 10,
         sell_price: 5000,
-        description: "A dense, mysterious rock seemingly absorbing light around it."
-    }
+        description: "A dense, mysterious stone seemingly absorbing light around it. Darker than vantablack."
+    },
+    hidden_mesage: {
+        name: "Hidden Message",
+        baseChance: 0.05, 
+        quantity: 1,
+        weight: 0,
+        sell_price: 2000,
+        description: `"Meet me at ______. Tell no one. Stay hidden, _____ is watching."`
+    },
+    g7_cloud_manta: {
+        name: "G7 Cloud Manta",
+        baseChance: 0.1, 
+        quantity: 1,
+        weight: 2,
+        sell_price: 4000,
+        description: `Alien life! A rare creature, somewhat resembling a manta ray, which breathes and flies through G7's natural gases.`
+    },
 }
 
 function calculateWeight(type, quantity) {
