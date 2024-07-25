@@ -10,8 +10,8 @@ const levelWeights = {
 
 
 const miningSellPrice = {
-    Ore: 70,
-    Gas: 35,
+    Ore: 35,
+    Gas: 50,
     Titanium: 200,
 }
 
@@ -34,7 +34,7 @@ const miningResources = {
         Rich: { min: 220, max: 320 },
     },
     Titanium: {
-        Very_Low: { min: 1, max: 10 },
+        Very_Low: { min: 5, max: 10 },
         Low: { min: 10, max: 30 },
         Medium: { min: 25, max: 50 },
         High: { min: 40, max: 80 },

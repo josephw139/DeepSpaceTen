@@ -30,11 +30,13 @@ module.exports = {
 
             try {
                 // Deferring the reply
-                await interaction.deferReply({ content: "Processing your command..." });
+                await interaction.deferReply();
                 // Executing the command
                 await command.execute(interaction);
                 // You can use interaction.editReply or interaction.followUp here if needed
             } catch (error) {
+                console.log(error);
+                return;
                 console.error(`Error executing ${interaction.commandName}`);
                 console.error(error);
                 await interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
