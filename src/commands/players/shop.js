@@ -61,33 +61,53 @@ module.exports = {
 
 		const playerData = getPlayerData(playerId);
 		if (typeof playerData === 'string') {
-            interaction.reply(playerData);
+            interaction.editReply(playerData);
         }
 		const { isEngaged, hangar, fleet, location,	locationDisplay, activeShip, credits } = playerData;
 
 		const canShop = location.currentLocation.activities.includes('Shop');
 
 		if (!canShop) {
-			await interaction.reply({ content: `There's nowhere to shop here`, ephemeral: true });
+			await interaction.editReply({ content: `There's nowhere to shop here`, ephemeral: true });
 		}
 
 		// BUY
 		if (subcommand === 'buy') {
-			if (!item) {
-				await interaction.reply({ content: `Please specify an item to buy.`, ephemeral: true });
-				return;
+			if (!item) { // SHOW ALL 
+				const locationName = location.currentLocation.name;
+				updateShopInventory(locationName);
+				const inventory = shopInventories[locationName];
+	
+				const shipsForSale = generateListString(inventory.ships, true);
+				const upgradesForSale = generateListString(inventory.upgrades);
+				const furnishingsForSale = generateListString(inventory.furnishings);
+	
+				const shopNameDesc = shopDialogue(location.currentLocation.name);
+	
+				const shopView = new EmbedBuilder()
+					.setTitle(`${shopNameDesc[0]}`)
+					.setDescription(`${shopNameDesc[1]}`)
+					.addFields(
+						{ name: 'Ships for Sale', value: shipsForSale || 'None available' },
+						{ name: '\u200B', value: '\u200B' },
+						{ name: 'Upgrades for Sale', value: `${upgradesForSale}` || 'None available' },
+						{ name: '\u200B', value: '\u200B' },
+						{ name: 'Furnishings for Sale', value: `${furnishingsForSale}` || 'None available' }
+					)
+				await interaction.editReply({ embeds: [shopView] });
 			}
+			
 			const itemToBuyResult = findItemInShop(item, location.currentLocation.name);
 			// Check if item exists
 			if (!itemToBuyResult) {
-				await interaction.reply({ content: `'${item}' not found in the shop.`, ephemeral: true });
+				await interaction.editReply({ content: `'${item}' not found in the shop.`, ephemeral: true });
 				return;
 			}
 			const itemToBuy = itemToBuyResult.item;
 		
 			// Check if the player has enough credits
 			if (credits < itemToBuy.price) {
-				await interaction.reply({ content: `You do not have enough credits to buy '${item}'. You need ${itemToBuy.price}.`, ephemeral: true });
+				await interaction.editReply({ content: `You do not have enough credits to buy '${item}'. You need ${itemToBuy.price}.`, ephemeral: true });
 				return;
 			}
 
@@ -105,7 +125,7 @@ module.exports = {
 				updateHangar(playerId, hangar, itemToBuy);
 			}
 		
-			await interaction.reply({ content: `Successfully bought '${item}' for ${itemToBuy.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
+			await interaction.editReply({ content: `Successfully bought '${item}' for ${itemToBuy.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
 		
 			
 		} else if (subcommand === 'sell') { // SELL
@@ -117,40 +137,16 @@ module.exports = {
 			}
 
 			if (!itemToSell) {
-				await interaction.reply({ content: `'${item}' not found.`, ephemeral: true });
+				await interaction.editReply({ content: `'${item}' not found.`, ephemeral: true });
 				return;
 			}
 
 			const sellPrice = itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
 			db.player.set(playerId, credits + sellPrice, "credits");
-			await interaction.reply({ content: `Sold '${item}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
+			await interaction.editReply({ content: `Sold '${item}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
 
 			
-		} else { // SHOW ALL 
-			const locationName = location.currentLocation.name;
-			updateShopInventory(locationName);
-			const inventory = shopInventories[locationName];
-
-			const shipsForSale = generateListString(inventory.ships, true);
-			const upgradesForSale = generateListString(inventory.upgrades);
-			const furnishingsForSale = generateListString(inventory.furnishings);
-
-			const shopNameDesc = shopDialogue(location.currentLocation.name);
-
-			const shopView = new EmbedBuilder()
-				.setTitle(`${shopNameDesc[0]}`)
-				.setDescription(`${shopNameDesc[1]}`)
-				.addFields(
-					{ name: 'Ships for Sale', value: shipsForSale || 'None available' },
-					{ name: '\u200B', value: '\u200B' },
-					{ name: 'Upgrades for Sale', value: `${upgradesForSale}` || 'None available' },
-					{ name: '\u200B', value: '\u200B' },
-					{ name: 'Furnishings for Sale', value: `${furnishingsForSale}` || 'None available' }
-				)
-			await interaction.reply({ embeds: [shopView] });
 		}
-
-		
 	}
 };
 

@@ -24,7 +24,7 @@ module.exports = {
         // assign Captain role to users who /start
         const role = interaction.guild.roles.cache.get("1121849015856803881");
         if (!role) {
-            return interaction.reply('The role does not exist.');
+            return interaction.editReply('The role does not exist.');
         }
         await member.roles.add(role);
 
@@ -76,7 +76,7 @@ module.exports = {
 
 
         // Reply with the dropdown menu
-        await interaction.reply({ embeds: [welcomeEmbed], components: [row] });
+        await interaction.editReply({ embeds: [welcomeEmbed], components: [row] });
 
 		// Handle the dropdown selection
         const filter = (i) => i.user.id === interaction.user.id;

@@ -28,7 +28,7 @@ module.exports = {
             await member.roles.add(role);
         } catch (error) {
             console.error(error);
-            await interaction.reply('There was an error giving the role.');
+            await interaction.editReply('There was an error giving the role.');
         }
 
         // Send Announcement
@@ -55,7 +55,7 @@ module.exports = {
         // db.player.set(`${member.id}`, newSquadron);
 
         // Obligatory reply
-        await interaction.reply({content: `${member.displayName} has been promoted to ${role.name}!`, ephemeral: true});
+        await interaction.editReply({content: `${member.displayName} has been promoted to ${role.name}!`, ephemeral: true});
 
 	}
 };

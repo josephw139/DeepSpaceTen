@@ -42,7 +42,7 @@ module.exports = {
         const playerData = getPlayerData(playerId);
 
         if (typeof playerData === 'string') {
-            interaction.reply(playerData);
+            interaction.editReply(playerData);
         }
         
 		const fleet = playerData.fleet;
@@ -56,12 +56,12 @@ module.exports = {
 
         const isHangar = location.currentLocation.activities.includes('Hangar');
         if (!isHangar && subcommand != "view") {
-            await interaction.reply(`You can't access your hangar here.`);
+            await interaction.editReply(`You can't access your hangar here.`);
             return;
         }
 
         if (isEngaged) {
-            await interaction.reply(`You're currently engaged in another activity.`);
+            await interaction.editReply(`You're currently engaged in another activity.`);
             return;
         }
 
@@ -73,7 +73,7 @@ module.exports = {
                 // Remove items from ship
                 const itemToDeposit = removeItemFromShipInventory(playerId, fleet, activeShip, item, quantity);
                 if (!itemToDeposit) {
-                    await interaction.reply({ content: `Item not found or insufficient quantity in ship's inventory.`, ephemeral: true });
+                    await interaction.editReply({ content: `Item not found or insufficient quantity in ship's inventory.`, ephemeral: true });
                     return;
                 }
 
@@ -82,20 +82,20 @@ module.exports = {
                 // Update player's hangar in the database
                 db.player.set(`${playerId}`, hangar, "hangar");
 
-                await interaction.reply(`Successfully deposited ${itemToDeposit.quantity} of ${itemToDeposit.name} into the hangar.`);
+                await interaction.editReply(`Successfully deposited ${itemToDeposit.quantity} of ${itemToDeposit.name} into the hangar.`);
                 break;
             case 'withdraw':
                 // Withdraw item from hangar
                 const itemToWithdraw = withdrawItemFromHangar(playerId, hangar, item, quantity);
                 if (!itemToWithdraw) {
-                    await interaction.reply({ content: `Item not found or insufficient quantity in hangar.`, ephemeral: true });
+                    await interaction.editReply({ content: `Item not found or insufficient quantity in hangar.`, ephemeral: true });
                     return;
                 }
 
                 // Add item to active ship's inventory
                 addItemToShipInventory(playerId, fleet, activeShip, itemToWithdraw);
 
-                await interaction.reply(`Successfully withdrew ${itemToWithdraw.quantity} of ${itemToWithdraw.name} from the hangar.`);
+                await interaction.editReply(`Successfully withdrew ${itemToWithdraw.quantity} of ${itemToWithdraw.name} from the hangar.`);
                 break;
             case 'view':
                 // Create an embed for the hangar view
@@ -117,10 +117,10 @@ module.exports = {
                         });
                     }
 
-                await interaction.reply({ embeds: [hangarEmbed] });
+                await interaction.editReply({ embeds: [hangarEmbed] });
                 break;
             default:
-                await interaction.reply('Unknown command, please try again!');
+                await interaction.editReply('Unknown command, please try again!');
                 break;
         }
     }

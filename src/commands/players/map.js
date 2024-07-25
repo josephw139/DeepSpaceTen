@@ -22,7 +22,7 @@ module.exports = {
 
 		const playerData = getPlayerData(member.id);
 		if (typeof playerData === 'string') {
-            interaction.reply(playerData);
+            interaction.editReply(playerData);
         }
 		const fleet = playerData.fleet;
 		const location = playerData.location;

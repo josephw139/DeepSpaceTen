@@ -30,7 +30,7 @@ module.exports = {
 			console.log(e);
 		}
 
-		await interaction.reply({ content: 'Message sent!'});
+		await interaction.editReply({ content: 'Message sent!'});
 
 	}
 };

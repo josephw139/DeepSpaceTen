@@ -22,7 +22,7 @@ module.exports = {
         // rework to use playerData function
         const actualPlayerData = getPlayerData(playerId);
         if (typeof actualPlayerData === 'string') {
-            interaction.reply(actualPlayerData);
+            interaction.editReply(actualPlayerData);
         }
         
         const { activeShip } = actualPlayerData;
@@ -35,7 +35,7 @@ module.exports = {
         const systemToTravel = findSystemByName(systemNameToTravel, discoveries);
 
         if (!systemToTravel) {
-            await interaction.reply({ content: `System "${systemNameToTravel}" not found.`, ephemeral: true });
+            await interaction.editReply({ content: `System "${systemNameToTravel}" not found.`, ephemeral: true });
             return;
         }
 
@@ -60,7 +60,7 @@ module.exports = {
             );
 
         // Reply with the dropdown menu
-        await interaction.reply({ content: 'Select your destination:', components: [row] });
+        await interaction.editReply({ content: 'Select your destination:', components: [row] });
 
 		// Handle the dropdown selection
         const filter = (i) => i.customId === 'select-destination' && i.user.id === interaction.user.id;

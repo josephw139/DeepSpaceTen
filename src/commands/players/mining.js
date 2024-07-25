@@ -29,7 +29,7 @@ module.exports = {
 
 		const playerData = getPlayerData(playerId);
         if (typeof playerData === 'string') {
-            interaction.reply(playerData);
+            interaction.editReply(playerData);
         }
         
         const {
@@ -44,16 +44,16 @@ module.exports = {
 
 				if (canMine && isMiningShip && minCrew ) {
 					startMining(member.id, activeShip, fleet);
-					await interaction.reply({ content: `You've started mining!`, ephemeral: false });
+					await interaction.editReply({ content: `You've started mining!`, ephemeral: false });
 				} else if (!canMine) {
-					await interaction.reply({ content: `You can't mine at this location`, ephemeral: true });
+					await interaction.editReply({ content: `You can't mine at this location`, ephemeral: true });
 				} else if (!isMiningShip) {
-					await interaction.reply({ content: `This ship doesn't have mining capability`, ephemeral: true });
+					await interaction.editReply({ content: `This ship doesn't have mining capability`, ephemeral: true });
 				} else if (!minCrew) {
-                    await interaction.reply({ content: `You don't have enough crew staffing the ship`, ephemeral: true });
+                    await interaction.editReply({ content: `You don't have enough crew staffing the ship`, ephemeral: true });
                 }
 			} else {
-				await interaction.reply({ content: `You're already engaged in another activity`, ephemeral: true });
+				await interaction.editReply({ content: `You're already engaged in another activity`, ephemeral: true });
 			}
 		} else {
 			if (isEngaged) {
@@ -68,14 +68,14 @@ module.exports = {
 					//await interaction.reply({ content: `Mining job finished`, ephemeral: true });
 
                     if (!interaction.deferred && !interaction.replied) {
-                        await interaction.reply({ content: `Mining job finished`, ephemeral: true });
+                        await interaction.editReply({ content: `Mining job finished`, ephemeral: true });
                     } else {
                         await interaction.followUp({ content: `Mining job finished`, ephemeral: true });
                     }
                     
 				}
 			} else {
-				await interaction.reply({ content: `You weren't mining. Idiot.`, ephemeral: true });
+				await interaction.editReply({ content: `You weren't mining. Idiot.`, ephemeral: true });
 			}
 		}
 	}

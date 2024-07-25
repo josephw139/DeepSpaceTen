@@ -1,10 +1,9 @@
 const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
 
-
 async function sendInputModal(interaction, title) {
     const modal = new ModalBuilder()
         .setCustomId('userInputModal')
-        .setTitle(title)
+        .setTitle(title);
 
     const input = new TextInputBuilder()
         .setCustomId('userInput')
@@ -13,7 +12,6 @@ async function sendInputModal(interaction, title) {
         .setRequired(true);
 
     const firstActionRow = new ActionRowBuilder().addComponents(input);
-    
     modal.addComponents(firstActionRow);
 
     interaction.showModal(modal).catch(console.error);
@@ -31,10 +29,15 @@ module.exports = {
             }
 
             try {
+                // Deferring the reply
+                await interaction.deferReply({ content: "Processing your command..." });
+                // Executing the command
                 await command.execute(interaction);
+                // You can use interaction.editReply or interaction.followUp here if needed
             } catch (error) {
                 console.error(`Error executing ${interaction.commandName}`);
                 console.error(error);
+                await interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
             }
         } else if (interaction.isSelectMenu()) {
             // Handle the select menu interaction
@@ -47,23 +50,18 @@ module.exports = {
             } catch (error) {
                 console.error(`Error in select menu interaction`);
                 console.error(error);
-                // Optionally, reply to the user if there's an error
-                await interaction.reply({ content: 'There was an error processing your selection.', ephemeral: true });
+                await interaction.editReply({ content: 'There was an error processing your selection.', ephemeral: true });
             }
         } else if (interaction.isModalSubmit()) {
-            
             // Handle the modal submission
             switch (interaction.customId) {
                 case 'userInputModal':
-                    // Handle the user's text input from modal
                     const userInput = interaction.fields.getTextInputValue('userInput');
-
                     const playerId = interaction.member.id;
                     interaction.client.userInputs = interaction.client.userInputs || {};
                     interaction.client.userInputs[playerId] = interaction.client.userInputs[playerId] || {};
                     interaction.client.userInputs[playerId]['userInput'] = userInput;
-
-                    await interaction.reply({ content: `You entered: ${userInput}`, ephemeral: true });
+                    await interaction.editReply({ content: `You entered: ${userInput}`, ephemeral: true });
                     break;
                 default:
                     console.warn(`Unhandled modal submit: ${interaction.customId}`);

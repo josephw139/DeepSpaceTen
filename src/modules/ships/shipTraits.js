@@ -2,7 +2,7 @@ const defaultStats = {
     cruiser: { 
         description: 'Cruisers are good all-rounder ships, sturdier and more versatile, but much more expensive.',
         hp: 16, attack: '1d6', armor: 4, speed: 10, miningPower: 0, researchPower: 0, stealth: 0, travelSpeed: 1, 
-        crew: [], crewCapacity: [8, 16], cargoCapacity: 1000, modCapacity: 4, modules: [],
+        crew: [], crewCapacity: [8, 16], cargoCapacity: 1000, modCapacity: 5, modules: [],
         furnishingsCapacity: 2, furnishings: [], inventory: [], capabilities: [], price: 50000,
     },
     mining_ship: { 
@@ -27,7 +27,7 @@ const defaultStats = {
         description: 'Equipped with state of the art laboraties and facilities to study exotic material and other life.',
         hp: 6, attack: '1d2', armor: 2, speed: 9, miningPower: 0, researchPower: 1, stealth: 0, travelSpeed: 1,
         crew: [], crewCapacity: [3, 10], cargoCapacity: 500, modCapacity: 2, modules: [],
-        inventory: [], capabilities: ["Research"], price: 30000,
+        inventory: [], furnishingsCapacity: 1, furnishings: [], capabilities: ["Research"], price: 30000,
     },
 };
 
@@ -63,7 +63,7 @@ const manufacturerModifiers = {
 
 };
 
-const classModifiers = {
+const sizeModifiers = {
     Light: {
         speed: +2,
         price: 0.9, // Reduce price by 20%
@@ -85,4 +85,4 @@ const classModifiers = {
 
 
 
-module.exports = { classModifiers, manufacturerModifiers, defaultStats }
+module.exports = { sizeModifiers, manufacturerModifiers, defaultStats }

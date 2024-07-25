@@ -134,7 +134,7 @@ module.exports = {
         }
 
         // Obligatory reply
-        await interaction.reply({content: `${capitalize(shipType)} ${name} has been deployed! Welcome to Frontier Space, and may the suns shine on you.`, ephemeral: false});
+        await interaction.editReply({content: `${capitalize(shipType)} ${name} has been deployed! Welcome to Frontier Space, and may the suns shine on you.`, ephemeral: false});
 	}
 };
 

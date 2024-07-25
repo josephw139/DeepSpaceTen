@@ -40,7 +40,7 @@ module.exports = {
 
                     Use /start to begin playing.
                     `);
-            interaction.reply({ embeds: [helpEmbed] });
+            interaction.editReply({ embeds: [helpEmbed] });
         } else if (helpWith === 'commands') {
             const helpEmbed = new EmbedBuilder()
                     .setTitle('U.C.S. New Arrival Center')
@@ -72,7 +72,7 @@ module.exports = {
                         Ships with higher Speeds take less time to reach their destinations.`},
                        
                     );
-            interaction.reply({ embeds: [helpEmbed] });
+            interaction.editReply({ embeds: [helpEmbed] });
         }
     }
 }

@@ -26,7 +26,7 @@ module.exports = {
 		
 		const playerData = getPlayerData(playerId);
 		if (typeof playerData === 'string') {
-            interaction.reply(playerData);
+            interaction.editReply(playerData);
         }
 		const { isEngaged, hangar, fleet, location,	locationDisplay, activeShip, credits } = playerData;
 
@@ -50,17 +50,17 @@ module.exports = {
 					value: `*${crewMember.age} years old. ${crewMember.career}. ${crewMember.attitude}.*\n${crewMember.appearance} ${crewMember.personality}\n\nWeapon: ${weapon}\nArmor: ${armor}\nSuit: ${suit}\nUtility: ${utility}`
 				});
 			});
-			await interaction.reply({ embeds: [crewEmbed] });
+			await interaction.editReply({ embeds: [crewEmbed] });
 		}
 		else if (manage == "view") {
-			await interaction.reply("not yet");
+			await interaction.editReply("not yet");
 		}
 		else if (manage == "assign") {
-			await interaction.reply("Crew Member has been assigned to Ship");
+			await interaction.editReply("Crew Member has been assigned to Ship");
 		}
 		else if (manage == "hire") {
 			if (!location.currentLocation.activities.includes('Shop')) {
-				await interaction.reply("There's nowhere to hire people here.");
+				await interaction.editReply("There's nowhere to hire people here.");
 				return;
 			}
 			let currentLocationName = location.currentLocation.name;
@@ -91,12 +91,12 @@ module.exports = {
             );
 
 			if (activeShip.crew.length >= activeShip.crewCapacity[1]) {
-				await interaction.reply("Your ship is at crew capacity. Please reassign or retire a crew member.");
+				await interaction.editReply("Your ship is at crew capacity. Please reassign or retire a crew member.");
 				return;
 			}
 
 			// Reply with the dropdown menu
-			await interaction.reply({ content: 'Hire Crew:', components: [row] });
+			await interaction.editReply({ content: 'Hire Crew:', components: [row] });
 			
 			// Handle the dropdown selection
 			const filter = (i) => i.customId === 'select-hire' && i.user.id === interaction.user.id;

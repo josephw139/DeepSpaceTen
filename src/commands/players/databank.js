@@ -38,7 +38,7 @@ module.exports = {
         
 
         if (typeof playerData === 'string') {
-            interaction.reply(playerData);
+            interaction.editReply(playerData);
         }
 
 
@@ -54,7 +54,7 @@ module.exports = {
                         __Scouts__ - Using highly specialized Abacus Retracers and warp facilities, these ships are the fastest for exploring the unknown regions of space.\n
                         __Freighters__ - Large cargo ships designed to carry enormous amounts of materials to their destinations.\n`},
                     );
-            interaction.reply({ embeds: [shipsEmbed] });
+            interaction.editReply({ embeds: [shipsEmbed] });
         } else if (lore === 'ucs') {
             const ucsEmbed = new EmbedBuilder()
                     .setTitle('U.C.S. Information Center')
@@ -64,7 +64,7 @@ module.exports = {
                     .addFields(
                         { name: 'Lore', value: `Lore moment`},
                     );
-            interaction.reply({ embeds: [ucsEmbed] });
+            interaction.editReply({ embeds: [ucsEmbed] });
         } else if (lore === 'sectors') {
             const sectorsEmbed = new EmbedBuilder()
                 .setTitle('Frontier Space')
@@ -99,7 +99,7 @@ module.exports = {
                 });
             }
         
-            await interaction.reply({ embeds: [sectorsEmbed] });
+            await interaction.editReply({ embeds: [sectorsEmbed] });
         } else if (lore === 'systems') {
             const systemsEmbed = new EmbedBuilder()
                 .setTitle('Frontier Space')
@@ -141,7 +141,7 @@ module.exports = {
                 });
             }
         
-            await interaction.reply({ embeds: [systemsEmbed] });
+            await interaction.editReply({ embeds: [systemsEmbed] });
         } else if (lore === 'locations') {
             const locationsEmbed = new EmbedBuilder()
                 .setTitle('Planets, Moons, Space Stations and more')
@@ -171,7 +171,7 @@ module.exports = {
                 locationsEmbed.setDescription(`No locations found${searchTerm ? ` matching "${searchTerm}"` : ''}.`);
             }
             
-            await interaction.reply({ embeds: [locationsEmbed] });
+            await interaction.editReply({ embeds: [locationsEmbed] });
         }
 
         // Obligatory reply

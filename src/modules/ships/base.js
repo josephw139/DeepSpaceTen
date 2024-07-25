@@ -1,16 +1,16 @@
 // class for a Ship
-const { classModifiers, manufacturerModifiers, defaultStats } = require('./shipTraits'); 
+const { sizeModifiers, manufacturerModifiers, defaultStats } = require('./shipTraits'); 
 
 
 class Ship {
-    constructor({ type, capabilities, classType, name, manufacturer, description,
+    constructor({ type, capabilities, sizeType, name, manufacturer, description,
                     hp, attack, armor, speed, miningPower, researchPower, stealth, travelSpeed,
                     crew ,crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
                     furnishings, inventory, price, }) {
 
         this.type = type;
         this.capabilities = capabilities;
-        this.classType = classType;
+        this.sizeType = sizeType;
         this.name = name;
         this.manufacturer = manufacturer;
         this.description = description;
@@ -44,11 +44,11 @@ class Ship {
 
     // function to call in the Fleet command to show ship details
     shipDisplay(detailed = false) {
-        let classTypeString;
+        let sizeTypeString;
         if (!this.classType) {
-            classTypeString = "";
+            sizeTypeString = "";
         } else {
-            classTypeString = this.classType;
+            sizeTypeString = this.sizeType;
         }
 
         if (detailed) {
@@ -83,7 +83,7 @@ class Ship {
                    `__Furnishings (${this.furnishings.length}/${this.furnishingsCapacity}):__\n${this.furnishings.join(', ')}\n\n` +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
-        return `${this.name}, ${classTypeString} ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
+        return `${this.name}, ${sizeTypeString} ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
     }
     
     
@@ -94,7 +94,7 @@ class Ship {
         const array = {
             type: this.type,
             capabilities: this.capabilities,
-            classType: this.classType,
+            sizeType: this.sizeType,
             name: this.name,
             manufacturer: this.manufacturer,
             description: this.description,
@@ -271,18 +271,18 @@ const shipClasses = {
 }
 
 // new version
-function createShip(shipType, nameOrArray, manufacturer, classType = null, modules = []) {
+function createShip(shipType, nameOrArray, manufacturer, sizeType = null, modules = []) {
     const ShipClass = shipClasses[shipType];
 
     if (typeof nameOrArray === "string") {
         // New ship creation
         const stats = JSON.parse(JSON.stringify(defaultStats[shipType]));
-        applyAllModifiers(stats, manufacturer, classType, modules);
+        applyAllModifiers(stats, manufacturer, sizeType, modules);
         let ship = new ShipClass({
             type: shipType,
             name: nameOrArray,
             manufacturer: manufacturer,
-            classType: classType,
+            sizeType: sizeType,
             ...stats
         });
         return ship;
@@ -292,10 +292,10 @@ function createShip(shipType, nameOrArray, manufacturer, classType = null, modul
     }
 }
 
-function applyAllModifiers(stats, manufacturer, classType, modules) {
-    // Apply Class modifiers
-    if (classType && classModifiers[classType]) {
-        applyModifiers(stats, classModifiers[classType]);
+function applyAllModifiers(stats, manufacturer, sizeType, modules) {
+    // Apply Size modifiers
+    if (sizeType && sizeModifiers[sizeType]) {
+        applyModifiers(stats, sizeModifiers[sizeType]);
     }
     
     // Apply manufacturer modifiers
@@ -413,21 +413,30 @@ function generateRandomShip() {
     const shipTypes = Object.keys(defaultStats);
     const manufacturers = Object.keys(manufacturerModifiers);
     // Add a chance for the Class to be null
-    const classes = [...Object.keys(classModifiers), null]; // Adding null to the classes array
+    const sizes = [...Object.keys(sizeModifiers), null]; // Adding null to the sizes array
 
     // Randomly select a ship type and manufacturer
-    const shipType = shipTypes[Math.floor(Math.random() * shipTypes.length)];
+
+    // Define the list of ship types you want to exclude
+    const excludedTypes = ["thorn", "ranger"];
+
+    // Filter out the excluded types from the shipTypes array
+    const filteredShipTypes = shipTypes.filter(type => !excludedTypes.includes(type.toLowerCase()));
+
+    // Randomly select a ship type from the filtered list
+    const shipType = filteredShipTypes[Math.floor(Math.random() * filteredShipTypes.length)];
     const manufacturer = manufacturers[Math.floor(Math.random() * manufacturers.length)];
-    // Randomly select a class, allowing for the possibility of null
-    const shipClass = classes[Math.floor(Math.random() * classes.length)];
+    
+    // Randomly select a size, allowing for the possibility of null
+    const shipSize = sizes[Math.floor(Math.random() * sizes.length)];
 
     // Generate a random name for the ship
     const shipName = `${capitalize(shipType)} ${Math.floor(Math.random() * 1000)}`;
 
-    // Use your existing createShip function to generate the ship, handling null Class appropriately
-    const randomShip = createShip(shipType, shipName, manufacturer, shipClass);
+    // Use your existing createShip function to generate the ship, handling null Size appropriately
+    const randomShip = createShip(shipType, shipName, manufacturer, shipSize);
 
-    console.log(`Generated ship: ${shipName}, Type: ${shipType}, Manufacturer: ${manufacturer}, Class: ${shipClass ? shipClass : "Standard"}`);
+    console.log(`Generated ship: ${shipName}, Type: ${shipType}, Manufacturer: ${manufacturer}, Size: ${shipSize ? shipSize : "Standard"}`);
     console.log(randomShip);
     return randomShip;
 }

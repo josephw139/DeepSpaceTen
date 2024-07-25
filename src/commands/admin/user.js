@@ -32,7 +32,7 @@ module.exports = {
         // db.player.set(`${member.id}`, newSquadron);
 
         // Obligatory reply
-        await interaction.reply({content: `${member.displayName} has been reset`, ephemeral: true});
+        await interaction.editReply({content: `${member.displayName} has been reset`, ephemeral: true});
 
 	}
 };
