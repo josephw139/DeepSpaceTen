@@ -87,10 +87,10 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
     db.player.set(`${playerId}`, startTime, "scanning.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
 
-    // Schedule a job to run every 1 minutes
+    // Schedule a job to run every hour
 
 	const jobId = `${playerId}-${Date.now()}`;
-    const job = schedule.scheduleJob(`*/1 * * * *`, function() {
+    const job = schedule.scheduleJob(`*/0 * * * *`, function() {
 		const shipName = activeShip.name;
         const ship = getShipFromFleet(shipName, fleet);
 		// console.log(ship);

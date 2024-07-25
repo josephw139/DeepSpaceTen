@@ -74,7 +74,7 @@ module.exports = {
                     // Schedule the completion of the travel
                     scheduleTravel(member.id, selectedLocation, travelTime, channel);
 
-                    i.channel.send({ content: `You will arrive in ${travelTime} minutes.`, components: [] });
+                    i.channel.send({ content: `You will arrive in ${Math.floor(travelTime / 60)} minutes.`, components: [] });
                 }  else {
                     i.channel.send({ content: `You're already engaged in another activity`, components: [] });
                 }
@@ -106,7 +106,7 @@ function findSystemByName(systemName, discoveries) {
 
 function getLocationsForSystem(systemToTravel, currentLocationName) {
     // Filter out the current location from the system's locations
-    console.log('getLocations function:' + currentLocationName)
+    //console.log('getLocations function:' + currentLocationName)
     return systemToTravel.locations.filter(location => location.name !== currentLocationName);
 }
 
@@ -132,7 +132,7 @@ function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) 
         // ship's travelTime
         if (activeShip.travelSpeed > 1) {
             const travelSpeedAdjustmentFactor = 0.1 * (travelSpeed - 1);
-            adjustedTime *= 1 - travelSpeedAdjustmentFactor;
+            travelTime *= 1 - travelSpeedAdjustmentFactor;
         }
 
         if (!minCrew) {
@@ -148,14 +148,13 @@ function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) 
             travelTime *= 1.12;
         }
         travelTime = Math.floor(travelTime);
-        console.log(travelTime);
         return travelTime;
     }
 }
 
 function scheduleTravel(playerId, destination, travelTime, channel) {
 	// multiply travelTime by 10000 if travelTime is minutes, 1000 for seconds)
-    const arrivalTime = new Date(new Date().getTime() + travelTime * 10);
+    const arrivalTime = new Date(new Date().getTime() + travelTime * 1000);
     // Schedule a job to update the player's location
     schedule.scheduleJob(arrivalTime, () => {
         completeTravel(playerId, destination, channel);
@@ -187,7 +186,7 @@ async function completeTravel(playerId, destination, channel) {
 		console.error(`Destination ${destinationName} not found in the current system for player ${playerId}.`);
 	}
     
-	console.log(db.player.get(`${playerId}`, 'location'));
+	//console.log(db.player.get(`${playerId}`, 'location'));
 
     await channel.send({ content: `<@${playerId}>, you've arrived at ${destination}` });
 } 

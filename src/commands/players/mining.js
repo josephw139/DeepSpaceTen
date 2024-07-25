@@ -86,10 +86,10 @@ function startMining(playerId, activeShip, fleet) {
     db.player.set(`${playerId}`, startTime, "mining.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
 
-    // Schedule a job to run every 1 minutes
+    // Schedule a job to run every 1 hour (change the 0 to 1 to run every minute)
 
 	const jobId = `${playerId}-${Date.now()}`;
-    const job = schedule.scheduleJob(`*/1 * * * *`, function() {
+    const job = schedule.scheduleJob(`*/0 * * * *`, function() {
 		const shipName = activeShip.name;
         const ship = getShipFromFleet(shipName, fleet);
 		// console.log(ship);
