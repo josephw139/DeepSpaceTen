@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
 const { Fleet, capitalize, createShip } = require('../../modules/ships/base.js');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
@@ -16,6 +16,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 	.setName("quickstart")
 	.setDescription('Create your first ship!')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
     .addStringOption(option =>
         option.setName("ship")
             .setDescription("Each type of ship has different benefits")

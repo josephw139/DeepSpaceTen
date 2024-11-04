@@ -4,6 +4,7 @@ const { Fleet, capitalize, createShip } = require('../../modules/ships/base');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
 const { generateRandomCrewMember } = require('../../database/crewFuncs.js');
+const { updateShipRoles } = require('../../roleManagement.js');
 
 
 /* TO DO
@@ -195,6 +196,8 @@ module.exports = {
             fleet.setActiveShip(`${shipName}`);
             const activeShip = fleet.getActiveShip();
             console.log(activeShip);
+
+            updateShipRoles(member, activeShip.capabilities);
 
             for (let i = 0; i < activeShip.crewCapacity[0]; i++) {
                 activeShip.crew.push(generateRandomCrewMember());

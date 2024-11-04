@@ -1,6 +1,6 @@
 // Promote User
 
-const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js');
+const { SlashCommandBuilder, ChannelType, EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const db = require('../../database/db.js');
 
 
@@ -8,6 +8,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 	.setName('promote')
 	.setDescription('Assigns role to user')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 	.addUserOption(option =>
         option
             .setName('user')

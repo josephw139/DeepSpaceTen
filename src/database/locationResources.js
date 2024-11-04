@@ -15,6 +15,13 @@ const miningSellPrice = {
     Titanium: 200,
 }
 
+const researchSellPrice = {
+    Bio: 750,
+    Tech: 750,
+    Cosmic: 750,
+    Exotic: 1000,
+}
+
 
 const miningResources = {
     Ore: {
@@ -88,4 +95,40 @@ function calculateWeight(type, quantity) {
     }
 }
 
-module.exports = { levelWeights, miningSellPrice, miningResources, uniqueItems, calculateWeight };
+
+const researchTypes = {
+    Bio: {
+        Very_Low: { min: 1, max: 2 },
+        Low: { min: 1, max: 3 },
+        Medium: { min: 2, max: 3 },
+        High: { min: 3, max: 5 },
+        Very_High: { min: 4, max: 6 },
+        Rich: { min: 4, max: 8 },
+    },
+    Tech: {
+        Very_Low: { min: 1, max: 2 },
+        Low: { min: 1, max: 3 },
+        Medium: { min: 2, max: 3 },
+        High: { min: 3, max: 5 },
+        Very_High: { min: 4, max: 6 },
+        Rich: { min: 4, max: 8 },
+    },
+    Cosmic: {
+        Very_Low: { min: 1, max: 2 },
+        Low: { min: 1, max: 3 },
+        Medium: { min: 2, max: 3 },
+        High: { min: 3, max: 5 },
+        Very_High: { min: 4, max: 6 },
+        Rich: { min: 4, max: 8 },
+    },
+    Exotic: {
+        Very_Low: { min: 1, max: 2 },
+        Low: { min: 1, max: 3 },
+        Medium: { min: 2, max: 3 },
+        High: { min: 3, max: 5 },
+        Very_High: { min: 4, max: 6 },
+        Rich: { min: 4, max: 8 },
+    }
+}
+
+module.exports = { levelWeights, miningSellPrice, miningResources, researchSellPrice, researchTypes, uniqueItems, calculateWeight };

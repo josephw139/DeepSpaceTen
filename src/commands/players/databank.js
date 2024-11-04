@@ -115,10 +115,15 @@ module.exports = {
                         if (system && discoveredSystems.includes(system.name)) {
                             found = true;
                             let systemDescription = system.description || "A system waiting to be explored.";
+                            const locationDescriptions = system.locations.map(location => `*${location.name}`);
+                            systemsEmbed.addFields({ name: `${system.name} - ${sectorName} Sector`, value: `${systemDescription}\n\n${location.name}` });
+                        }
+
+                        /* 
                             const locationDescriptions = system.locations.map(location => `*${location.name}:* ${location.description}
                             Activities: ${location.activities.join(', ')}`).join("\n\n");
                             systemsEmbed.addFields({ name: `${system.name} - ${sectorName} Sector`, value: `${systemDescription}\n\n${locationDescriptions}` });
-                        }
+                        */
                     }
                 });
                 if (!found) {
@@ -133,9 +138,15 @@ module.exports = {
                             if (discoveredSystems.includes(system.name)) {
                                 let systemDescription = system.description || "A system waiting to be explored.";
                                 const locationDescriptions = system.locations.map(location => `*${location.name}:* ${location.description}
-                                Activities: ${location.activities.join(', ')}`).join("\n\n");
+                                `).join("\n\n");
                                 systemsEmbed.addFields({ name: `${system.name} - ${sectorName} Sector`, value: `${systemDescription}\n\n${locationDescriptions}` });
                             }
+
+                            /*
+                                const locationDescriptions = system.locations.map(location => `*${location.name}:* ${location.description}
+                                Activities: ${location.activities.join(', ')}`).join("\n\n");
+                                systemsEmbed.addFields({ name: `${system.name} - ${sectorName} Sector`, value: `${systemDescription}\n\n${locationDescriptions}` });
+                            */
                         });
                     }
                 });

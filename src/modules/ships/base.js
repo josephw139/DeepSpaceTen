@@ -6,7 +6,7 @@ class Ship {
     constructor({ type, capabilities, sizeType, name, manufacturer, description,
                     hp, attack, armor, speed, miningPower, researchPower, stealth, travelSpeed,
                     crew ,crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
-                    furnishings, inventory, price, }) {
+                    furnishings, inventory, lab, price, }) {
 
         this.type = type;
         this.capabilities = capabilities;
@@ -30,6 +30,7 @@ class Ship {
         this.furnishingsCapacity = furnishingsCapacity;
         this.furnishings = furnishings;
         this.inventory = inventory;
+        this.lab = lab;
         this.price = price;
 
         // determine ship morale
@@ -54,7 +55,8 @@ class Ship {
         if (detailed) {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
             const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight}kg) - ${item.sell_price * item.quantity} C\n*${item.description}*`).join('\n\n');
-            
+            const labNames = this.lab.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C\n*${item.description}*`).join('\n\n');
+
             // Prepare module details, consolidate duplicates, and format description
             const moduleCounts = this.modules.reduce((acc, module) => {
                 const name = module.name;
@@ -81,6 +83,7 @@ class Ship {
                     `__Capabilities:__ ${this.capabilities.join(', ')}\n\n` +
                    `__Installed Modules (${this.modules.length}/${this.modCapacity}):__\n${modulesInfo}\n\n` +
                    `__Furnishings (${this.furnishings.length}/${this.furnishingsCapacity}):__\n${this.furnishings.join(', ')}\n\n` +
+                   (this.capabilities.includes('Research') ? `__Lab:__\n${labNames}\n\n`: '') +
                    `__Cargo Hold (${totalInventoryWeight}/${this.cargoCapacity}):__\n${inventoryNames}`;
         }
         return `${this.name}, ${sizeTypeString} ${capitalize(this.type)} (${capitalize(this.manufacturer)})`;
@@ -110,6 +113,7 @@ class Ship {
             crewCapacity: this.crewCapacity,
             cargoCapacity: this.cargoCapacity,
             inventory: this.inventory,
+            lab: this.lab,
             modCapacity: this.modCapacity,
             modules: this.modules,
             furnishingsCapacity: this.furnishingsCapacity,
@@ -209,9 +213,10 @@ class Fleet {
 
             // Format ship line with or without bold based on active status
             const inventoryNames = ship.inventory.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
+            const labNames = ship.lab.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
             const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
             const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
-            const shipLineThree = `Cargo: ${inventoryNames}`;
+            const shipLineThree = `Cargo: ${inventoryNames}\nLab: ${labNames}`;
             const formattedLine = isActive ? `**${shipLineOne}**` : shipLineOne;
 
             shipDisplay += `${formattedLine}\n${shipLineTwo}\n${shipLineThree}\n${statusLine}\n\n`;

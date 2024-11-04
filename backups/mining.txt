@@ -139,7 +139,7 @@ function calculateMinerals(location) {
         High: { min: 180, max: 300 }
     };
 
-    // Randomly select a mining type (Ore, Gas, Adamantium) based on weights
+    // Randomly select a mining type (Ore, Gas, Titanium) based on weights
     const miningTypes = Object.keys(location.mining);
     const selectedType = weightedRandom(miningTypes, location.mining);
 

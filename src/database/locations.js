@@ -1,4 +1,4 @@
-const { uniqueItems } = require('./miningResources');
+const { uniqueItems } = require('./locationResources');
 
 // Activities: Shop, Build, Hangar, Mine, Research, Light_Scan, Deep_Scan
 // Mining & Research Levels: None, Very_Low, Low, Medium, High, Very_High

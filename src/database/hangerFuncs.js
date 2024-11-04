@@ -1,4 +1,4 @@
-const { calculateWeight } = require('./miningResources.js');
+const { calculateWeight } = require('./locationResources.js');
 const db = require('./db.js');
 
 

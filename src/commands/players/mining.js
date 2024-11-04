@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
-const { levelWeights, miningSellPrice, miningResources, calculateWeight } = require('../../database/miningResources.js');
+const { levelWeights, miningSellPrice, miningResources, calculateWeight } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -44,7 +44,7 @@ module.exports = {
 
 				if (canMine && isMiningShip && minCrew ) {
 					startMining(member.id, activeShip, fleet);
-					await interaction.editReply({ content: `You've started mining!`, ephemeral: false });
+					await interaction.editReply({ content: `You've started mining!`, ephemeral: true });
 				} else if (!canMine) {
 					await interaction.editReply({ content: `You can't mine at this location`, ephemeral: true });
 				} else if (!isMiningShip) {
@@ -86,10 +86,14 @@ function startMining(playerId, activeShip, fleet) {
     db.player.set(`${playerId}`, startTime, "mining.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
 
-    // Schedule a job to run every 1 hour (change the 0 to 1 to run every minute)
+    // Get the current minute to start the cron job at that minute every hour
+    const currentMinute = startTime.getMinutes();
+    const cronExpression = `${currentMinute} * * * *`;  // This will fire at 'currentMinute' every hour
+
+    // Schedule a job to run every 1 hour (change the ${currentMinute} to a * to run every minute)
 
 	const jobId = `${playerId}-${Date.now()}`;
-    const job = schedule.scheduleJob(`*/0 * * * *`, function() {
+    const job = schedule.scheduleJob(jobId, cronExpression, function() {
 		const shipName = activeShip.name;
         const ship = getShipFromFleet(shipName, fleet);
 		// console.log(ship);

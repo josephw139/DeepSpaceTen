@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, PermissionFlagsBits } = require('discord.js');
 const db = require('../../database/db.js');
 
 
@@ -6,6 +6,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 	.setName('user')
 	.setDescription('user manipulation')
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
 	.addUserOption(option =>
         option
             .setName('user')

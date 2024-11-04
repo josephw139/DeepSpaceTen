@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
-const { miningResources } = require('../../database/miningResources.js');
+const { miningResources } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -45,7 +45,7 @@ module.exports = {
 
 				if (canScan && lightScan && minCrew ) {
 					startScanning(member.id, activeShip, fleet, lightScan, deepScan);
-					await interaction.editReply({ content: `You've started scanning!`, ephemeral: false });
+					await interaction.editReply({ content: `You've started scanning!`, ephemeral: true });
 				} else if (!canScan) {
 					await interaction.editReply({ content: `You can't scan at this location`, ephemeral: true });
 				} else if (!lightScan) {
@@ -87,10 +87,14 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
     db.player.set(`${playerId}`, startTime, "scanning.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
 
+    // Get the current minute to start the cron job at that minute every hour
+    const currentMinute = startTime.getMinutes();
+    const cronExpression = `${currentMinute} * * * *`;  // This will fire at 'currentMinute' every hour
+
     // Schedule a job to run every hour
 
 	const jobId = `${playerId}-${Date.now()}`;
-    const job = schedule.scheduleJob(`*/0 * * * *`, function() {
+    const job = schedule.scheduleJob(jobId, cronExpression, function() {
 		const shipName = activeShip.name;
         const ship = getShipFromFleet(shipName, fleet);
 		// console.log(ship);

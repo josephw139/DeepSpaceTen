@@ -52,7 +52,8 @@ module.exports = {
                         /hangar
                         /shop
                         /mine
-                        /research (not implemented)
+                        /scan
+                        /laboratory
                         /travel
                         `},
                         { name: 'View Commands', value: `Use /view fleet to see a list of ships you own.
@@ -66,7 +67,7 @@ module.exports = {
                         Use /shop to view all items in your location, /shop buy or sell to purchase from the shop or sell from your Active Ship.`},
                         { name: 'Mining Commands', value: `Can only be used in locations with the Mining Activity.
                         Use /mine job: start to begin mining and /mine job: stop to cancel it.`},
-                        { name: 'Research Commands (not implemented)', value: `Can only be used in locations with the Research Activity.
+                        { name: 'Laboratory Commands', value: `Can only be used in locations with the Research Activity.
                         Use /research job: start to begin mining and /research job: stop to cancel it.`},
                         { name: 'Travel Commands', value: `Use /travel to select a known location within your current System to travel to.
                         Ships with higher Speeds take less time to reach their destinations.`},
