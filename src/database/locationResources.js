@@ -69,7 +69,7 @@ const uniqueItems = {
         quantity: 1,
         weight: 0,
         sell_price: 2000,
-        description: `"Meet me at ______. Tell no one. Stay hidden, _____ is watching."`
+        description: '',
     },
     g7_cloud_manta: {
         name: "G7 Cloud Manta",
@@ -131,4 +131,40 @@ const researchTypes = {
     }
 }
 
-module.exports = { levelWeights, miningSellPrice, miningResources, researchSellPrice, researchTypes, uniqueItems, calculateWeight };
+
+hiddenMessages = [
+    `-ross the lines, and across th-`,
+    `-loyed at a worrying distance of the border, in an uncanny resemblance t-`,
+    `-wn another thirteen percent this quarter, with another drop pro-`,
+    `-ey go silent before the leap, you know this, i know this. But it co-`,
+    `-fore kinetics, we had bullets and shells. Before then, spears and rocks. In a hundred years, w-`,
+    `-ish you could see the images!! you have to come over the second you can, it looks almost almost like a cat, and it t-`,
+    `-n they must not care about undue attention, no “planetary mining operation” needs proximity mines and-`,
+    `-ke a tower of fire dancing across the sun where there is no sun, where there should be no fire, and f-`,
+    `-ne. Two. Four. Six. Ten. Zero. Ten. One. Two. Two. Two. Two. Tw-`,
+    `-The best decision man ever made was taking shelter in a cave come nightfall. The worst, by far, w-`,
+
+]
+
+function randomizeInput(array) {
+    selection = getRndInteger(0, array.length);
+    return array[selection];
+}
+
+//Returns a random number between min and max (min excluded, max excluded):
+function getRndInteger(min, max) {
+    return Math.floor(Math.random() * (max - min) ) + min;
+  }
+
+module.exports = {
+    levelWeights,
+    miningSellPrice,
+    miningResources,
+    researchSellPrice,
+    researchTypes,
+    uniqueItems,
+    hiddenMessages,
+    calculateWeight,
+    randomizeInput,
+    getRndInteger,
+ };

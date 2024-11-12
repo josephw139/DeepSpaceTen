@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
-const { miningResources } = require('../../database/locationResources.js');
+const { miningResources, hiddenMessages, randomizeInput, getRndInteger} = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -89,9 +89,9 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
-    const cronExpression = `${currentMinute} * * * *`;  // This will fire at 'currentMinute' every hour
+    const cronExpression = `* * * * *`;  // This will fire at 'currentMinute' every hour
 
-    // Schedule a job to run every hour
+    // ${currentMinute} Schedule a job to run every hour
 
 	const jobId = `${playerId}-${Date.now()}`;
     const job = schedule.scheduleJob(jobId, cronExpression, function() {
@@ -135,7 +135,7 @@ function updateShipInventory(playerId, shipName, item, fleet) {
         const itemEntry = ship.inventory.find(shipItem => shipItem.name === item.type);
         const itemWeight = item.weight;
 
-        if (itemEntry) {
+        if (itemEntry && itemEntry.description == item.description) {
             itemEntry.quantity += item.quantity;
             itemEntry.weight += itemWeight;
         } else {
@@ -179,13 +179,20 @@ function calculateScanning(location, morale, lightScan, deepScan) {
         for (const unique of location.unique_items) {
             const chance = unique.adjustedChance || unique.item.baseChance;
             randomChance -= chance;
-            if (randomChance <= 0) {
+            if (Math.random() <= chance) {
+                let itemDescription;
+                if (unique.item.name == 'Hidden Message') {
+                    itemDescription = randomizeInput(hiddenMessages);
+                } else {
+                    itemDescription = unique.item.description;
+                }
+                
                 return {
                     type: unique.item.name,
                     quantity: unique.item.quantity,
                     weight: unique.item.weight,
                     sell_price: unique.item.sell_price,
-                    description: unique.item.description,
+                    description: itemDescription,
                 };
             }
         }

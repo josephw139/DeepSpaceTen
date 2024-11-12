@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
-const { levelWeights, miningSellPrice, miningResources, calculateWeight } = require('../../database/locationResources.js');
+const { levelWeights, miningSellPrice, miningResources, calculateWeight, hiddenMessages, randomizeInput } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -155,7 +155,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
         const resourceEntry = ship.inventory.find(item => item.name === resource.type);
         const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
-        if (resourceEntry) {
+        if (resourceEntry && resourceEntry.description == resource.description) {
             resourceEntry.quantity += resource.quantity;
             resourceEntry.weight += resourceWeight;
         } else {
@@ -191,12 +191,19 @@ function calculateMinerals(location, morale, miningPower) {
         for (const unique of location.unique_items) {
             const chance = unique.adjustedChance || unique.item.baseChance;
             if (Math.random() <= chance) {
+                let itemDescription;
+                if (unique.item.name == 'Hidden Message') {
+                    itemDescription = randomizeInput(hiddenMessages);
+                } else {
+                    itemDescription = unique.item.description;
+                }
+                
                 return {
                     type: unique.item.name,
                     quantity: unique.item.quantity,
                     weight: unique.item.weight,
                     sell_price: unique.item.sell_price,
-                    description: unique.item.description,
+                    description: itemDescription,
                 };
             }
         }

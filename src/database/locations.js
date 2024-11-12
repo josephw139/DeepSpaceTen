@@ -99,7 +99,8 @@ const sectors = {
                         item: uniqueItems.lightless_stone,
                       },
                       {
-                        item: uniqueItems.hidden_mesage,
+                        item: uniqueItems.hidden_message,
+                        adjustedChance: 1.0,
                       },
                     ],
                     light_scan: [],

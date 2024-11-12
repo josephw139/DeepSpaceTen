@@ -4,6 +4,7 @@ const sectorsData = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const schedule = require('node-schedule');
 const { getPlayerData } = require('../../database/playerFuncs.js');
+const { handleTechnologyInteraction } = require('../../database/databank/technology.js');
 
 
 module.exports = {
@@ -17,6 +18,8 @@ module.exports = {
                 .addChoices(
                     { name: 'Ships', value: 'ships' },
                     { name: 'United Confederacy of Systems', value: 'ucs' },
+                    { name: 'Galactic Politics', value: 'politics' },
+                    { name: 'Technology', value: 'technology' },
                     { name: 'Sectors', value: 'sectors' },
                     { name: 'Systems', value: 'systems' },
                     { name: 'Locations', value: 'locations' },
@@ -183,6 +186,45 @@ module.exports = {
             }
             
             await interaction.editReply({ embeds: [locationsEmbed] });
+        } else if (lore === 'politics') {
+            const ucsEmbed = new EmbedBuilder()
+                    .setTitle('Galactic Politics')
+                    .setDescription(`
+                    `)
+                    .addFields(
+                        { name: 'U.C.S. [Power]', value: `The U.C.S. (United Confederacy of Systems) is the current power structure spanning across multiple star systems, not dissimilar to the United Nations of Earth, earlier in humanity's history.`},
+                        { name: 'The Laureiate [Power]', value: `The Laureiate is a recognized non-member sovreign entity.
+                            
+                            The UCS advises caution while interacting with Laureiate citizenry, and reccomends keeping in mind their bias towards misattributing human history and their respective role in it.` },
+                        { name: 'Aspanza Purveyor Association [Organization]', value: `A middling economic entity on the sidelines of logistical and navigational industries.
+
+Technically a shipping firm, one which rarely deals in any actual shipping. Founded in an amalgamation of groups vying to contend with extravagantly funded Laureiate archaeologists, with little success.
+
+They operate in the expanses bordering charted space, too small to compete with established conglomerates, too large to have any meaningful commercial competition of their own, granting them a fickle sort of monopoly. 
+
+They sell pilgrims and Voyagers routes, charts, and the occasional travel supply or excavation equipment. They buy whatever they can sell, at a markup, to any 'interested investor'. A group keenly aware and content with its role as middleman.
+` },
+                    );
+            interaction.editReply({ embeds: [ucsEmbed] });
+        } else if (lore === 'technology') {
+            const ucsEmbed = new EmbedBuilder()
+                    .setTitle('Technology')
+                    .setDescription(`
+                    `)
+                    .addFields(
+                        { name: 'Retracer Abacus [Technology]', value: `The second half of mechanisms that make interstellar travel within one lifetime possible. Retracers are specialized Abacus machines that mitigate the erratic conditions of Clear Bounds by simulating and averaging Clear courses. With the tiny margin of error these estimations require, Retracers need readouts of precalculated space to be in any way efficient.` },
+                        /*{ name: 'RHAILs and Clear Bounds [Technology | Intrastellar]', value: `Heritage sciences defined theories of everything as interplay of space and force, absolute subjects to place and pull. It is considered unsurprising that the culmination of those fields was implemented with the Ribar-Hsieh-Annastice Inflection Lattice.
+                            
+                            [Related article → Notable Heritage Figures]
+                            
+                            With precise gravitic arraying, a selected point can be “inflected” into a state of one-dimensional kinematics. This is only directional linearization, the dimensions of the point are unchanged. In effect, the point is situated across the curvature of space, rendering potential motion both linear and curved. This is a Clear Line and Bound, traveling across a trajectory that includes every point in space (treating it as a one-dimensional line). The Bound is the illusory surface of a sphere which this occurs along. (Illusory because it is the impression of a shape created by the outline of curvature. A “shadow” of space.)
+                            
+                            To a Clear Bound for an outside observer, light has “already arrived”. While travel alongside it is, strictly speaking, not faster than light, bounding from A to B would result in arriving earlier than unbounded light. While remarkable for the time, RHAILs did not see regular usage until the wide scale implementation of Riencoats, enabling biological sapiances to survive the journey.
+                            
+                            [Related article → Riencoats]
+                            [Related article → Abacus]`},*/
+                    );
+            interaction.editReply({ embeds: [ucsEmbed] });
         }
 
         // Obligatory reply

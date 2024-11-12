@@ -207,16 +207,20 @@ module.exports = {
             const starterLocation = starterSystem ? starterSystem.locations[0] : null;
 
             // Set up Database file for the player
-            db.player.set(`${playerId}`, false, "engaged");
-            db.player.set(`${playerId}`, `${selectedCareer}`, "career");
-            db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-            db.player.set(`${playerId}`, {
-                currentSector: 'Southeast',
-                currentSystem: starterSystem,
-                currentLocation: starterLocation
-            }, "location");
-            db.player.set(`${playerId}`, [], "hangar");
-            db.player.set(`${playerId}`, 50000, "credits");
+            // Set up Database file for the player
+            try {
+                db.player.set(`${playerId}`, false, "engaged");
+                db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+                db.player.set(`${playerId}`, {
+                    currentSector: 'Southeast',
+                    currentSystem: starterSystem,
+                    currentLocation: starterLocation
+                }, "location");
+                db.player.set(`${playerId}`, [], "hangar");
+                db.player.set(`${playerId}`, 50000, "credits");
+            } catch (e) {
+                console.log(e);
+            }
             initializeNewPlayer(playerId);
 
             
