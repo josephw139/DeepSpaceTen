@@ -63,6 +63,7 @@ module.exports = {
 				let activeShipString = '';
 				if (target === activeShip) {
 					activeShipString += 'STATUS: ACTIVE';
+					activeShipString += activity;
 				}
 				const shipView = new EmbedBuilder()
 				.setTitle(`Exploration Team ${member.displayName}`)
