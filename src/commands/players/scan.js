@@ -89,7 +89,7 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
-    const cronExpression = `* * * * *`;  // This will fire at 'currentMinute' every hour
+    const cronExpression = `${currentMinute} * * * *`;  // This will fire at 'currentMinute' every hour
 
     // ${currentMinute} Schedule a job to run every hour
 
@@ -186,7 +186,7 @@ function calculateScanning(location, morale, lightScan, deepScan) {
                 } else {
                     itemDescription = unique.item.description;
                 }
-                
+
                 return {
                     type: unique.item.name,
                     quantity: unique.item.quantity,

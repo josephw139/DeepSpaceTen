@@ -76,6 +76,7 @@ const sectors = {
                       },
                       {
                         item: uniqueItems.hidden_message,
+                        adjustedChance: 0.08,
                       },
                     ],
                     light_scan: [],
@@ -100,7 +101,6 @@ const sectors = {
                       },
                       {
                         item: uniqueItems.hidden_message,
-                        adjustedChance: 1.0,
                       },
                     ],
                     light_scan: [],
