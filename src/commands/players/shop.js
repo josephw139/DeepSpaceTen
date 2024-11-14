@@ -95,38 +95,38 @@ module.exports = {
 						{ name: 'Furnishings for Sale', value: `${furnishingsForSale}` || 'None available' }
 					)
 				await interaction.editReply({ embeds: [shopView] });
-			}
+			} else {
 			
-			const itemToBuyResult = findItemInShop(item, location.currentLocation.name);
-			// Check if item exists
-			if (!itemToBuyResult) {
-				await interaction.editReply({ content: `'${item}' not found in the shop.`, ephemeral: true });
-				return;
-			}
-			const itemToBuy = itemToBuyResult.item;
-		
-			// Check if the player has enough credits
-			if (credits < itemToBuy.price) {
-				await interaction.editReply({ content: `You do not have enough credits to buy '${item}'. You need ${itemToBuy.price}.`, ephemeral: true });
-				return;
-			}
+				const itemToBuyResult = findItemInShop(item, location.currentLocation.name);
+				// Check if item exists
+				if (!itemToBuyResult) {
+					await interaction.editReply({ content: `'${item}' not found in the shop.`, ephemeral: true });
+					return;
+				}
+				const itemToBuy = itemToBuyResult.item;
+			
+				// Check if the player has enough credits
+				if (credits < itemToBuy.price) {
+					await interaction.editReply({ content: `You do not have enough credits to buy '${item}'. You need ${itemToBuy.price}.`, ephemeral: true });
+					return;
+				}
 
-			// Update credits
-			const newCredits = credits - itemToBuy.price;
-    		db.player.set(playerId, newCredits, "credits");
+				// Update credits
+				const newCredits = credits - itemToBuy.price;
+				db.player.set(playerId, newCredits, "credits");
+				
+				// Use itemToBuyResult.type to determine action
+				if (itemToBuyResult.type === 'ship') {
+					// Add ship to fleet
+					fleet.ships.push(itemToBuy);
+					// Save the updated fleet or hangar
+					db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+				} else if (itemToBuyResult.type === 'upgrade' || itemToBuyResult.type === 'furnishing') {
+					updateHangar(playerId, hangar, itemToBuy);
+				}
 			
-			// Use itemToBuyResult.type to determine action
-			if (itemToBuyResult.type === 'ship') {
-				// Add ship to fleet
-				fleet.ships.push(itemToBuy);
-				// Save the updated fleet or hangar
-				db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-			} else if (itemToBuyResult.type === 'upgrade' || itemToBuyResult.type === 'furnishing') {
-				updateHangar(playerId, hangar, itemToBuy);
+				await interaction.editReply({ content: `Successfully bought '${item}' for ${itemToBuy.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
 			}
-		
-			await interaction.editReply({ content: `Successfully bought '${item}' for ${itemToBuy.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
-		
 			
 		} else if (subcommand === 'sell') { // SELL
 			let itemToSell;

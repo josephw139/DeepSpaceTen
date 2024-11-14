@@ -55,6 +55,9 @@ module.exports = {
 		else if (manage == "view") {
 			await interaction.editReply("not yet");
 		}
+		else if (manage == "retire") {
+			await interaction.editReply("not yet");
+		}
 		else if (manage == "assign") {
 			await interaction.editReply("Crew Member has been assigned to Ship");
 		}

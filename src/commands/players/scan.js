@@ -66,6 +66,7 @@ module.exports = {
 					db.player.delete(`${playerId}`, "scanning.details"); // Clean up database entries
 					db.player.delete(`${playerId}`, "scanning.startTime");
 					db.player.set(`${playerId}`, false, "engaged");
+                    db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
 					//await interaction.reply({ content: `Scanning job finished`, ephemeral: true });
 
                     if (!interaction.deferred && !interaction.replied) {
@@ -84,8 +85,11 @@ module.exports = {
 
 function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
     const startTime = new Date();
+    const location = db.player.get(`${playerId}`, "location");
+
     db.player.set(`${playerId}`, startTime, "scanning.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
+    db.player.set(`${playerId}`, `${activeShip}'s crew is scanning at ${location.currentLocation.name}`, "activity");
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
@@ -98,8 +102,7 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
 		const shipName = activeShip.name;
         const ship = getShipFromFleet(shipName, fleet);
 		// console.log(ship);
-		const location = db.player.get(`${playerId}`, "location");
-
+		
         if (ship) {
             try {
                 const item = calculateScanning(location.currentLocation, activeShip.morale, lightScan, deepScan);
@@ -113,6 +116,7 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
 					this.cancel();
 					db.player.delete(`${playerId}`, "scanning.startTime");
 					db.player.set(`${playerId}`, false, "engaged");
+                    db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
                 }
             } catch (e) {
                 console.error(e);

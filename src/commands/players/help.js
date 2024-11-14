@@ -55,6 +55,7 @@ module.exports = {
                         /scan
                         /laboratory
                         /travel
+                        /crew
                         `},
                         { name: 'View Commands', value: `Use /view fleet to see a list of ships you own.
                         Use /view fleet ship # to view the specfics
@@ -71,6 +72,8 @@ module.exports = {
                         Use /research job: start to begin mining and /research job: stop to cancel it.`},
                         { name: 'Travel Commands', value: `Use /travel to select a known location within your current System to travel to.
                         Ships with higher Speeds take less time to reach their destinations.`},
+                        { name: 'Crew Commands', value: `Use /crew to view, hire, retire, and assign crew members to ships.
+                        Right now, only the hiring subcommand works, but you can view all crew members by leaving the option blank.`},
                        
                     );
             interaction.editReply({ embeds: [helpEmbed] });

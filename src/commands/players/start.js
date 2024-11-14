@@ -162,13 +162,13 @@ module.exports = {
 
                 await i.followUp({ content: "Your ship's manufacturer been noted.", components: [careerRow] });
             } else if (i.customId === 'select-career') {
-                const buttonRow = new ActionRowBuilder()
+                /*const buttonRow = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId('nameShipButton')
                         .setLabel('Name Your Ship')
                         .setStyle(ButtonStyle.Primary)
-                );
+                ); */
         
                 await i.followUp({ content: "The U.C.S. has verified all relevant data. Use /fleet manage: rename to name your ship.", components: [] });
                 collector.stop();
@@ -186,7 +186,8 @@ module.exports = {
             console.log('Selections:', selections);
             const selectedShip = selections['select-ship'];
             const selectedSponsor = selections['select-sponsor'];
-            const shipName = `${interaction.member.nickname}'s ${capitalize(selectedShip)}`
+            const memberName = interaction.member.nickname || interaction.member.username;
+            const shipName = `${memberName}'s ${capitalize(selectedShip)}`
             //const shipName = interaction.client.userInputs && interaction.client.userInputs[playerId] ? interaction.client.userInputs[playerId]['userInput'] : null;
             const selectedCareer = selections['select-career'];
 
@@ -210,6 +211,7 @@ module.exports = {
             // Set up Database file for the player
             try {
                 db.player.set(`${playerId}`, false, "engaged");
+                db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
                 db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
                 db.player.set(`${playerId}`, {
                     currentSector: 'Southeast',

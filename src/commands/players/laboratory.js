@@ -65,6 +65,7 @@ module.exports = {
 					db.player.delete(`${playerId}`, "research.details"); // Clean up database entries
 					db.player.delete(`${playerId}`, "research.startTime");
 					db.player.set(`${playerId}`, false, "engaged");
+                    db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
 					//await interaction.reply({ content: `Research job finished`, ephemeral: true });
 
                     if (!interaction.deferred && !interaction.replied) {
@@ -83,8 +84,12 @@ module.exports = {
 
 function startResearch(playerId, activeShip, fleet) {
     const startTime = new Date();
+    const location = db.player.get(`${playerId}`, "location");
+
     db.player.set(`${playerId}`, startTime, "research.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
+    db.player.set(`${playerId}`, `${activeShip}'s crew is researching at ${location.currentLocation.name}`, "activity");
+
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
@@ -97,7 +102,7 @@ function startResearch(playerId, activeShip, fleet) {
 		const shipName = activeShip.name;
         const ship = getShipFromFleet(shipName, fleet);
 		// console.log(ship);
-		const location = db.player.get(`${playerId}`, "location");
+		
 
         if (ship) {
             try {

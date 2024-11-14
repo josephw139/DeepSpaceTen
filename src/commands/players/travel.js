@@ -166,6 +166,8 @@ function scheduleTravel(playerId, destination, travelTime, channel) {
     db.player.set(`${playerId}`, arrivalTime, "location.arrivalTime");
     db.player.set(`${playerId}`, channel.id, "location.channelId");
     db.player.set(`${playerId}`, true, "engaged");
+    db.player.set(`${playerId}`, `${activeShip} is en route to ${destination}`, "activity");
+
 }
 
 async function completeTravel(playerId, destination, channel) {
@@ -182,6 +184,7 @@ async function completeTravel(playerId, destination, channel) {
 		db.player.delete(`${playerId}`, "location.arrivalTime");
         db.player.delete(`${playerId}`, "location.channelId");
         db.player.set(`${playerId}`, false, "engaged");
+        db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
 	} else {
 		console.error(`Destination ${destinationName} not found in the current system for player ${playerId}.`);
 	}

@@ -216,7 +216,7 @@ class Fleet {
             const labNames = ship.lab.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
             const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
             const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
-            const shipLineThree = `Cargo: ${inventoryNames}\nLab: ${labNames}`;
+            const shipLineThree = `Cargo: ${inventoryNames}\n` + (ship.capabilities.includes('Research') ? `Lab: ${labNames}` : '');
             const formattedLine = isActive ? `**${shipLineOne}**` : shipLineOne;
 
             shipDisplay += `${formattedLine}\n${shipLineTwo}\n${shipLineThree}\n${statusLine}\n\n`;

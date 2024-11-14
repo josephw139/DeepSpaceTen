@@ -39,6 +39,8 @@ module.exports = {
 		const activeShip = playerData.activeShip;
 		const credits = playerData.credits;
 		const hangar = playerData.hangar;
+		const isEngaged = playerData.isEngaged;
+		const activity = playerData.activity;
 
 		const manageOption = interaction.options.getString('manage');
         const shipOption = interaction.options.getInteger('ship');
@@ -78,7 +80,7 @@ module.exports = {
 				
 				const fleetDisplay = new EmbedBuilder()
 				.setTitle(`Captain ${member.displayName}`)
-				.setDescription(`__Fleet Overview__\nBank: ${credits} C\n`)
+				.setDescription(`__Fleet Overview__\nBank: ${credits} C\n${activity}`)
 				.addFields(
 					{ name: 'Location', value: `${locationDisplay}`},
 					{ name: 'Ships', value: `${shipDisplay}` },
@@ -90,13 +92,18 @@ module.exports = {
 				channel.send({ embeds: [fleetDisplay] });
 
 				// Obligatory reply
-				await interaction.editReply({content: `Use /view fleet ship # to see individual ship details`, ephemeral: true});
+				await interaction.editReply({content: `Use /fleet:manage view ship # to see individual ship details`, ephemeral: true});
 
 			}
 
 		} else if (manageOption === 'active') {
 			if (!shipOption) {
 				await interaction.editReply({content: `Specify a # to select your ship`, ephemeral: true});
+				return;
+			}
+
+			if (shipOption > fleet.ships.length || shipOption === 0) {
+				await interaction.editReply({content: `This ship does not exist.`, ephemeral: true});
 				return;
 			}
 

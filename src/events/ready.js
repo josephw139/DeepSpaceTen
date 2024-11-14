@@ -25,6 +25,8 @@ async function resetPlayerStates(client) {
 
 		// Reset 'engaged' status to false
 		db.player.set(playerId, false, "engaged");
+		db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
+
 
 		// Handle ongoing travel jobs, if the bot restarted mid-travel
 		if (playerData.location && playerData.location.destination && playerData.location.channelId) {

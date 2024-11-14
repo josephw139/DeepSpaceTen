@@ -23,6 +23,9 @@ function getPlayerData(playerId) {
         // Retrieve engaged status
         const isEngaged = db.player.get(`${playerId}`, "engaged");
 
+        // Retrieve activity status
+        const activity = db.player.get(`${playerId}`, "activity");
+
         // Retrieve hangar
         const hangar = db.player.get(`${playerId}`, "hangar");
 
@@ -39,6 +42,7 @@ function getPlayerData(playerId) {
         return {
             fleet,
             isEngaged,
+            activity,
             activeShip,
             location,
             locationDisplay,
