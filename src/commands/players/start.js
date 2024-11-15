@@ -186,7 +186,8 @@ module.exports = {
             console.log('Selections:', selections);
             const selectedShip = selections['select-ship'];
             const selectedSponsor = selections['select-sponsor'];
-            const memberName = interaction.member.nickname || interaction.member.username;
+            console.log(interaction.member.user.username);
+            const memberName = interaction.member.nickname || interaction.member.user.username;
             const shipName = `${memberName}'s ${capitalize(selectedShip)}`
             //const shipName = interaction.client.userInputs && interaction.client.userInputs[playerId] ? interaction.client.userInputs[playerId]['userInput'] : null;
             const selectedCareer = selections['select-career'];

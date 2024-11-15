@@ -44,7 +44,7 @@ module.exports = {
 
 				if (canResearch && isResearchShip && minCrew ) {
 					startResearch(member.id, activeShip, fleet);
-					await interaction.editReply({ content: `You've started researching!`, ephemeral: true });
+					await interaction.editReply({ content: `You've started researching! Results will be produced every hour`, ephemeral: true });
 				} else if (!canResearch) {
 					await interaction.editReply({ content: `You can't research at this location`, ephemeral: true });
 				} else if (!isResearchShip) {
@@ -110,7 +110,7 @@ function startResearch(playerId, activeShip, fleet) {
                 //const totalWeight = getTotalWeight(ship.inventory);
                 // const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
-				console.log(resource);
+				// console.log(resource);
                 updateShipInventory(playerId, shipName, resource, fleet);
 
             } catch (e) {

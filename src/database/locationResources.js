@@ -53,29 +53,30 @@ const miningResources = {
 const uniqueItems = {
     pulsating_rock: { 
         name: "Pulsating Rock",
-        quantity: 1, weight: 5, sell_price: 1000, baseChance: 0.02,
-        description: "It beats, almost like a heart. You can feel it pulsing in your grip. Is it alive?"},
+        quantity: 1, weight: 0, sell_price: 1000, baseChance: 0.02,
+        description: "It beats, almost like a heart. You can feel it pulsing in your grip. Is it alive?"
+    },
     lightless_stone: {
         name: "Lightless Stone",
         baseChance: 0.01, 
         quantity: 1,
-        weight: 10,
+        weight: 0,
         sell_price: 5000,
         description: "A dense, mysterious stone seemingly absorbing light around it. Darker than vantablack."
     },
-    hidden_mesage: {
+    hidden_message: {
         name: "Hidden Message",
         baseChance: 0.05, 
         quantity: 1,
         weight: 0,
         sell_price: 2000,
-        description: '',
+        description: ''
     },
     g7_cloud_manta: {
         name: "G7 Cloud Manta",
         baseChance: 0.1, 
         quantity: 1,
-        weight: 2,
+        weight: 0,
         sell_price: 4000,
         description: `Alien life! A rare creature, somewhat resembling a manta ray, which breathes and flies through G7's natural gases.`
     },

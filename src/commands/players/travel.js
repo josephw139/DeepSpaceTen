@@ -166,7 +166,7 @@ function scheduleTravel(playerId, destination, travelTime, channel) {
     db.player.set(`${playerId}`, arrivalTime, "location.arrivalTime");
     db.player.set(`${playerId}`, channel.id, "location.channelId");
     db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `${activeShip} is en route to ${destination}`, "activity");
+    db.player.set(`${playerId}`, `Your ship is en route to ${destination}`, "activity");
 
 }
 

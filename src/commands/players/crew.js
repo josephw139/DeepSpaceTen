@@ -53,13 +53,13 @@ module.exports = {
 			await interaction.editReply({ embeds: [crewEmbed] });
 		}
 		else if (manage == "view") {
-			await interaction.editReply("not yet");
+			await interaction.editReply("(placeholder)");
 		}
 		else if (manage == "retire") {
-			await interaction.editReply("not yet");
+			await interaction.editReply("(placeholder)");
 		}
 		else if (manage == "assign") {
-			await interaction.editReply("Crew Member has been assigned to Ship");
+			await interaction.editReply("Crew Member has been assigned to Ship (placeholder)");
 		}
 		else if (manage == "hire") {
 			if (!location.currentLocation.activities.includes('Shop')) {
@@ -126,7 +126,7 @@ module.exports = {
 					
 					// Add crew to ship & fleet
 					activeShip.crew.push(selectedCrew);	
-					console.log(selectedCrew);			
+					// console.log(selectedCrew);			
 					db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 
 					// Remove hired crew from hiring board

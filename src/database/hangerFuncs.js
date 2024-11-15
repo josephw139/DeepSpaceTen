@@ -35,7 +35,7 @@ function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quan
     } else {
         // Remove the item entirely if quantity matches
         fleet.ships[shipIndex].inventory.splice(itemIndex, 1);
-        console.log(fleet);
+        // console.log(fleet);
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
         return item; // Item matches the quantity to remove, so return it as is
     }

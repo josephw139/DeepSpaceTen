@@ -59,11 +59,11 @@ module.exports = {
 					await interaction.editReply({content: `This ship doesn't exist`, ephemeral: true});
 					return;
 				}
-				console.log(target);
+				// console.log(target);
 				let activeShipString = '';
 				if (target === activeShip) {
 					activeShipString += 'STATUS: ACTIVE';
-					activeShipString += activity;
+					activeShipString += `\n*${activity}*`;
 				}
 				const shipView = new EmbedBuilder()
 				.setTitle(`Exploration Team ${member.displayName}`)
@@ -81,7 +81,7 @@ module.exports = {
 				
 				const fleetDisplay = new EmbedBuilder()
 				.setTitle(`Captain ${member.displayName}`)
-				.setDescription(`__Fleet Overview__\nBank: ${credits} C\n${activity}`)
+				.setDescription(`__Fleet Overview__\nBank: ${credits} C\n*${activity}*`)
 				.addFields(
 					{ name: 'Location', value: `${locationDisplay}`},
 					{ name: 'Ships', value: `${shipDisplay}` },

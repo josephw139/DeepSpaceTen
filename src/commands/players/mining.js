@@ -44,7 +44,7 @@ module.exports = {
 
 				if (canMine && isMiningShip && minCrew ) {
 					startMining(member.id, activeShip, fleet);
-					await interaction.editReply({ content: `You've started mining!`, ephemeral: true });
+					await interaction.editReply({ content: `You've started mining! Resources will be extracted every hour`, ephemeral: true });
 				} else if (!canMine) {
 					await interaction.editReply({ content: `You can't mine at this location`, ephemeral: true });
 				} else if (!isMiningShip) {
@@ -161,7 +161,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
         const resourceEntry = ship.inventory.find(item => item.name === resource.type);
         const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
-        if (resourceEntry && resourceEntry.description == resource.description) {
+        if (resourceEntry && (resourceEntry.type === resource.type)) {
             resourceEntry.quantity += resource.quantity;
             resourceEntry.weight += resourceWeight;
         } else {

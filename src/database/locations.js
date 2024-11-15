@@ -97,7 +97,7 @@ const sectors = {
                         item: uniqueItems.pulsating_rock,
                       },
                       {
-                        item: uniqueItems.lightless_stone,
+                        item: uniqueItems.pulsating_rock,
                       },
                       {
                         item: uniqueItems.hidden_message,

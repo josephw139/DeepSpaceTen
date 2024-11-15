@@ -22,6 +22,7 @@ module.exports = {
             ))
 	,
 	async execute(interaction) {
+        //console.log(sectors);
         const member = interaction.member;
         const playerId = member.id;
 		const channel = interaction.channel;
@@ -36,16 +37,18 @@ module.exports = {
             fleet, location, locationDisplay, activeShip, isEngaged
         } = playerData;
 
+        const liveLocation = getCurrentLocationFromPlayerData(location);
+
 		if (job === "start") {
 			if (!isEngaged) {
-				const canScan = location.currentLocation.activities.includes('Scan');
+				const canScan = liveLocation.activities.includes('Scan');
 				const lightScan = activeShip.capabilities.includes("Light Scan");
                 const deepScan = activeShip.capabilities.includes("Deep Scan");
                 const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
 
 				if (canScan && lightScan && minCrew ) {
-					startScanning(member.id, activeShip, fleet, lightScan, deepScan);
-					await interaction.editReply({ content: `You've started scanning!`, ephemeral: true });
+					startScanning(member.id, liveLocation, activeShip, fleet, lightScan, deepScan);
+					await interaction.editReply({ content: `You've started scanning! Scans will complete every hour`, ephemeral: true });
 				} else if (!canScan) {
 					await interaction.editReply({ content: `You can't scan at this location`, ephemeral: true });
 				} else if (!lightScan) {
@@ -83,13 +86,12 @@ module.exports = {
 	}
 };
 
-function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
+function startScanning(playerId, location, activeShip, fleet, lightScan, deepScan) {
     const startTime = new Date();
-    const location = db.player.get(`${playerId}`, "location");
 
     db.player.set(`${playerId}`, startTime, "scanning.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `${activeShip}'s crew is scanning at ${location.currentLocation.name}`, "activity");
+    db.player.set(`${playerId}`, `${activeShip.name}'s crew is scanning at ${location.name}`, "activity");
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
@@ -105,7 +107,7 @@ function startScanning(playerId, activeShip, fleet, lightScan, deepScan) {
 		
         if (ship) {
             try {
-                const item = calculateScanning(location.currentLocation, activeShip.morale, lightScan, deepScan);
+                const item = calculateScanning(location, activeShip.morale, lightScan, deepScan);
                 const totalWeight = getTotalWeight(ship.inventory);
                 const itemWeight = item.weight;
 
@@ -170,26 +172,28 @@ function getShipFromFleet(shipName, fleet) {
 
 
 function calculateScanning(location, morale, lightScan, deepScan) {
+    // Check if there are unique items and ensure the array is not empty
     if (location.unique_items && location.unique_items.length > 0) {
-        // Calculate total weight
         let totalChance = 0;
+        // console.log(location.unique_items);
+
+        // Sum up all chances (either adjustedChance or baseChance)
         for (const unique of location.unique_items) {
             const chance = unique.adjustedChance || unique.item.baseChance;
             totalChance += chance;
         }
 
-        // Generate a random number within the total chance
-        let randomChance = Math.random() * totalChance;
+        // Generate a random threshold to select an item based on its chance
+        let randomThreshold = Math.random() * totalChance;
+
+        // Iterate over each item and decrement the threshold by the item's chance
         for (const unique of location.unique_items) {
             const chance = unique.adjustedChance || unique.item.baseChance;
-            randomChance -= chance;
-            if (Math.random() <= chance) {
-                let itemDescription;
-                if (unique.item.name == 'Hidden Message') {
-                    itemDescription = randomizeInput(hiddenMessages);
-                } else {
-                    itemDescription = unique.item.description;
-                }
+            randomThreshold -= chance;
+            
+            // Check if the threshold has been crossed
+            if (randomThreshold <= 0) {
+                let itemDescription = unique.item.name === 'Hidden Message' ? randomizeInput(hiddenMessages) : unique.item.description;
 
                 return {
                     type: unique.item.name,
@@ -202,7 +206,33 @@ function calculateScanning(location, morale, lightScan, deepScan) {
         }
     } else {
         console.log("No unique items available for scanning.");
-        return null; // Handle the case where no unique items are present
     }
+    // If no item is selected (e.g., due to rounding errors or empty items list), return null
+    return null;
 }
 
+// Helper function to find the current location object in the sectors data
+function getCurrentLocationFromPlayerData(playerLocationData) {
+    const { currentSector, currentSystem, currentLocation } = playerLocationData;
+    const sector = sectors.sectors[currentSector];
+
+    if (!sector) {
+        console.error(`Sector ${currentSector} not found.`);
+        return null;
+    }
+
+    const system = sector.systems.find(s => s.name === currentSystem.name);
+    if (!system) {
+        console.error(`System ${currentSystem.name} not found in sector ${currentSector}.`);
+        return null;
+    }
+
+    const location = system.locations.find(l => l.name === currentLocation.name);
+    if (!location) {
+        console.error(`Location ${currentLocation.name} not found in system ${currentSystem.name}.`);
+        return null;
+    }
+
+    console.log(location);
+    return location;
+}

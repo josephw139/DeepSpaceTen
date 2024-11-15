@@ -69,6 +69,7 @@ module.exports = {
 
 		if (!canShop) {
 			await interaction.editReply({ content: `There's nowhere to shop here`, ephemeral: true });
+			return;
 		}
 
 		// BUY
