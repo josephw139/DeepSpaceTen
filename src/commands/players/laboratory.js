@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = re
 const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData } = require('../../database/playerFuncs.js');
+const { getPlayerData, getCurrentLocationFromPlayerData } = require('../../database/playerFuncs.js');
 const { levelWeights, miningSellPrice, miningResources, researchSellPrice, researchTypes, calculateWeight } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
@@ -36,14 +36,16 @@ module.exports = {
             fleet, location, locationDisplay, activeShip, isEngaged
         } = playerData;
 
+        const liveLocation = getCurrentLocationFromPlayerData(location);
+
 		if (job === "start") {
 			if (!isEngaged) {
-				const canResearch = location.currentLocation.activities.includes('Research');
+				const canResearch = liveLocation.activities.includes('Research');
 				const isResearchShip = activeShip.capabilities.includes("Research");
                 const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
 
 				if (canResearch && isResearchShip && minCrew ) {
-					startResearch(member.id, activeShip, fleet);
+					startResearch(member.id, liveLocation, activeShip, fleet);
 					await interaction.editReply({ content: `You've started researching! Results will be produced every hour`, ephemeral: true });
 				} else if (!canResearch) {
 					await interaction.editReply({ content: `You can't research at this location`, ephemeral: true });
@@ -82,13 +84,12 @@ module.exports = {
 	}
 };
 
-function startResearch(playerId, activeShip, fleet) {
+function startResearch(playerId, location, activeShip, fleet) {
     const startTime = new Date();
-    const location = db.player.get(`${playerId}`, "location");
 
     db.player.set(`${playerId}`, startTime, "research.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `${activeShip}'s crew is researching at ${location.currentLocation.name}`, "activity");
+    db.player.set(`${playerId}`, `${activeShip.name}'s crew is researching at ${location.name}`, "activity");
 
 
     // Get the current minute to start the cron job at that minute every hour
@@ -106,7 +107,7 @@ function startResearch(playerId, activeShip, fleet) {
 
         if (ship) {
             try {
-                const resource = calculateResearch(location.currentLocation, activeShip.morale, activeShip.researchPower);
+                const resource = calculateResearch(location, activeShip.morale, activeShip.researchPower);
                 //const totalWeight = getTotalWeight(ship.inventory);
                 // const resourceWeight = calculateWeight(resource.type, resource.quantity);
 

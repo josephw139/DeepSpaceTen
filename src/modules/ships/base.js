@@ -46,7 +46,7 @@ class Ship {
     // function to call in the Fleet command to show ship details
     shipDisplay(detailed = false) {
         let sizeTypeString;
-        if (!this.classType) {
+        if (!this.sizeType) {
             sizeTypeString = "";
         } else {
             sizeTypeString = this.sizeType;
@@ -316,7 +316,7 @@ function applyModifiers(stats, modifiers) {
             stats[stat][0] += modifiers[stat].min || 0;
             stats[stat][1] += modifiers[stat].max || 0;
         } else if (['price', 'cargoCapacity'].includes(stat) && typeof stats[stat] === 'number') {
-            stats[stat] *= modifiers[stat];
+            stats[stat] = Math.floor(stats[stat] * modifiers[stat]);
         } else if (typeof stats[stat] === 'number') {
             stats[stat] += modifiers[stat];
         }

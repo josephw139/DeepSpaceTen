@@ -131,7 +131,7 @@ function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) 
 
         // ship's travelTime
         if (activeShip.travelSpeed > 1) {
-            const travelSpeedAdjustmentFactor = 0.1 * (travelSpeed - 1);
+            const travelSpeedAdjustmentFactor = 0.1 * (activeShip.travelSpeed - 1);
             travelTime *= 1 - travelSpeedAdjustmentFactor;
         }
 

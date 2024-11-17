@@ -3,14 +3,24 @@ const db = require('./db.js');
 
 
 // Remove from Active Ship Inventory (used in Hanger DEPOSIT)
-function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quantityToRemove) {
+function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quantityToRemove, hangar=null) {
     // Find the ship and item
     const shipIndex = fleet.ships.findIndex(s => s.name === activeShip.name);
     const ship = fleet.ships[shipIndex];
-    const itemIndex = ship.inventory.findIndex(i => i.name === itemName);
-    if (itemIndex === -1) return null; // Item not found
+    let itemIndex = ship.inventory.findIndex(i => i.name === itemName);
+    let isLab = false;
+    if (itemIndex === -1) {
+        itemIndex = ship.lab.findIndex(i => i.name === itemName);
+        if (itemIndex === -1) {
+            return null; // Item not found
+        }
+        isLab = true;
+        if (hangar == "hangar") return 10;
+        // Hangar is a string passed in the /hangar command to determine the source of the function call
+        // If someone is trying to deposit Research, stop them and return 10. 10 is arbitrary.
+    }
     
-    const item = ship.inventory[itemIndex];
+    const item = isLab ? ship.lab[itemIndex] : ship.inventory[itemIndex];
 
     const quantity = quantityToRemove !== null ? quantityToRemove : item.quantity;
 
@@ -18,12 +28,19 @@ function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quan
     // console.log("Fleet:");
     // Adjust quantity or remove item from inventory
     if (item.quantity > quantity) {
-        ship.inventory[itemIndex] = {
-            ...item,
-            quantity: item.quantity - quantity,
-            weight: calculateWeight(item.name, item.quantity - quantity)
-        };
-        
+        if (isLab) {
+            ship.lab[itemIndex] = {
+                ...item,
+                quantity: item.quantity - quantity,
+            };
+        } else {
+            ship.inventory[itemIndex] = {
+                ...item,
+                quantity: item.quantity - quantity,
+                weight: calculateWeight(item.name, item.quantity - quantity)
+            };
+        }
+
         // console.log(fleet);
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
         // Return a new object representing the removed portion
@@ -34,7 +51,12 @@ function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quan
         };
     } else {
         // Remove the item entirely if quantity matches
-        fleet.ships[shipIndex].inventory.splice(itemIndex, 1);
+        if (isLab) {
+            fleet.ships[shipIndex].lab.splice(itemIndex, 1);
+        } else {
+            fleet.ships[shipIndex].inventory.splice(itemIndex, 1);
+        }
+        
         // console.log(fleet);
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
         return item; // Item matches the quantity to remove, so return it as is

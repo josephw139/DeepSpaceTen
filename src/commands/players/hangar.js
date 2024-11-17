@@ -71,9 +71,13 @@ module.exports = {
         switch (subcommand) {
             case 'deposit':
                 // Remove items from ship
-                const itemToDeposit = removeItemFromShipInventory(playerId, fleet, activeShip, item, quantity);
+                const itemToDeposit = removeItemFromShipInventory(playerId, fleet, activeShip, item, quantity, "hangar");
                 if (!itemToDeposit) {
                     await interaction.editReply({ content: `Item not found or insufficient quantity in ship's inventory.`, ephemeral: true });
+                    return;
+                }
+                if (itemToDeposit == 10) { // 10 arbitrarily means research is trying to be deposited
+                    await interaction.editReply({ content: "You can't deposit research into the hangar.", ephemeral: true });
                     return;
                 }
 

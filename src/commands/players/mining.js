@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = re
 const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData } = require('../../database/playerFuncs.js');
+const { getPlayerData, getCurrentLocationFromPlayerData } = require('../../database/playerFuncs.js');
 const { levelWeights, miningSellPrice, miningResources, calculateWeight, hiddenMessages, randomizeInput } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
@@ -36,14 +36,16 @@ module.exports = {
             fleet, location, locationDisplay, activeShip, isEngaged
         } = playerData;
 
+        const liveLocation = getCurrentLocationFromPlayerData(location);
+
 		if (job === "start") {
 			if (!isEngaged) {
-				const canMine = location.currentLocation.activities.includes('Mine');
+				const canMine = liveLocation.activities.includes('Mine');
 				const isMiningShip = activeShip.capabilities.includes("Mining");
                 const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
 
 				if (canMine && isMiningShip && minCrew ) {
-					startMining(member.id, activeShip, fleet);
+					startMining(member.id, liveLocation, activeShip, fleet);
 					await interaction.editReply({ content: `You've started mining! Resources will be extracted every hour`, ephemeral: true });
 				} else if (!canMine) {
 					await interaction.editReply({ content: `You can't mine at this location`, ephemeral: true });
@@ -82,13 +84,12 @@ module.exports = {
 	}
 };
 
-function startMining(playerId, activeShip, fleet) {
+function startMining(playerId, location, activeShip, fleet) {
     const startTime = new Date();
-    const location = db.player.get(`${playerId}`, "location");
 
     db.player.set(`${playerId}`, startTime, "mining.startTime");
 	db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `${activeShip}'s crew is mining at ${location.currentLocation.name}`, "activity");
+    db.player.set(`${playerId}`, `${activeShip.name}'s crew is mining at ${location.name}`, "activity");
     
 
     // Get the current minute to start the cron job at that minute every hour
@@ -106,7 +107,7 @@ function startMining(playerId, activeShip, fleet) {
 
         if (ship) {
             try {
-                const resource = calculateMinerals(location.currentLocation, activeShip.morale, activeShip.miningPower);
+                const resource = calculateMinerals(location, activeShip.morale, activeShip.miningPower);
                 const totalWeight = getTotalWeight(ship.inventory);
                 const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
@@ -161,7 +162,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
         const resourceEntry = ship.inventory.find(item => item.name === resource.type);
         const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
-        if (resourceEntry && (resourceEntry.type === resource.type)) {
+        if (resourceEntry) {
             resourceEntry.quantity += resource.quantity;
             resourceEntry.weight += resourceWeight;
         } else {

@@ -2,6 +2,7 @@
 
 const { Fleet } = require('../modules/ships/base');
 const db = require('./db');
+const sectors = require('./locations');
 
 
 // returns playerData object
@@ -79,7 +80,31 @@ function isDiscovered(playerId, type, name) {
     return false;
 }
 
+// Helper function to find the current location object in the sectors data
+function getCurrentLocationFromPlayerData(playerLocationData) {
+    const { currentSector, currentSystem, currentLocation } = playerLocationData;
+    const sector = sectors.sectors[currentSector];
+
+    if (!sector) {
+        console.error(`Sector ${currentSector} not found.`);
+        return null;
+    }
+
+    const system = sector.systems.find(s => s.name === currentSystem.name);
+    if (!system) {
+        console.error(`System ${currentSystem.name} not found in sector ${currentSector}.`);
+        return null;
+    }
+
+    const location = system.locations.find(l => l.name === currentLocation.name);
+    if (!location) {
+        console.error(`Location ${currentLocation.name} not found in system ${currentSystem.name}.`);
+        return null;
+    }
+
+    console.log(location);
+    return location;
+}
 
 
-
-module.exports = { getPlayerData, updateDiscovery, isDiscovered };
+module.exports = { getPlayerData, getCurrentLocationFromPlayerData, updateDiscovery, isDiscovered };

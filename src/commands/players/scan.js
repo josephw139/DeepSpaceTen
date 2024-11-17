@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder } = re
 const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
-const { getPlayerData } = require('../../database/playerFuncs.js');
+const { getPlayerData, getCurrentLocationFromPlayerData } = require('../../database/playerFuncs.js');
 const { miningResources, hiddenMessages, randomizeInput, getRndInteger} = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
@@ -209,30 +209,4 @@ function calculateScanning(location, morale, lightScan, deepScan) {
     }
     // If no item is selected (e.g., due to rounding errors or empty items list), return null
     return null;
-}
-
-// Helper function to find the current location object in the sectors data
-function getCurrentLocationFromPlayerData(playerLocationData) {
-    const { currentSector, currentSystem, currentLocation } = playerLocationData;
-    const sector = sectors.sectors[currentSector];
-
-    if (!sector) {
-        console.error(`Sector ${currentSector} not found.`);
-        return null;
-    }
-
-    const system = sector.systems.find(s => s.name === currentSystem.name);
-    if (!system) {
-        console.error(`System ${currentSystem.name} not found in sector ${currentSector}.`);
-        return null;
-    }
-
-    const location = system.locations.find(l => l.name === currentLocation.name);
-    if (!location) {
-        console.error(`Location ${currentLocation.name} not found in system ${currentSystem.name}.`);
-        return null;
-    }
-
-    console.log(location);
-    return location;
 }
