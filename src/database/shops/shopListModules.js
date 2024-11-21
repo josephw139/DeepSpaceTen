@@ -4,7 +4,7 @@ const { Fleet, capitalize } = require('../../modules/ships/base');
 
 // rarity: 1 - common, 2 - uncommon, 3 - rare, 4 - extra rare, - 5 super extra rare
 
-const shopListUpgrades = {
+const shopListModules = {
     cargo_storage: {
         type: "module",
         name: `Exterior Cargo Bay`,
@@ -21,7 +21,7 @@ const shopListUpgrades = {
     mining_apparatus: {
         type: "module",
         name: `Mining Apparatus`,
-        description: `Allows your ship to mine. If it already had the capability, further increases mining outputs.\nSpecial: Stacks`,
+        description: `Allows your ship to mine, or further increases mining outputs.\nSpecial: Stacks`,
         price: 15000,
         quantity: 1,
         weight: 0,
@@ -35,7 +35,7 @@ const shopListUpgrades = {
     science_lab: {
         type: "module",
         name: `Science Lab`,
-        description: `Allows your ship to research. If it already had the capability, further increases research outputs.\nSpecial: Stacks`,
+        description: `Allows your ship to research, or further increases research outputs.\nSpecial: Stacks`,
         price: 15000,
         quantity: 1,
         weight: 0,
@@ -140,4 +140,4 @@ const shopListUpgrades = {
     }
 }
 
-module.exports = { shopListUpgrades };
+module.exports = { shopListModules };

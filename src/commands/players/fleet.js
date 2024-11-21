@@ -351,7 +351,7 @@ module.exports = {
 					let moduleOption = selections['equip'];
 					let typeOption = selections['type'];
 
-					target = fleet.ships[0];
+					target = fleet.ships[shipOption];
 					//console.log(target);
 	
 					if (typeOption === "module") {

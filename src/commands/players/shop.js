@@ -15,13 +15,13 @@ module.exports = {
 	.setDescription('Purchase and sell items. Leave blank to view shop.')
 	.addSubcommand(subcommand =>
 		subcommand
+			.setName('view')
+			.setDescription('View the shop')
+		)
+	.addSubcommand(subcommand =>
+		subcommand
 			.setName('buy')
-			.setDescription('View and purchase from the shop')
-			.addStringOption(option =>
-				option.setName("item")
-					.setDescription("Name of item to buy. Blank to view shop.")
-					.setRequired(false)
-			)
+			.setDescription('Purchase from the shop')
 		)
 	.addSubcommand(subcommand =>
 		subcommand
@@ -37,8 +37,8 @@ module.exports = {
 					))
 			.addStringOption(option =>
 				option.setName("item")
-					.setDescription("Name of item to sell.")
-					.setRequired(true)
+					.setDescription("Name of item to sell. Leave blank to sell everything (this will not sell purchased items)")
+					.setRequired(false)
 			)
 			.addIntegerOption(option =>
 				option.setName("quantity")
@@ -53,9 +53,9 @@ module.exports = {
 		const channel = interaction.channel;
 
 		const subcommand = interaction.options.getSubcommand();
-		const item = capitalize(interaction.options.getString('item')) || null;
+		const itemToSellName = capitalize(interaction.options.getString('item')) || null;
 		const quantity = interaction.options.getInteger('quantity') || null;
-		const from = interaction.options.getString('from') || null;
+		const sellFrom = interaction.options.getString('from') || null;
 
 		//console.log(item);
 
@@ -72,16 +72,19 @@ module.exports = {
 			return;
 		}
 
-		// BUY
-		if (subcommand === 'buy') {
-			if (!item) { // SHOW ALL 
-				const locationName = location.currentLocation.name;
-				updateShopInventory(locationName);
-				const inventory = shopInventories[locationName];
+		const selections = {};
+
+		const locationName = location.currentLocation.name;
+		updateShopInventory(locationName);
+		const inventory = shopInventories[locationName];
+		
+		// SHOW ALL
+		if (subcommand === 'view') {
 	
 				const shipsForSale = generateListString(inventory.ships, true);
-				const upgradesForSale = generateListString(inventory.upgrades);
+				const modulesForSale = generateListString(inventory.modules);
 				const furnishingsForSale = generateListString(inventory.furnishings);
+				const equipmentForSale = generateListString(inventory.furnishings);
 	
 				const shopNameDesc = shopDialogue(location.currentLocation.name);
 	
@@ -91,62 +94,151 @@ module.exports = {
 					.addFields(
 						{ name: 'Ships for Sale', value: shipsForSale || 'None available' },
 						{ name: '\u200B', value: '\u200B' },
-						{ name: 'Upgrades for Sale', value: `${upgradesForSale}` || 'None available' },
+						{ name: 'Modules for Sale', value: `${modulesForSale}` || 'None available' },
 						{ name: '\u200B', value: '\u200B' },
-						{ name: 'Furnishings for Sale', value: `${furnishingsForSale}` || 'None available' }
+						{ name: 'Furnishings for Sale', value: `${furnishingsForSale}` || 'None available' },
+						{ name: '\u200B', value: '\u200B' },
+						{ name: 'Equipment for Sale', value: `${equipmentForSale}` || 'None available' }
 					)
 				await interaction.editReply({ embeds: [shopView] });
-			} else {
-			
-				const itemToBuyResult = findItemInShop(item, location.currentLocation.name);
-				// Check if item exists
-				if (!itemToBuyResult) {
-					await interaction.editReply({ content: `'${item}' not found in the shop.`, ephemeral: true });
-					return;
-				}
-				const itemToBuy = itemToBuyResult.item;
-			
-				// Check if the player has enough credits
-				if (credits < itemToBuy.price) {
-					await interaction.editReply({ content: `You do not have enough credits to buy '${item}'. You need ${itemToBuy.price}.`, ephemeral: true });
-					return;
-				}
 
-				// Update credits
-				const newCredits = credits - itemToBuy.price;
-				db.player.set(playerId, newCredits, "credits");
-				
-				// Use itemToBuyResult.type to determine action
-				if (itemToBuyResult.type === 'ship') {
-					// Add ship to fleet
-					fleet.ships.push(itemToBuy);
-					// Save the updated fleet or hangar
-					db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-				} else if (itemToBuyResult.type === 'upgrade' || itemToBuyResult.type === 'furnishing') {
-					updateHangar(playerId, hangar, itemToBuy);
+		} else if (subcommand === 'buy') { // BUY
+
+			// Create a dropdown menu with items to buy as options
+			const typeRow = new ActionRowBuilder()
+				.addComponents(
+					new StringSelectMenuBuilder()
+						.setCustomId('select-type')
+						.setPlaceholder('Select type of item it purchase')
+						.addOptions([
+							{ label: 'Ship', value: 'ships' },
+							{ label: 'Module', value: 'modules' },
+							{ label: 'Furnishing', value: 'furnishings' },
+							{ label: 'Crew Equipment', value: 'equipment' }
+						])
+				);
+		
+			// Reply with the dropdown menu
+			await interaction.editReply({ content: 'Select category to purchase from:', components: [typeRow] });
+		
+			const filter = (i) => i.user.id === interaction.user.id;
+			const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+		
+			collector.on('collect', async (i) => {
+				await i.deferUpdate();  // Acknowledge the interaction
+				if (i.customId === 'select-type') {
+					
+
+					const selectedType = i.values[0];
+					selections['type'] = selectedType;
+					const items = inventory[selectedType];
+
+					if (!items || items.length === 0) {
+						await i.editReply({ content: `No items available for purchase in this category.`, components: [] });
+						return;
+					}
+			
+					// List shop items
+					const itemRow = new ActionRowBuilder().addComponents(
+						new StringSelectMenuBuilder()
+							.setCustomId('select-item')
+							.setPlaceholder('Select item to purchase')
+							.addOptions(items.map((item, index) => ({
+								label: `${item.name} - ${item.price} C`,
+								description: item.description,
+								value: `${selectedType}-${index}` // A value combining type and index
+							}))
+						)
+					);
+					await i.editReply({ content: `Choose an option to buy:`, components: [itemRow] });
+			
+				} else if (i.customId === 'select-item') {
+
+					const [type, index] = i.values[0].split('-');
+					const item = inventory[type][parseInt(index)];
+					selections['item'] = item;
+
+					// Check if the player has enough credits
+					if (credits < item.price) {
+						await i.editReply({ content: `You do not have enough credits to buy '${item.name}'. You need ${item.price}.`, ephemeral: true });
+						return;
+					}
+	
+					await i.editReply({ content: `You have selected to purchase: ${item.name} for ${item.price}.`, components: [] });
+					// Here you can handle the logic to actually purchase the item
+					collector.stop();
 				}
-			
-				await interaction.editReply({ content: `Successfully bought '${item}' for ${itemToBuy.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: false });
-			}
-			
+			})
+
+			collector.on('end', () => {
+				try {
+					const item = selections['item'];	
+					const type = selections['type'];				
+					
+					// Use itemToBuyResult.type to determine action
+					if (type === 'ships') {
+						// Add ship to fleet
+						fleet.ships.push(item);
+						// Save the updated fleet or hangar
+						db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+					} else if (type === 'modules' || type === 'furnishings') {
+						updateHangar(playerId, hangar, item);
+					}
+
+					// Update credits
+					const newCredits = credits - item.price;
+					db.player.set(playerId, newCredits, "credits");
+				
+					interaction.channel.send({ content: `Successfully bought '${item.name}' for ${item.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: true });
+
+
+				} catch (err) {
+					console.log(err);
+				}
+			})
+
 		} else if (subcommand === 'sell') { // SELL
 			let itemToSell;
-			if (from == "hangar") {
-				itemToSell = withdrawItemFromHangar(playerId, hangar, item, quantity);
-			} else if (from == "ship") {
-				itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item, quantity);
+			let sellPrice = 0;
+
+			if (itemToSellName) {
+				if (sellFrom == "hangar") {
+					itemToSell = withdrawItemFromHangar(playerId, hangar, itemToSellName, quantity);
+				} else if (sellFrom == "ship") {
+					itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, itemToSellName, quantity);
+				}
+
+				if (!itemToSell) {
+					await interaction.editReply({ content: `'${itemToSellName}' not found.`, ephemeral: true });
+					return;
+				}
+
+				sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+				db.player.set(playerId, credits + sellPrice, "credits");
+				await interaction.editReply({ content: `Sold '${item}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
+			} else {
+				if (sellFrom === "hangar") {
+					hangar.forEach(item => {
+						if (item.type != 'module' && item.type != 'furnishing' && item.type != 'equipment') {
+							itemToSell = withdrawItemFromHangar(playerId, hangar, item.name, null);
+							sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+						}
+					})
+					db.player.set(playerId, credits + sellPrice, "credits");
+				} else {
+					activeShip.inventory.forEach(item => {
+						itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item.name, null);
+						sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+					})
+
+					activeShip.lab.forEach(item => {
+						itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item.name, null);
+						sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+					})
+					db.player.set(playerId, credits + sellPrice, "credits");
+				}
 			}
-
-			if (!itemToSell) {
-				await interaction.editReply({ content: `'${item}' not found.`, ephemeral: true });
-				return;
-			}
-
-			const sellPrice = itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
-			db.player.set(playerId, credits + sellPrice, "credits");
-			await interaction.editReply({ content: `Sold '${item}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
-
-			
+						
 		}
 	}
 };
@@ -184,7 +276,7 @@ function updateShopInventory(location) {
 
     if (!inventory.lastUpdateTime || now - inventory.lastUpdateTime >= 3 * 24 * 60 * 60 * 1000) { // 3 days in milliseconds
         inventory.ships = [];
-		inventory.upgrades.length = 0;
+		inventory.modules.length = 0;
 		inventory.furnishings.length = 0;
 
 		// Generate two new random ships and add them to the inventory
@@ -193,7 +285,7 @@ function updateShopInventory(location) {
             inventory.ships.push(newShip);
         }
 
-		inventory.upgrades = generateRandomItemsFromObject(shopList.shopList.upgrades, inventory.config.upgrades);
+		inventory.modules = generateRandomItemsFromObject(shopList.shopList.modules, inventory.config.modules);
 		inventory.furnishings = generateRandomItemsFromObject(shopList.shopList.furnishings, inventory.config.furnishings);
 
         inventory.lastUpdateTime = now;
@@ -248,9 +340,9 @@ const findItemInShop = (itemName, locationName) => {
     const foundShip = inventory.ships.find(ship => ship.name.toLowerCase() === itemName.toLowerCase());
     if (foundShip) return { item: foundShip, type: 'ship' };
 
-    // Search upgrades
-    const foundUpgrade = inventory.upgrades.find(upgrade => upgrade.name.toLowerCase() === itemName.toLowerCase());
-    if (foundUpgrade) return { item: foundUpgrade, type: 'upgrade' };
+    // Search modules
+    const foundModules = inventory.modules.find(modules => modules.name.toLowerCase() === itemName.toLowerCase());
+    if (foundModules) return { item: foundModules, type: 'module' };
 
     // Search furnishings
     const foundFurnishing = inventory.furnishings.find(furnishing => furnishing.name.toLowerCase() === itemName.toLowerCase());

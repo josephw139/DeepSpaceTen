@@ -1,9 +1,9 @@
-const { shopListUpgrades } = require('./shopListUpgrades');
+const { shopListModules } = require('./shopListModules');
 const { shopListFurnishings } = require('./shopListFurnishings');
 const { shopListEquipment } = require('./shopListEquipment');
 
 const shopList = {
-    upgrades: shopListUpgrades,
+    modules: shopListModules,
     furnishings: shopListFurnishings,
     equipment: shopListEquipment,
 };

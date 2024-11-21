@@ -1,26 +1,26 @@
 const shopInventories = {
     "Orion Station": {
         ships: [],
-        upgrades: [],
+        modules: [],
         furnishings: [],
         equipment: [],
         lastUpdateTime: null,
         config: {
             ships: 1,
-            upgrades: 2,
+            modules: 2,
             furnishings: 1,
             //equipment: 1,
         }
     },
     "Kaysatha": {
         ships: [],
-        upgrades: [],
+        modules: [],
         furnishings: [],
         equipment: [],
         lastUpdateTime: null,
         config: {
             ships: 1,
-            upgrades: 2,
+            modules: 2,
             furnishings: 6,
             //equipment: 1,
         }
