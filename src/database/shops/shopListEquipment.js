@@ -6,6 +6,7 @@ const { Fleet, capitalize } = require('../../modules/ships/base');
 
 const shopListEquipment = {
     personal_energy_shield: {
+        type: "equipment",
         name: `Personal Energy Shield`,
         description: `A bubble field surrounds the wearer, providing great protection at the cost of power.`,
         price: 5000,

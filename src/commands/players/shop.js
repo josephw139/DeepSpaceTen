@@ -163,8 +163,8 @@ function generateListString(items, isShip = false) {
 		}).join('\n\n');
 	} else {
 		return items.map(item => {
-			const classType = item.classType ? `${item.classType} ` : ""; // If classType is null, use an empty string
-			return `__${classType}${item.name} (${item.manufacturer})- ${item.price}C__\n${item.description}`;
+			const sizeType = item.sizeType ? `${item.sizeType} ` : ""; // If sizeType is null, use an empty string
+			return `__${sizeType} ${item.name} (${item.manufacturer}) - ${item.price}C__\n${item.description}`;
 		}).join('\n\n');
 		
 	}

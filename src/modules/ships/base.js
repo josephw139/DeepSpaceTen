@@ -5,7 +5,7 @@ const { sizeModifiers, manufacturerModifiers, defaultStats } = require('./shipTr
 class Ship {
     constructor({ type, capabilities, sizeType, name, manufacturer, description,
                     hp, attack, armor, speed, miningPower, researchPower, stealth, travelSpeed,
-                    crew ,crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
+                    crew, crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
                     furnishings, inventory, lab, price, }) {
 
         this.type = type;
@@ -62,7 +62,8 @@ class Ship {
                 const name = module.name;
                 if (!acc[name]) {
                     // Removing 'Special:' and anything after it using a regular expression
-                    const description = module.description.replace(/(\s*Special:.*)/i, '');
+                    // const description = module.description.replace(/(\s*Special:.*)/i, '');
+                    const description = module.description;
                     acc[name] = { 
                         count: 0, 
                         description
@@ -186,11 +187,14 @@ class Fleet {
 
     // set active ship
     setActiveShip(shipName) {
+        
         let ship = null;
         if (typeof shipName === 'string') {
             ship = this.ships.find(s => s.name === shipName);
         } else {
             ship = this.ships.find(s => s.name === shipName.name);
+            //console.log('SET ACTIVE SHIP:');
+            //console.log(shipName);
         }
         if (ship) {
             this.activeShip = ship;
@@ -216,7 +220,7 @@ class Fleet {
             const labNames = ship.lab.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
             const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
             const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
-            const shipLineThree = `Cargo: ${inventoryNames}\n` + (ship.capabilities.includes('Research') ? `Lab: ${labNames}` : '');
+            const shipLineThree = `Cargo: ${inventoryNames}` + (ship.capabilities.includes('Research') ? `\nLab: ${labNames}` : '');
             const formattedLine = isActive ? `**${shipLineOne}**` : shipLineOne;
 
             shipDisplay += `${formattedLine}\n${shipLineTwo}\n${shipLineThree}\n${statusLine}\n\n`;

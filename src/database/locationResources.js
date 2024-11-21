@@ -10,58 +10,67 @@ const levelWeights = {
 
 
 const miningSellPrice = {
-    Ore: 35,
-    Gas: 50,
-    Titanium: 200,
+    Copper: 60,
+    Ore: 80,
+    Gas: 40,
+    Titanium: 140,
 }
 
 const researchSellPrice = {
-    Bio: 750,
-    Tech: 750,
-    Cosmic: 750,
-    Exotic: 1000,
+    Bio: 1250,
+    Tech: 1250,
+    Cosmic: 1250,
+    Exotic: 1250,
 }
 
 
 const miningResources = {
+    Copper: {
+        Very_Low: { min: 60, max: 110 },
+        Low: { min: 80, max: 160 },
+        Medium: { min: 130, max: 220 },
+        High: { min: 190, max: 280 },
+        Very_High: { min: 250, max: 350 },
+        Rich: { min: 310, max: 510 },
+    },
     Ore: {
-        Very_Low: { min: 10, max: 30 },
-        Low: { min: 40, max: 100 },
+        Very_Low: { min: 50, max: 100 },
+        Low: { min: 70, max: 150 },
         Medium: { min: 120, max: 210 },
         High: { min: 180, max: 270 },
-        Very_High: { min: 230, max: 340 },
-        Rich: { min: 340, max: 500 },
+        Very_High: { min: 240, max: 340 },
+        Rich: { min: 300, max: 500 },
     },
     Gas: {
-        Very_Low: { min: 5, max: 20 },
-        Low: { min: 30, max: 60 },
-        Medium: { min: 70, max: 120 },
-        High: { min: 100, max: 160 },
-        Very_High: { min: 140, max: 220 },
-        Rich: { min: 220, max: 320 },
+        Very_Low: { min: 100, max: 200 },
+        Low: { min: 170, max: 270 },
+        Medium: { min: 230, max: 370 },
+        High: { min: 320, max: 480 },
+        Very_High: { min: 450, max: 600 },
+        Rich: { min: 530, max: 700 },
     },
     Titanium: {
         Very_Low: { min: 5, max: 10 },
-        Low: { min: 10, max: 30 },
-        Medium: { min: 25, max: 50 },
-        High: { min: 40, max: 80 },
-        Very_High: { min: 70, max: 100 },
-        Rich: { min: 100, max: 140 },
+        Low: { min: 8, max: 20 },
+        Medium: { min: 15, max: 30 },
+        High: { min: 20, max: 40 },
+        Very_High: { min: 30, max: 50 },
+        Rich: { min: 40, max: 60 },
     }
 };
 
 const uniqueItems = {
     pulsating_rock: { 
         name: "Pulsating Rock",
-        quantity: 1, weight: 0, sell_price: 1000, baseChance: 0.02,
+        quantity: 1, weight: 3, sell_price: 1100, baseChance: 0.1,
         description: "It beats, almost like a heart. You can feel it pulsing in your grip. Is it alive?"
     },
     lightless_stone: {
         name: "Lightless Stone",
         baseChance: 0.01, 
         quantity: 1,
-        weight: 0,
-        sell_price: 5000,
+        weight: 10,
+        sell_price: 1500,
         description: "A dense, mysterious stone seemingly absorbing light around it. Darker than vantablack."
     },
     hidden_message: {
@@ -74,10 +83,10 @@ const uniqueItems = {
     },
     g7_cloud_manta: {
         name: "G7 Cloud Manta",
-        baseChance: 0.1, 
+        baseChance: 0.01, 
         quantity: 1,
-        weight: 0,
-        sell_price: 4000,
+        weight: 5,
+        sell_price: 3000,
         description: `Alien life! A rare creature, somewhat resembling a manta ray, which breathes and flies through G7's natural gases.`
     },
 }
@@ -86,11 +95,13 @@ function calculateWeight(type, quantity) {
     // Define how weight is calculated based on type and quantity
     switch (type) {
         case 'Ore':
-            return quantity; // Example: 1 unit of quantity equals 1 unit of weight
+            return quantity * 3; // Example: 1 unit of quantity equals 5 unit of weight
         case 'Gas':
-            return quantity * 0.5; // Example: Gas is lighter
+            return quantity * 2; // Example: Gas is lighter
         case 'Titanium':
-            return quantity * 2; // Example: Titanium is heavier
+            return quantity * 5; // Example: Titanium is heavier
+        case 'Copper':
+            return quantity * 3; // Example: Copper is same as Ore
         default:
             return quantity; // Default case
     }

@@ -6,6 +6,7 @@ const { Fleet, capitalize } = require('../../modules/ships/base');
 
 const shopListUpgrades = {
     cargo_storage: {
+        type: "module",
         name: `Exterior Cargo Bay`,
         description: `Increase your ship's cargo capacity by 600.\nSpecial: Stacks`,
         price: 10000,
@@ -18,6 +19,7 @@ const shopListUpgrades = {
         }
     },
     mining_apparatus: {
+        type: "module",
         name: `Mining Apparatus`,
         description: `Allows your ship to mine. If it already had the capability, further increases mining outputs.\nSpecial: Stacks`,
         price: 15000,
@@ -31,6 +33,7 @@ const shopListUpgrades = {
         capabilities: ["Mining"],
     },
     science_lab: {
+        type: "module",
         name: `Science Lab`,
         description: `Allows your ship to research. If it already had the capability, further increases research outputs.\nSpecial: Stacks`,
         price: 15000,
@@ -44,6 +47,7 @@ const shopListUpgrades = {
         capabilities: ["Research"],
     },
     light_scanner: {
+        type: "module",
         name: `Light Scanner`,
         description: `Allows your ship to perform better planetary and system scans. Does not increase effectiveness if the ship already has Light Scan capabilities.`,
         price: 15000,
@@ -54,6 +58,7 @@ const shopListUpgrades = {
         capabilities: ["Light Scan"],
     },
     abacus_retracer_retrofit: {
+        type: "module",
         name: `Abacus Retracer Retrofit`,
         description: `Abacus Retracers - The technology which allows FTL travel. Decreases travel times.`,
         price: 20000,
@@ -66,6 +71,7 @@ const shopListUpgrades = {
         },
     },
     warp_drives: {
+        type: "module",
         name: `Warp Drive Thrusters`,
         description: `Warp Drives: Psuedo-science or the next age of space travel? Only time will tell! Increases Speed.`,
         price: 15000,
@@ -99,6 +105,7 @@ const shopListUpgrades = {
         stacking: false,
     },*/
     deep_range_scanner: {
+        type: "module",
         name: `Deep Range Scanner`,
         description: `Allows for more thorough imaging of systems and planets.`,
         price: 7000,
@@ -109,6 +116,7 @@ const shopListUpgrades = {
         capabilities: ["Deep Scan"],
     },
     security_team: {
+        type: "module",
         name: `Security Team`,
         description: `Hired mercenaries to protect your ship. Includes an armory and barracks spaces.`,
         price: 30000,
@@ -118,6 +126,7 @@ const shopListUpgrades = {
         stacking: false,
     },
     stealth_drive: {
+        type: "module",
         name: `Stealth Drive`,
         description: `Advanced stealth technology, helping hide ships from unwanted attention.`,
         price: 20000,

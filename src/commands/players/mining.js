@@ -45,7 +45,7 @@ module.exports = {
                 const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
 
 				if (canMine && isMiningShip && minCrew ) {
-					startMining(member.id, liveLocation, activeShip, fleet);
+					startMining(interaction, member.id, liveLocation, activeShip, fleet);
 					await interaction.editReply({ content: `You've started mining! Resources will be extracted every hour`, ephemeral: true });
 				} else if (!canMine) {
 					await interaction.editReply({ content: `You can't mine at this location`, ephemeral: true });
@@ -84,7 +84,7 @@ module.exports = {
 	}
 };
 
-function startMining(playerId, location, activeShip, fleet) {
+function startMining(interaction, playerId, location, activeShip, fleet) {
     const startTime = new Date();
 
     db.player.set(`${playerId}`, startTime, "mining.startTime");
@@ -127,6 +127,8 @@ function startMining(playerId, location, activeShip, fleet) {
 					db.player.delete(`${playerId}`, "mining.startTime");
 					db.player.set(`${playerId}`, false, "engaged");
                     db.player.set(`${playerId}`, "Crew on standby, ship conserving power.", "activity");
+                    interaction.channel.send({ content: `<@${playerId}> ${activeShip.name}'s crew loads one last crate into the hold - your cargo hold is full.` });
+
                 }
             } catch (e) {
                 console.error(e);

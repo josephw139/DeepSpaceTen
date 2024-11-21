@@ -10,10 +10,10 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('travel')
         .setDescription('Sail through the stars')
-        .addStringOption(option =>
+        /*.addStringOption(option => TEMP REMOVED UNTIL INTERSYSTEM TRAVEL IS IMPLEMENTED
             option.setName("system")
                 .setDescription("Choose a system, or leave blank for your current system.")
-                .setRequired(false))
+                .setRequired(false))*/
     ,
     async execute(interaction) {
 		const member = interaction.member;

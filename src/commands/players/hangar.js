@@ -60,7 +60,7 @@ module.exports = {
             return;
         }
 
-        if (isEngaged) {
+        if (isEngaged && subcommand != "view") {
             await interaction.editReply(`You're currently engaged in another activity.`);
             return;
         }
@@ -116,7 +116,10 @@ module.exports = {
                         // Iterate through each item in the hangar array and add it to the embed
                         hangar.forEach(item => {
                             // console.log(item);
-                            const itemInfo = `Quantity: ${item.quantity} | Weight: ${item.weight}kg | Value: ${item.sell_price * item.quantity} C\nDescription: ${item.description}`;
+                            const itemInfo = `Quantity: ${item.quantity}` + (item.weight ? ` | Weight: ${item.weight}kg` : '') +
+                            ` | Value: ${item.sell_price ? (item.sell_price * item.quantity) : (item.price * .8 * item.quantity)} C` + 
+                            `\nDescription: ${item.description}`;
+                            
                             hangarEmbed.addFields({ name: `${item.name}`, value: itemInfo });
                         });
                     }
