@@ -164,6 +164,14 @@ class Fleet {
         this.fleetSpecs = [];
         this.activeShip = null;
 
+        if (array) {
+            array.ships.forEach(shipData => {
+                this.saveShipToFleet(createShip(shipData.type, shipData));
+            });
+            this.activeShip = this.ships[array.activeShip];
+        }
+
+        /*
         // Recreating an existing Fleet
         if (array != null) {
             // console.log(array);
@@ -182,11 +190,12 @@ class Fleet {
                 // console.log(newFleet[i]);
             }
             this.setActiveShip(array[1]);
-        }
+        }*/
     }
 
     // set active ship
     setActiveShip(shipName) {
+        console.log(`setActiveShip: ${shipName}`);
         
         let ship = null;
         if (typeof shipName === 'string') {
@@ -200,6 +209,7 @@ class Fleet {
             this.activeShip = ship;
         } else {
             console.error(`Ship with name ${shipName} not found in the fleet.`);
+            console.error(shipName);
         }
     }
 
@@ -231,6 +241,13 @@ class Fleet {
 
     // convert fleet to JSON to save to database
     fleetSave() {
+        return {
+            ships: this.ships.map(ship => ship.toArray()),
+            activeShip: this.activeShip ? this.ships.findIndex(ship => ship.name === this.activeShip.name) : -1
+        };
+    }
+    
+    /*fleetSave() {
         let shipJSON = [];
         for (let i = 0; i < this.ships.length; i++) {
             shipJSON.push(this.ships[i].toArray())
@@ -238,7 +255,7 @@ class Fleet {
         this.fleetJSON.push(shipJSON);
         this.fleetJSON.push(this.activeShip);
         return this.fleetJSON;
-    }
+    }*/
 
     /*fleetReconstruct(fleetArray) {
 

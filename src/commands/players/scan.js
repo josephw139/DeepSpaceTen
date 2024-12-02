@@ -154,7 +154,7 @@ function updateShipInventory(playerId, shipName, item, fleet) {
             });
         }
 
-        fleet[shipIndex] = ship; 
+        //fleet[shipIndex] = ship; 
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
     } else {
         console.error(`Ship with name ${shipName} not found in the fleet.`);

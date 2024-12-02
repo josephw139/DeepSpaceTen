@@ -31,7 +31,7 @@ const miningResources = {
         Medium: { min: 130, max: 220 },
         High: { min: 190, max: 280 },
         Very_High: { min: 250, max: 350 },
-        Rich: { min: 310, max: 510 },
+        Rich: { min: 310, max: 410 },
     },
     Ore: {
         Very_Low: { min: 50, max: 100 },
@@ -39,7 +39,7 @@ const miningResources = {
         Medium: { min: 120, max: 210 },
         High: { min: 180, max: 270 },
         Very_High: { min: 240, max: 340 },
-        Rich: { min: 300, max: 500 },
+        Rich: { min: 300, max: 400 },
     },
     Gas: {
         Very_Low: { min: 100, max: 200 },
@@ -97,7 +97,7 @@ function calculateWeight(type, quantity) {
         case 'Ore':
             return quantity * 3; // Example: 1 unit of quantity equals 5 unit of weight
         case 'Gas':
-            return quantity * 2; // Example: Gas is lighter
+            return quantity; // Example: Gas is lighter
         case 'Titanium':
             return quantity * 5; // Example: Titanium is heavier
         case 'Copper':

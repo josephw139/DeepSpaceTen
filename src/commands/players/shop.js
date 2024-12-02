@@ -103,99 +103,102 @@ module.exports = {
 				await interaction.editReply({ embeds: [shopView] });
 
 		} else if (subcommand === 'buy') { // BUY
-
-			// Create a dropdown menu with items to buy as options
-			const typeRow = new ActionRowBuilder()
-				.addComponents(
-					new StringSelectMenuBuilder()
-						.setCustomId('select-type')
-						.setPlaceholder('Select type of item it purchase')
-						.addOptions([
-							{ label: 'Ship', value: 'ships' },
-							{ label: 'Module', value: 'modules' },
-							{ label: 'Furnishing', value: 'furnishings' },
-							{ label: 'Crew Equipment', value: 'equipment' }
-						])
-				);
-		
-			// Reply with the dropdown menu
-			await interaction.editReply({ content: 'Select category to purchase from:', components: [typeRow] });
-		
-			const filter = (i) => i.user.id === interaction.user.id;
-			const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
-		
-			collector.on('collect', async (i) => {
-				await i.deferUpdate();  // Acknowledge the interaction
-				if (i.customId === 'select-type') {
-					
-
-					const selectedType = i.values[0];
-					selections['type'] = selectedType;
-					const items = inventory[selectedType];
-
-					if (!items || items.length === 0) {
-						await i.editReply({ content: `No items available for purchase in this category.`, components: [] });
-						return;
-					}
-			
-					// List shop items
-					const itemRow = new ActionRowBuilder().addComponents(
+			try {
+				// Create a dropdown menu with items to buy as options
+				const typeRow = new ActionRowBuilder()
+					.addComponents(
 						new StringSelectMenuBuilder()
-							.setCustomId('select-item')
-							.setPlaceholder('Select item to purchase')
-							.addOptions(items.map((item, index) => ({
-								label: `${item.name} - ${item.price} C`,
-								description: item.description,
-								value: `${selectedType}-${index}` // A value combining type and index
-							}))
-						)
+							.setCustomId('select-type')
+							.setPlaceholder('Select type of item it purchase')
+							.addOptions([
+								{ label: 'Ship', value: 'ships' },
+								{ label: 'Module', value: 'modules' },
+								{ label: 'Furnishing', value: 'furnishings' },
+								{ label: 'Crew Equipment', value: 'equipment' }
+							])
 					);
-					await i.editReply({ content: `Choose an option to buy:`, components: [itemRow] });
 			
-				} else if (i.customId === 'select-item') {
+				// Reply with the dropdown menu
+				await interaction.editReply({ content: 'Select category to purchase from:', components: [typeRow] });
+			
+				const filter = (i) => i.user.id === interaction.user.id;
+				const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
+			
+				collector.on('collect', async (i) => {
+					await i.deferUpdate();  // Acknowledge the interaction
+					if (i.customId === 'select-type') {
+						
 
-					const [type, index] = i.values[0].split('-');
-					const item = inventory[type][parseInt(index)];
-					selections['item'] = item;
+						const selectedType = i.values[0];
+						selections['type'] = selectedType;
+						const items = inventory[selectedType];
 
-					// Check if the player has enough credits
-					if (credits < item.price) {
-						await i.editReply({ content: `You do not have enough credits to buy '${item.name}'. You need ${item.price}.`, ephemeral: true });
-						return;
-					}
-	
-					await i.editReply({ content: `You have selected to purchase: ${item.name} for ${item.price}.`, components: [] });
-					// Here you can handle the logic to actually purchase the item
-					collector.stop();
-				}
-			})
-
-			collector.on('end', () => {
-				try {
-					const item = selections['item'];	
-					const type = selections['type'];				
-					
-					// Use itemToBuyResult.type to determine action
-					if (type === 'ships') {
-						// Add ship to fleet
-						fleet.ships.push(item);
-						// Save the updated fleet or hangar
-						db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-					} else if (type === 'modules' || type === 'furnishings') {
-						updateHangar(playerId, hangar, item);
-					}
-
-					// Update credits
-					const newCredits = credits - item.price;
-					db.player.set(playerId, newCredits, "credits");
+						if (!items || items.length === 0) {
+							await i.editReply({ content: `No items available for purchase in this category.`, components: [] });
+							return;
+						}
 				
-					interaction.channel.send({ content: `Successfully bought '${item.name}' for ${item.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: true });
+						// List shop items
+						const itemRow = new ActionRowBuilder().addComponents(
+							new StringSelectMenuBuilder()
+								.setCustomId('select-item')
+								.setPlaceholder('Select item to purchase')
+								.addOptions(items.map((item, index) => ({
+									label: `${item.name} - ${item.price} C`,
+									description: item.description,
+									value: `${selectedType}-${index}` // A value combining type and index
+								}))
+							)
+						);
+						await i.editReply({ content: `Choose an option to buy:`, components: [itemRow] });
+				
+					} else if (i.customId === 'select-item') {
+
+						const [type, index] = i.values[0].split('-');
+						const item = inventory[type][parseInt(index)];
+						selections['item'] = item;
+
+						// Check if the player has enough credits
+						if (credits < item.price) {
+							await i.editReply({ content: `You do not have enough credits to buy '${item.name}'. You need ${item.price}.`, ephemeral: true });
+							return;
+						}
+		
+						await i.editReply({ content: `You have selected to purchase: ${item.name} for ${item.price}.`, components: [] });
+						// Here you can handle the logic to actually purchase the item
+						collector.stop();
+					}
+				})
+
+				collector.on('end', () => {
+					try {
+						const item = selections['item'];	
+						const type = selections['type'];				
+						
+						// Use itemToBuyResult.type to determine action
+						if (type === 'ships') {
+							// Add ship to fleet
+							fleet.ships.push(item);
+							// Save the updated fleet or hangar
+							db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+						} else if (type === 'modules' || type === 'furnishings') {
+							updateHangar(playerId, hangar, item);
+						}
+
+						// Update credits
+						const newCredits = credits - item.price;
+						db.player.set(playerId, newCredits, "credits");
+					
+						interaction.channel.send({ content: `Successfully bought '${item.name}' for ${item.price} Credits. Your new balance is ${newCredits} credits.`, ephemeral: true });
 
 
-				} catch (err) {
-					console.log(err);
-				}
-			})
+					} catch (err) {
+						console.log(err);
+					}
+				})
+			} catch (err) {
+				console.log(err);
+			}
 
 		} else if (subcommand === 'sell') { // SELL
 			let itemToSell;
@@ -215,7 +218,7 @@ module.exports = {
 
 				sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
 				db.player.set(playerId, credits + sellPrice, "credits");
-				await interaction.editReply({ content: `Sold '${item}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
+				await interaction.editReply({ content: `Sold '${itemToSellName}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
 			} else {
 				if (sellFrom === "hangar") {
 					hangar.forEach(item => {
@@ -224,6 +227,7 @@ module.exports = {
 							sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
 						}
 					})
+					await interaction.editReply({ content: `Emptied the Hangar for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
 					db.player.set(playerId, credits + sellPrice, "credits");
 				} else {
 					activeShip.inventory.forEach(item => {
@@ -235,6 +239,7 @@ module.exports = {
 						itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item.name, null);
 						sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
 					})
+					await interaction.editReply({ content: `Emptied the cargo hold for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
 					db.player.set(playerId, credits + sellPrice, "credits");
 				}
 			}

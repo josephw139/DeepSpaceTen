@@ -54,7 +54,14 @@ module.exports = {
 		const isEngaged = playerData.isEngaged;
         const credits = playerData.credits;
 
-        const isHangar = location.currentLocation.activities.includes('Hangar');
+        let isHangar;
+        
+        try {
+            isHangar = location.currentLocation.activities.includes('Hangar');
+        } catch (err) {
+            isHangar = null;
+        }
+
         if (!isHangar && subcommand != "view") {
             await interaction.editReply(`You can't access your hangar here.`);
             return;

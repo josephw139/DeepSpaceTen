@@ -43,8 +43,10 @@ module.exports = {
 				const canMine = liveLocation.activities.includes('Mine');
 				const isMiningShip = activeShip.capabilities.includes("Mining");
                 const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
-
-				if (canMine && isMiningShip && minCrew ) {
+                const totalWeight = getTotalWeight(activeShip.inventory);
+                const isCargoAlmostFull = Math.abs(activeShip.cargoCapacity - totalWeight) <= 10;
+                
+				if (canMine && isMiningShip && minCrew && !isCargoAlmostFull ) {
 					startMining(interaction, member.id, liveLocation, activeShip, fleet);
 					await interaction.editReply({ content: `You've started mining! Resources will be extracted every hour`, ephemeral: true });
 				} else if (!canMine) {
@@ -53,6 +55,8 @@ module.exports = {
 					await interaction.editReply({ content: `This ship doesn't have mining capability`, ephemeral: true });
 				} else if (!minCrew) {
                     await interaction.editReply({ content: `You don't have enough crew staffing the ship`, ephemeral: true });
+                } else if (isCargoAlmostFull) {
+                    await interaction.editReply({ content: `Your cargo hold is too full to hold much more`, ephemeral: true });
                 }
 			} else {
 				await interaction.editReply({ content: `You're already engaged in another activity`, ephemeral: true });
@@ -116,12 +120,14 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
                     updateShipInventory(playerId, shipName, resource, fleet);
                 } else {
                     const remainingCapacity = ship.cargoCapacity - totalWeight;
-					const adjustedResourceAmount = calculateAdjustedResourceAmount(resource.type, resource.quantity, remainingCapacity);
-
-					// Update the inventory with the adjusted amount
-					if (adjustedResourceAmount.quantity > 0) {
-						updateShipInventory(playerId, shipName, adjustedResourceAmount, fleet);
-					}
+					if (remainingCapacity > 0) {
+                        const adjustedResourceAmount = calculateAdjustedResourceAmount(resource.type, resource.quantity, remainingCapacity);
+                
+                        // Update the inventory with the adjusted amount
+                        if (adjustedResourceAmount.quantity > 0) {
+                            updateShipInventory(playerId, shipName, adjustedResourceAmount, fleet);
+                        }
+                    }
 
 					this.cancel(); // Cancel the scheduled job after adding the last bit of resources
 					db.player.delete(`${playerId}`, "mining.startTime");
@@ -144,17 +150,19 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
 }
 
 function calculateAdjustedResourceAmount(resourceType, quantity, remainingCapacity) {
-    // Assume a fixed weight per unit for simplicity; adjust based on your game's mechanics
-    const weightPerUnit = calculateWeight(resourceType, quantity);
+    // Get the weight per unit by dividing the total weight by the quantity
+    const totalWeight = calculateWeight(resourceType, quantity);
+    const weightPerUnit = totalWeight / quantity; // This provides the correct weight per unit
 
     // Calculate the maximum quantity that can be added without exceeding capacity
     const maxQuantity = Math.floor(remainingCapacity / weightPerUnit);
 
     return {
         type: resourceType,
-        quantity: maxQuantity // Ensure this doesn't go negative
+        quantity: Math.min(maxQuantity, quantity) // Ensure this doesn't go negative and doesn't exceed original quantity
     };
 }
+
 
 
 function updateShipInventory(playerId, shipName, resource, fleet) {
@@ -177,7 +185,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
             });
         }
 
-        fleet[shipIndex] = ship; 
+        //fleet[shipIndex] = ship; 
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
     } else {
         console.error(`Ship with name ${shipName} not found in the fleet.`);
@@ -233,6 +241,8 @@ function calculateMinerals(location, morale, miningPower) {
     const { min, max } = miningResources[selectedType][miningLevel];
     let oreQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * miningPower;
     oreQuantity = applyMoraleEffects(oreQuantity, morale);
+
+    console.log(miningSellPrice[selectedType]);
     
     return {
         type: selectedType,

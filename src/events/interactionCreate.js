@@ -29,13 +29,14 @@ module.exports = {
             }
 
             try {
-                // Deferring the reply
-                await interaction.deferReply();
+                // Acknowledge the interaction
+                await interaction.reply({content: `Processing...`, ephemeral: true});
+
                 // Executing the command
                 await command.execute(interaction);
-                // You can use interaction.editReply or interaction.followUp here if needed
             } catch (error) {
                 console.log(error);
+                await interaction.channel.send({ content: 'An error occurred while processing your command, please try again.', ephemeral: true });
                 return;
                 console.error(`Error executing ${interaction.commandName}`);
                 console.error(error);
@@ -44,6 +45,7 @@ module.exports = {
         } else if (interaction.isSelectMenu()) {
             // Handle the select menu interaction
             try {
+                //await interaction.deferReply();
                 if (interaction.customId === 'select-destination') {
                     const selectedLocation = interaction.values[0];
                     await interaction.update({ content: `Traveling to ${selectedLocation}...`, components: [] });

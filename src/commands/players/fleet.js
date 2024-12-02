@@ -234,7 +234,7 @@ module.exports = {
 			collector.on('collect', async (i) => {
 				await i.deferUpdate(); // Acknowledge the interaction
 				selections[i.customId] = parseInt(i.values[0]);
-				await i.followUp({content: `Your ship has been rechristened as ${nameOption}`, ephemeral: true});
+				//await i.followUp({content: `Your ship has been rechristened as ${nameOption}`, ephemeral: true});
 				collector.stop();
 			})
             
@@ -244,24 +244,35 @@ module.exports = {
 				try {
 					target = fleet.ships[shipOption];
 					const oldName = target.name;
-					fleet.ships[shipOption].name = nameOption;
-					//target.name = nameOption;
+					const oldActiveName = activeShip.name;
+					target.name = nameOption;
+
+					console.log('RENAMING SHIP AND SAVING TO FLEET');
+					console.log(fleet);
 					db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+
 					const updatedFleet = new Fleet(db.player.get(`${playerId}`, "fleet"));
-					console.log(updatedFleet);
+					//console.log(updatedFleet);
 					//console.log('RENAME')
 					//console.log(target);
-					//interaction.channel.send({content: `${oldName} has been rechristened as ${target.name}`, ephemeral: true});
+					interaction.followUp({content: `${oldName} has been rechristened as ${target.name}`, ephemeral: true});
 				} catch (err) {
 					// console.log(err);
-					interaction.channel.send({content: `This ship doesn't exist`, ephemeral: true});
+					interaction.followUp({content: `This ship doesn't exist`, ephemeral: true});
 					return;
 				}
 			})
 
 		} else if (manageOption === 'equip') {
 
-			const isHangar = location.currentLocation.activities.includes('Hangar');
+			let isHangar;
+			
+			try {
+				isHangar = location.currentLocation.activities.includes('Hangar');
+			} catch (err) {
+				isHangar == null;
+			}
+
 			if (!isHangar) {
 				await interaction.editReply(`You can't access your hangar here.`);
 				return;
@@ -371,10 +382,13 @@ module.exports = {
 						const moduleApplied = applyModule(target, moduleToEquip);
 						if (!moduleApplied) {
 							interaction.channel.send({content: `${moduleList[moduleOption].name} is not stackable.`, ephemeral: true});
+							updateHangar(playerId, hangar, moduleToEquip);
+							return;
 						}
 						
 						db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 						interaction.channel.send({content: `${target.name} has been equipped with ${moduleList[moduleOption].name}`, ephemeral: true});
+						return;
 					
 					} else if (typeOption === "furnishing") {
 						interaction.channel.send({content: `Placeholder`, ephemeral: true});
@@ -409,7 +423,14 @@ module.exports = {
 			
 		} else if (manageOption === 'unequip') {
 
-			const isHangar = location.currentLocation.activities.includes('Hangar');
+			let isHangar;
+
+			try {
+				isHangar = location.currentLocation.activities.includes('Hangar');
+			} catch (err) {
+				isHangar == null;
+			}
+
 			if (!isHangar) {
 				await interaction.editReply(`You can't access your hangar here.`);
 				return;

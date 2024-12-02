@@ -220,7 +220,7 @@ module.exports = {
                     currentLocation: starterLocation
                 }, "location");
                 db.player.set(`${playerId}`, [], "hangar");
-                db.player.set(`${playerId}`, 1000, "credits");
+                db.player.set(`${playerId}`, 200000, "credits");
                 db.player.set(`${playerId}`, selectedCareer, "career");
             } catch (e) {
                 console.log(e);
