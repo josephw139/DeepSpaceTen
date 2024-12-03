@@ -28,7 +28,10 @@ const shopListModules = {
         rarity: 1,
         stacking: true,
         stats: {
-            miningPower: 0.5,
+            extractionPower: {
+                ore: 0.5,
+                gas: 0.5,
+            },
         },
         capabilities: ["Mining"],
     },

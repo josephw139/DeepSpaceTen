@@ -124,7 +124,7 @@ module.exports = {
                         hangar.forEach(item => {
                             // console.log(item);
                             const itemInfo = `Quantity: ${item.quantity}` + (item.weight ? ` | Weight: ${item.weight}kg` : '') +
-                            ` | Value: ${item.sell_price ? (item.sell_price * item.quantity) : (item.price * .8 * item.quantity)} C` + 
+                            ` | Value: ${item.sellPrice ? (item.sellPrice * item.quantity) : (item.price * .8 * item.quantity)} C` + 
                             `\nDescription: ${item.description}`;
                             
                             hangarEmbed.addFields({ name: `${item.name}`, value: itemInfo });

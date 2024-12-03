@@ -50,7 +50,12 @@ const sectors = {
                       name: "Vaxas",
                       description: "A windswept and barren planet, the only one in the system with moons.",
                       activities: ["Mine", "Research", "Scan"],
-                      mining: {Ore: "Very_Low", Gas: "None", Titanium: "Low"},
+                      mining: {
+                        "Iron": "Low",
+                        "Platinum": "Very_Low",
+                        "Helium_3": "None",
+                        "Tritium": "None"
+                      },
                       research: {Tech: "None", Bio: "None", Cosmic: "Very_Low", Exotic: "None"},
                       unique_items: [
                         {
@@ -71,7 +76,12 @@ const sectors = {
                     name: "Vaxas II",
                     description: "A forested moon orbiting Vaxas, crawling with undiscovered native fauna.",
                     activities: ["Research", "Mine", "Scan"],
-                    mining: {Ore: "Very_Low", Gas: "None", Titanium: "None", Copper: "Medium"},
+                    mining: {
+                      "Iron": "Low",
+                      "Platinum": "Low",
+                      "Helium_3": "None",
+                      "Tritium": "None"
+                    },
                     research: {Tech: "None", Bio: "High", Cosmic: "Very_Low", Exotic: "None"},
                     unique_items: [
                       {
@@ -93,7 +103,12 @@ const sectors = {
                     name: "Epsilon Outpost",
                     description: "A research facility set up by the U.C.S. on Vaxas V, orbiting Vaxas.",
                     activities: ["Research", "Mine", "Scan"],
-                    mining: {Ore: "Very_Low", Gas: "None", Titanium: "None", Copper: "Low"},
+                    mining: {
+                      "Iron": "Low",
+                      "Platinum": "Low",
+                      "Helium_3": "Very_Low",
+                      "Tritium": "Very_Low"
+                    },
                     research: {Tech: "Low", Bio: "Very_Low", Cosmic: "Medium", Exotic: "None"},
                     unique_items: [
                       {
@@ -117,7 +132,12 @@ const sectors = {
                     name: "G7",
                     description: "A gas giant, seventh planet from the Sun. A neverending storm crawls across a fifth of the planet.",
                     activities: ["Mine", "Research", "Scan"],
-                    mining: {Ore: "None", Gas: "High", Titanium: "None"},
+                    mining: {
+                      "Iron": "None",
+                      "Platinum": "None",
+                      "Helium_3": "Medium",
+                      "Tritium": "Medium"
+                    },
                     research: {Tech: "None", Bio: "None", Cosmic: "Low", Exotic: "Low"},
                     unique_items: [
                       {
@@ -138,7 +158,12 @@ const sectors = {
                     name: "A-357 Asteroid Belt",
                     description: "A mineral-rich belt of asteroids, orbiting the central Sun in the Beacon.",
                     activities: ["Mine", "Research", "Scan"],
-                    mining: {Ore: "Medium", Gas: "Low", Titanium: "Very_Low", Copper: "High"},
+                    mining: {
+                      "Iron": "Medium",
+                      "Platinum": "Low",
+                      "Helium_3": "Very_Low",
+                      "Tritium": "Very_Low"
+                    },
                     research: {Tech: "None", Bio: "None", Cosmic: "Medium", Exotic: "None"},
                     light_scan: [],
                     deep_scan: [],

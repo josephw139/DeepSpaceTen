@@ -150,7 +150,7 @@ function updateShipInventory(playerId, shipName, item, fleet) {
                 quantity: item.quantity,
                 weight: itemWeight,
                 description: item.description,
-                sell_price: item.sell_price,
+                sellPrice: item.sellPrice,
             });
         }
 
@@ -199,7 +199,7 @@ function calculateScanning(location, morale, lightScan, deepScan) {
                     type: unique.item.name,
                     quantity: unique.item.quantity,
                     weight: unique.item.weight,
-                    sell_price: unique.item.sell_price,
+                    sellPrice: unique.item.sellPrice,
                     description: itemDescription,
                 };
             }

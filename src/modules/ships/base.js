@@ -4,7 +4,7 @@ const { sizeModifiers, manufacturerModifiers, defaultStats } = require('./shipTr
 
 class Ship {
     constructor({ type, capabilities, sizeType, name, manufacturer, description,
-                    hp, attack, armor, speed, miningPower, researchPower, stealth, travelSpeed,
+                    hp, attack, armor, speed, extractionPower, researchPower, stealth, travelSpeed,
                     crew, crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
                     furnishings, inventory, lab, price, }) {
 
@@ -18,7 +18,7 @@ class Ship {
         this.attack = attack;
         this.armor = armor;
         this.speed = speed;
-        this.miningPower = miningPower;
+        this.extractionPower = extractionPower;
         this.researchPower = researchPower;
         this.stealth = stealth;
         this.travelSpeed = travelSpeed;
@@ -54,8 +54,8 @@ class Ship {
 
         if (detailed) {
             const totalInventoryWeight = this.inventory.reduce((total, item) => total + (item.weight || 0), 0);
-            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight}kg) - ${item.sell_price * item.quantity} C\n*${item.description}*`).join('\n\n');
-            const labNames = this.lab.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C\n*${item.description}*`).join('\n\n');
+            const inventoryNames = this.inventory.map(item => `x${item.quantity} ${item.name} (${item.weight}kg) - ${item.sellPrice * item.quantity} C\n*${item.description}*`).join('\n\n');
+            const labNames = this.lab.map(item => `x${item.quantity} ${item.name} - ${item.sellPrice * item.quantity} C\n*${item.description}*`).join('\n\n');
 
             // Prepare module details, consolidate duplicates, and format description
             const moduleCounts = this.modules.reduce((acc, module) => {
@@ -106,7 +106,7 @@ class Ship {
             attack: this.attack,
             armor: this.armor, 
             speed: this.speed,
-            miningPower: this.miningPower,
+            extractionPower: this.extractionPower,
             researchPower: this.researchPower,
             stealth: this.stealth,
             travelSpeed: this.travelSpeed,
@@ -226,8 +226,8 @@ class Fleet {
             const statusLine = `STATUS: ${isActive ? 'ACTIVE' : 'INACTIVE'}`;
 
             // Format ship line with or without bold based on active status
-            const inventoryNames = ship.inventory.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
-            const labNames = ship.lab.map(item => `x${item.quantity} ${item.name} - ${item.sell_price * item.quantity} C`).join(', ');
+            const inventoryNames = ship.inventory.map(item => `x${item.quantity} ${item.name} - ${item.sellPrice * item.quantity} C`).join(', ');
+            const labNames = ship.lab.map(item => `x${item.quantity} ${item.name} - ${item.sellPrice * item.quantity} C`).join(', ');
             const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
             const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
             const shipLineThree = `Cargo: ${inventoryNames}` + (ship.capabilities.includes('Research') ? `\nLab: ${labNames}` : '');
@@ -359,7 +359,13 @@ function applyModule(ship, module) {
 
     if (module.stats) {
         Object.keys(module.stats).forEach(stat => {
-            if (stat === 'crewCapacity' && typeof module.stats[stat] === 'object') {
+            if (typeof module.stats[stat] === 'object' && typeof ship[stat] === 'object') {
+                // This handles cases like extractionPower where the stat is an object
+                // Apply changes to each key in the stat object
+                Object.keys(module.stats[stat]).forEach(key => {
+                    ship[stat][key] = (ship[stat][key] || 0) + module.stats[stat][key];
+                });
+            } else if (stat === 'crewCapacity' && typeof module.stats[stat] === 'object') {
                 ship.crewCapacity[0] += module.stats[stat].min || 0;
                 ship.crewCapacity[1] += module.stats[stat].max || 0;
             // Special case for Martian Manufacturing LLC Synth Crew

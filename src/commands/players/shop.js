@@ -216,7 +216,7 @@ module.exports = {
 					return;
 				}
 
-				sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+				sellPrice += itemToSell.quantity * (itemToSell.sellPrice || (itemToSell.price * .8));
 				db.player.set(playerId, credits + sellPrice, "credits");
 				await interaction.editReply({ content: `Sold '${itemToSellName}' for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
 			} else {
@@ -224,7 +224,7 @@ module.exports = {
 					hangar.forEach(item => {
 						if (item.type != 'module' && item.type != 'furnishing' && item.type != 'equipment') {
 							itemToSell = withdrawItemFromHangar(playerId, hangar, item.name, null);
-							sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+							sellPrice += itemToSell.quantity * (itemToSell.sellPrice || (itemToSell.price * .8));
 						}
 					})
 					await interaction.editReply({ content: `Emptied the Hangar for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
@@ -232,12 +232,12 @@ module.exports = {
 				} else {
 					activeShip.inventory.forEach(item => {
 						itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item.name, null);
-						sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+						sellPrice += itemToSell.quantity * (itemToSell.sellPrice || (itemToSell.price * .8));
 					})
 
 					activeShip.lab.forEach(item => {
 						itemToSell = removeItemFromShipInventory(playerId, fleet, activeShip, item.name, null);
-						sellPrice += itemToSell.quantity * (itemToSell.sell_price || (itemToSell.price * .8));
+						sellPrice += itemToSell.quantity * (itemToSell.sellPrice || (itemToSell.price * .8));
 					})
 					await interaction.editReply({ content: `Emptied the cargo hold for ${sellPrice} Credits. Your new balance is ${credits + sellPrice} Credits.`, ephemeral: true });
 					db.player.set(playerId, credits + sellPrice, "credits");

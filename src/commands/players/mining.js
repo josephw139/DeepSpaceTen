@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData, getCurrentLocationFromPlayerData } = require('../../database/playerFuncs.js');
-const { levelWeights, miningSellPrice, miningResources, calculateWeight, hiddenMessages, randomizeInput } = require('../../database/locationResources.js');
+const { levelWeights, miningSellPrice, miningResources, resources, calculateWeight, hiddenMessages, randomizeInput } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -98,7 +98,7 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
-    const cronExpression = `${currentMinute} * * * *`;  // This will fire at 'currentMinute' every hour
+    const cronExpression = `* * * * *`;  // This will fire at 'currentMinute' every hour
 
     // Schedule a job to run every 1 hour (change the ${currentMinute} to a * to run every minute)
 
@@ -111,9 +111,10 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
 
         if (ship) {
             try {
-                const resource = calculateMinerals(location, activeShip.morale, activeShip.miningPower);
+                const resource = calculateMinerals(location, activeShip.morale, activeShip.extractionPower);
+                console.log(resource);
                 const totalWeight = getTotalWeight(ship.inventory);
-                const resourceWeight = calculateWeight(resource.type, resource.quantity);
+                const resourceWeight = resource.weight;
 
 				// console.log(resource);
                 if (totalWeight + resourceWeight <= ship.cargoCapacity) {
@@ -121,7 +122,7 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
                 } else {
                     const remainingCapacity = ship.cargoCapacity - totalWeight;
 					if (remainingCapacity > 0) {
-                        const adjustedResourceAmount = calculateAdjustedResourceAmount(resource.type, resource.quantity, remainingCapacity);
+                        const adjustedResourceAmount = calculateAdjustedResourceAmount(resource, remainingCapacity);
                 
                         // Update the inventory with the adjusted amount
                         if (adjustedResourceAmount.quantity > 0) {
@@ -149,20 +150,23 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
 
 }
 
-function calculateAdjustedResourceAmount(resourceType, quantity, remainingCapacity) {
-    // Get the weight per unit by dividing the total weight by the quantity
-    const totalWeight = calculateWeight(resourceType, quantity);
-    const weightPerUnit = totalWeight / quantity; // This provides the correct weight per unit
+
+function calculateAdjustedResourceAmount(resource, remainingCapacity) {
+
+    const resourceCategory = findResourceCategory(resource.type);
+    const weightPerUnit = resources[resourceCategory][resource.type].weight;
 
     // Calculate the maximum quantity that can be added without exceeding capacity
     const maxQuantity = Math.floor(remainingCapacity / weightPerUnit);
 
     return {
-        type: resourceType,
-        quantity: Math.min(maxQuantity, quantity) // Ensure this doesn't go negative and doesn't exceed original quantity
+        type: resource.type,
+        quantity: Math.min(maxQuantity, resource.quantity), // Ensure this doesn't go negative and doesn't exceed original quantity
+        sellPrice: resource.sellPrice,
+        description: resource.description,
+        weight: Math.min(maxQuantity, resource.quantity) * weightPerUnit, // Calculate the new weight based on the adjusted quantity
     };
 }
-
 
 
 function updateShipInventory(playerId, shipName, resource, fleet) {
@@ -170,7 +174,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
     if (shipIndex !== -1) {
         const ship = fleet.ships[shipIndex];
         const resourceEntry = ship.inventory.find(item => item.name === resource.type);
-        const resourceWeight = calculateWeight(resource.type, resource.quantity);
+        const resourceWeight = resource.weight;
 
         if (resourceEntry) {
             resourceEntry.quantity += resource.quantity;
@@ -180,8 +184,8 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
                 name: resource.type,
                 quantity: resource.quantity,
                 weight: resourceWeight,
-                description: resource.type,
-                sell_price: resource.sell_price,
+                description: resource.description,
+                sellPrice: resource.sellPrice,
             });
         }
 
@@ -202,7 +206,7 @@ function getShipFromFleet(shipName, fleet) {
 }
 
 
-function calculateMinerals(location, morale, miningPower) {
+function calculateMinerals(location, morale, extractionPower) {
     // Check for unique items first
     if (location.unique_items) {
         for (const unique of location.unique_items) {
@@ -219,7 +223,7 @@ function calculateMinerals(location, morale, miningPower) {
                     type: unique.item.name,
                     quantity: unique.item.quantity,
                     weight: unique.item.weight,
-                    sell_price: unique.item.sell_price,
+                    sellPrice: unique.item.sellPrice,
                     description: itemDescription,
                 };
             }
@@ -232,22 +236,30 @@ function calculateMinerals(location, morale, miningPower) {
         console.log("No valid mining type selected.");
         return null; // Handle the case where no type is selected due to filtering or chance
     }
-    const miningLevel = location.mining[selectedType];
-    if (!miningLevel) {
-        console.log(`No mining level found for type: ${selectedType}`);
-        return null; // Safeguard against undefined mining levels
+
+    const resourceCategory = findResourceCategory(selectedType);
+    if (!resourceCategory) {
+        console.log(`No category found for type: ${selectedType}`);
+        return null; // Safeguard against undefined categories or mining levels
     }
 
-    const { min, max } = miningResources[selectedType][miningLevel];
-    let oreQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * miningPower;
-    oreQuantity = applyMoraleEffects(oreQuantity, morale);
+    const miningLevel = location.mining[selectedType];
+    const resourceDetails = resources[resourceCategory][selectedType];
+    const { min, max } = resourceDetails.availability[miningLevel];
+    const extractionPowerValue = extractionPower[resourceCategory.toLowerCase()];
 
-    console.log(miningSellPrice[selectedType]);
+    let resourceQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * extractionPowerValue;
+
+    resourceQuantity = applyMoraleEffects(resourceQuantity, morale);
+
+    //console.log(miningSellPrice[selectedType]);
     
     return {
         type: selectedType,
-        quantity: Math.round(oreQuantity),
-        sell_price: miningSellPrice[selectedType],
+        quantity: Math.round(resourceQuantity),
+        sellPrice: resourceDetails.sellPrice,
+        description: resourceDetails.type,
+        weight: Math.floor((resourceDetails.weight * resourceQuantity))
     };
 }
 
@@ -258,7 +270,7 @@ function applyMoraleEffects(quantity, morale) {
     else if (morale >= 7 && morale < 10) return quantity * 1.05;
     else if (morale < 5 && morale > 1) return quantity * 0.94;
     else if (morale <= 1) return quantity * 0.9;
-    return quantity;
+    return Math.floor(quantity);
 }
 
 
@@ -282,3 +294,12 @@ function weightedRandom(types) {
     }
 }
 
+// Helper function to find the category of the given resource
+function findResourceCategory(resourceKey) {
+    for (const category in resources) {
+        if (resources[category][resourceKey]) {
+            return category;
+        }
+    }
+    return null; // Return null if the resource isn't found in any category
+}

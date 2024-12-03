@@ -36,44 +36,11 @@ module.exports = {
                 await command.execute(interaction);
             } catch (error) {
                 console.log(error);
-                await interaction.channel.send({ content: 'An error occurred while processing your command, please try again.', ephemeral: true });
+                await interaction.channel.send({ content: 'The bot did not crash, just hiccuped, please try again.', ephemeral: true });
                 return;
                 console.error(`Error executing ${interaction.commandName}`);
                 console.error(error);
                 await interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true });
-            }
-        } else if (interaction.isSelectMenu()) {
-            // Handle the select menu interaction
-            try {
-                //await interaction.deferReply();
-                if (interaction.customId === 'select-destination') {
-                    const selectedLocation = interaction.values[0];
-                    await interaction.update({ content: `Traveling to ${selectedLocation}...`, components: [] });
-                }
-                // Add more cases for different select menus as needed
-            } catch (error) {
-                console.error(`Error in select menu interaction`);
-                console.error(error);
-                await interaction.editReply({ content: 'There was an error processing your selection.', ephemeral: true });
-            }
-        } else if (interaction.isModalSubmit()) {
-            // Handle the modal submission
-            switch (interaction.customId) {
-                case 'userInputModal':
-                    const userInput = interaction.fields.getTextInputValue('userInput');
-                    const playerId = interaction.member.id;
-                    interaction.client.userInputs = interaction.client.userInputs || {};
-                    interaction.client.userInputs[playerId] = interaction.client.userInputs[playerId] || {};
-                    interaction.client.userInputs[playerId]['userInput'] = userInput;
-                    await interaction.editReply({ content: `You entered: ${userInput}`, ephemeral: true });
-                    break;
-                default:
-                    console.warn(`Unhandled modal submit: ${interaction.customId}`);
-            } 
-        } else if (interaction.isButton()) {
-            if (interaction.customId === 'nameShipButton') {
-                // Show the modal when the button is clicked
-                await sendInputModal(interaction, "Name your ship");
             }
         }
     },

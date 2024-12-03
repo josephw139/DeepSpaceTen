@@ -144,7 +144,7 @@ function updateShipInventory(playerId, shipName, resource, fleet) {
                 quantity: resource.quantity,
                 // weight: resourceWeight,
                 description: resource.type,
-                sell_price: resource.sell_price,
+                sellPrice: resource.sellPrice,
             });
         }
 
@@ -199,7 +199,7 @@ function calculateResearch(location, morale, researchPower) {
     return {
         type: selectedType,
         quantity: Math.round(researchQuantity),
-        sell_price: researchSellPrice[selectedType],
+        sellPrice: researchSellPrice[selectedType],
     };
 }
 

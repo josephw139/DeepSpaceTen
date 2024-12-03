@@ -25,7 +25,7 @@ module.exports = {
             interaction.editReply(actualPlayerData);
         }
         
-        const { activeShip } = actualPlayerData;
+        const { activeShip, isEngaged } = actualPlayerData;
 
         const playerData = db.player.get(`${member.id}`, "location");
         const discoveries = db.player.get(`${playerId}`, "discoveries");
@@ -33,6 +33,11 @@ module.exports = {
         const systemNameToTravel = interaction.options.getString('system') || currentSystemName;
         
         const systemToTravel = findSystemByName(systemNameToTravel, discoveries);
+
+        if (isEngaged) {
+            await i.update({ content: `You're already engaged in another activity.`, components: [] });
+            return;
+        }
 
         if (!systemToTravel) {
             await interaction.editReply({ content: `System "${systemNameToTravel}" not found.`, ephemeral: true });
@@ -53,6 +58,9 @@ module.exports = {
                 new StringSelectMenuBuilder()
                     .setCustomId('select-destination')
                     .setPlaceholder('Choose your destination')
+                    /*.addOptions([
+                        { label: 'Cancel', value: 'cancel' },
+                    ])*/
                     .addOptions(locations.map(location => ({
                         label: location.name,
                         value: location.name
@@ -61,33 +69,24 @@ module.exports = {
 
         // Reply with the dropdown menu
         await interaction.editReply({ content: 'Select your destination:', components: [row] });
+        
 
 		// Handle the dropdown selection
         const filter = (i) => i.customId === 'select-destination' && i.user.id === interaction.user.id;
-        interaction.channel.awaitMessageComponent({ filter, time: 120000 }) // 120-second wait for response
-            .then(i => {
-                const isEngaged = db.player.get(`${playerId}`, "engaged");
-                if (!isEngaged) {
-                    const selectedLocation = i.values[0];
-                    const travelTime = calculateTravelTime(playerData, selectedLocation, minCrew, activeShip); // Implement your logic to calculate travel time
+        const collector = interaction.channel.createMessageComponentCollector({ filter, time: 60000 });
 
-                    // Schedule the completion of the travel
-                    scheduleTravel(member.id, selectedLocation, travelTime, channel);
+        collector.on('collect', async (i) => {
+            const selectedLocation = i.values[0];
+            const travelTime = calculateTravelTime(playerData, selectedLocation, minCrew, activeShip);
+            scheduleTravel(playerId, selectedLocation, travelTime, channel); 
 
-                    i.channel.send({ content: `You will arrive in ${Math.floor(travelTime / 60)} minutes.`, components: [] });
-                }  else {
-                    i.channel.send({ content: `You're already engaged in another activity`, components: [] });
-                }
-            })
-            .catch(e => {
-                if (e.code === 'InteractionCollectorError') {
-                    channel.send({ content: `Travel selection has timed out. Please select your destination again.` });
-                } else {
-                    // Log other errors for debugging
-                    console.error('Error in awaitMessageComponent:', e);
-                }
-            });
-            
+            await i.update({ content: `You will arrive at ${selectedLocation} in ${Math.floor(travelTime / 60)} minutes.`, components: [] });
+        });
+
+        collector.on('end', collected => {
+            if (!collected.size) interaction.followUp({ content: 'Travel command timed out. Please try again.', ephemeral: true });
+        });
+
     },
 };
 

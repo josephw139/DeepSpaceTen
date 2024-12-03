@@ -1,31 +1,49 @@
+const extractionPowerOne = {
+    ore: 1,
+    gas: 1,
+}
+
+const extractionPowerZero = {
+    ore: 0,
+    gas: 0,
+}
+
+const researchPowerBase = {
+    base: 1,
+}
+
+const researchPowerZero = {
+    base: 0,
+}
+
 const defaultStats = {
     cruiser: { 
         description: 'Cruisers are good all-rounder ships, sturdier and more versatile, but much more expensive.',
-        hp: 16, attack: '1d6', armor: 4, speed: 10, miningPower: 0, researchPower: 0, stealth: 0, travelSpeed: 1, 
+        hp: 16, attack: '1d6', armor: 4, speed: 10, extractionPower: extractionPowerZero, researchPower: researchPowerZero, stealth: 0, travelSpeed: 1, 
         crew: [], crewCapacity: [8, 16], cargoCapacity: 1000, modCapacity: 5, modules: [],
         furnishingsCapacity: 2, furnishings: [], inventory: [], lab: [], capabilities: [], price: 50000,
     },
     mining_ship: { 
         description: 'Outfitted with drills, ore storage, mineral scanners.',
-        hp: 10, attack: '1d2', armor: 2, speed: 9, miningPower: 1, researchPower: 0, stealth: 0, travelSpeed: 1,
+        hp: 10, attack: '1d2', armor: 2, speed: 9, extractionPower: extractionPowerOne, researchPower: researchPowerZero, stealth: 0, travelSpeed: 1,
         crew: [], crewCapacity: [3, 7], cargoCapacity: 1500,  modCapacity: 2, modules: [],
         furnishingsCapacity: 1, furnishings: [], inventory: [], lab: [], capabilities: ["Mining"], price: 30000,
     },
     freighter: { 
         description: 'Designed to haul as much cargo as possible.',
-        hp: 10, attack: '1d2', armor: 2, speed: 8, miningPower: 0, researchPower: 0, stealth: 0, travelSpeed: 1,
+        hp: 10, attack: '1d2', armor: 2, speed: 8, extractionPower: extractionPowerZero, researchPower: researchPowerZero, stealth: 0, travelSpeed: 1,
         crew: [], crewCapacity: [3, 5], cargoCapacity: 4000,  modCapacity: 2, modules: [],
         furnishingsCapacity: 1, furnishings: [], inventory: [], lab: [], capabilities: [], price: 30000,
     },
     scout: { 
         description: 'Fast and nimble, equipped with probes and advanced scanning hardware',
-        hp: 8, attack: '1d2', armor: 2, speed: 14, miningPower: 0, researchPower: 0, stealth: 1, travelSpeed: 1,
+        hp: 8, attack: '1d2', armor: 2, speed: 14, extractionPower: extractionPowerZero, researchPower: researchPowerZero, stealth: 1, travelSpeed: 1,
         crew: [], crewCapacity: [3, 4], cargoCapacity: 500,  modCapacity: 1, modules: [], 
         inventory: [], lab: [], furnishingsCapacity: 1, furnishings: [], capabilities: ["Light Scan"], price: 25000,
     },
     science_vessel: {
         description: 'Equipped with state of the art laboraties and facilities to study exotic material and other life.',
-        hp: 6, attack: '1d2', armor: 2, speed: 9, miningPower: 0, researchPower: 1, stealth: 0, travelSpeed: 1,
+        hp: 6, attack: '1d2', armor: 2, speed: 9, extractionPower: extractionPowerZero, researchPower: researchPowerBase, stealth: 0, travelSpeed: 1,
         crew: [], crewCapacity: [3, 10], cargoCapacity: 500, modCapacity: 2, modules: [],
         inventory: [], lab: [], furnishingsCapacity: 1, furnishings: [], capabilities: ["Research"], price: 30000,
     },
