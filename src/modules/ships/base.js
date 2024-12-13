@@ -6,7 +6,7 @@ class Ship {
     constructor({ type, capabilities, sizeType, name, manufacturer, description,
                     hp, attack, armor, speed, extractionPower, researchPower, stealth, travelSpeed,
                     crew, crewCapacity, cargoCapacity, modCapacity, modules, furnishingsCapacity,
-                    furnishings, inventory, lab, price, }) {
+                    furnishings, inventory, lab, engaged, activity, location, price, id, }) {
 
         this.type = type;
         this.capabilities = capabilities;
@@ -31,7 +31,11 @@ class Ship {
         this.furnishings = furnishings;
         this.inventory = inventory;
         this.lab = lab;
+        this.engaged = engaged;
+        this.activity = activity;
+        this.location = location;
         this.price = price;
+        this.id = id;
 
         // determine ship morale
         let morale = 0;
@@ -119,7 +123,11 @@ class Ship {
             modules: this.modules,
             furnishingsCapacity: this.furnishingsCapacity,
             furnishings: this.furnishings,
+            engaged: this.engaged,
+            activity: this.activity,
+            location: this.location,
             price: this.price,
+            id: this.id,
         };
 
         //console.log('base(54) toArray:\n' + array);
@@ -229,11 +237,12 @@ class Fleet {
             const inventoryNames = ship.inventory.map(item => `x${item.quantity} ${item.name} - ${item.sellPrice * item.quantity} C`).join(', ');
             const labNames = ship.lab.map(item => `x${item.quantity} ${item.name} - ${item.sellPrice * item.quantity} C`).join(', ');
             const shipLineOne = `${i + 1} - ${ship.shipDisplay()}`;
+            const locationLine = `Location: ${ship.location.currentLocation.name}`;
             const shipLineTwo = `Crew: ${ship.crew.length}/${ship.crewCapacity[1]} | Morale: ${ship.morale}`;
             const shipLineThree = `Cargo: ${inventoryNames}` + (ship.capabilities.includes('Research') ? `\nLab: ${labNames}` : '');
             const formattedLine = isActive ? `**${shipLineOne}**` : shipLineOne;
 
-            shipDisplay += `${formattedLine}\n${shipLineTwo}\n${shipLineThree}\n${statusLine}\n\n`;
+            shipDisplay += `${formattedLine}\n${locationLine}\n${shipLineTwo}\n${shipLineThree}\n${statusLine}\n\n`;
         }
         return shipDisplay;
     }

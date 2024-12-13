@@ -18,14 +18,19 @@ function getPlayerData(playerId) {
         const activeShip = fleet.getActiveShip();
 
         // Retrieve the location
-        const location = db.player.get(`${playerId}`, "location");
+        // const location = db.player.get(`${playerId}`, "location");
+        // const locationDisplay = `Sector: ${location.currentSector}\nSystem: ${location.currentSystem.name}\nLocation: ${typeof location.currentLocation === "string" ? location.currentLocation : location.currentLocation.name}`;
+        const location = activeShip.location;
         const locationDisplay = `Sector: ${location.currentSector}\nSystem: ${location.currentSystem.name}\nLocation: ${typeof location.currentLocation === "string" ? location.currentLocation : location.currentLocation.name}`;
 
         // Retrieve engaged status
-        const isEngaged = db.player.get(`${playerId}`, "engaged");
+        // const isEngaged = db.player.get(`${playerId}`, "engaged");
+        const isEngaged = activeShip.engaged;
 
         // Retrieve activity status
-        const activity = db.player.get(`${playerId}`, "activity");
+        // const activity = db.player.get(`${playerId}`, "activity");
+        const activity = activeShip.activity;
+        // console.log(activeShip);
 
         // Retrieve hangar
         const hangar = db.player.get(`${playerId}`, "hangar");
@@ -81,8 +86,8 @@ function isDiscovered(playerId, type, name) {
 }
 
 // Helper function to find the current location object in the sectors data
-function getCurrentLocationFromPlayerData(playerLocationData) {
-    const { currentSector, currentSystem, currentLocation } = playerLocationData;
+function getCurrentLocationFromPlayerData(shipLocationData) {
+    const { currentSector, currentSystem, currentLocation } = shipLocationData;
     const sector = sectors.sectors[currentSector];
 
     if (!sector) {

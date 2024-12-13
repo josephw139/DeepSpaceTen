@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, PermissionFlagsBits, ChannelType, EmbedBuilder } = require('discord.js');
+const { v4: uuidv4 } = require('uuid');
 const { Fleet, capitalize, createShip } = require('../../modules/ships/base.js');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
@@ -91,6 +92,19 @@ module.exports = {
             // console.log(`${flagshipName}`)
 
             const flagship = createShip(`${shipType}`, `${name}`, "Conglomerate of Liberated Peoples' Steelworks", 'Light'); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            
+
+            const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
+            const starterLocation = starterSystem ? starterSystem.locations[0] : null;
+
+            flagship.location = {
+                currentSector: 'Southeast',
+                currentSystem: starterSystem,
+                currentLocation: starterLocation
+            };
+
+            flagship.id = uuidv4();
+
             fleet.saveShipToFleet(flagship);
             fleet.setActiveShip(`${name}`);
             const activeShip = fleet.getActiveShip();
@@ -111,20 +125,19 @@ module.exports = {
             }
             */
 
-            const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
-            const starterLocation = starterSystem ? starterSystem.locations[0] : null;
+            
 
             // Set up Database file for the player
             try {
-                db.player.set(`${playerId}`, false, "engaged");
+                //db.player.set(`${playerId}`, false, "engaged");
                 db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-                db.player.set(`${playerId}`, {
+                /*db.player.set(`${playerId}`, {
                     currentSector: 'Southeast',
                     currentSystem: starterSystem,
                     currentLocation: starterLocation
-                }, "location");
+                }, "location");*/
                 db.player.set(`${playerId}`, [], "hangar");
-                db.player.set(`${playerId}`, 50000, "credits");
+                db.player.set(`${playerId}`, 300000, "credits");
             } catch (e) {
                 console.log(e);
             }

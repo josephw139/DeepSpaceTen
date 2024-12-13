@@ -28,7 +28,11 @@ module.exports = {
 		if (typeof playerData === 'string') {
             interaction.editReply(playerData);
         }
-		const { isEngaged, hangar, fleet, location,	locationDisplay, activeShip, credits } = playerData;
+		
+		const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = playerData;
 
 		
 
@@ -132,7 +136,7 @@ module.exports = {
 					// Remove hired crew from hiring board
 					currentHiringBoard.splice(selectedIndex, 1);
 					
-					i.reply({ content: `Successfully hired ${selectedCrew.name}`, components: [] });
+					i.channel.send({ content: `Successfully hired ${selectedCrew.name}`, components: [], ephemeral: true });
 				})
 				.catch(e => {
 					if (e.code === 'InteractionCollectorError') {

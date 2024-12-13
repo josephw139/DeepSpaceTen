@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, ChannelType, ButtonStyle, ButtonBuilder, EmbedBuilder, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle,
     StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+const { v4: uuidv4 } = require('uuid');
 const { Fleet, capitalize, createShip } = require('../../modules/ships/base');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
@@ -194,33 +195,43 @@ module.exports = {
 
             const fleet = new Fleet();
             const flagship = createShip(`${selectedShip}`, `${shipName}`, `${capitalize(selectedSponsor)}`); // new fleet.Cruiser(`U.C.S. ${flagshipName}`);
+            
+            const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
+            const starterLocation = starterSystem ? starterSystem.locations[0] : null; // grabs Orion Station
+
+            flagship.location = {
+                currentSector: 'Southeast',
+                currentSystem: starterSystem,
+                currentLocation: starterLocation
+            };
+
+            flagship.id = uuidv4();
+
             fleet.saveShipToFleet(flagship);
             fleet.setActiveShip(`${shipName}`);
             const activeShip = fleet.getActiveShip();
-            console.log(activeShip);
+            // console.log(activeShip);
 
-            updateShipRoles(member, activeShip.capabilities);
+            updateShipRoles(member, activeShip.capabilities, true);
 
             for (let i = 0; i < activeShip.crewCapacity[0]; i++) {
                 activeShip.crew.push(generateRandomCrewMember());
             }
 
-            const starterSystem = sectors.Southeast.systems.find(system => system.name === "Argus' Beacon");
-            const starterLocation = starterSystem ? starterSystem.locations[0] : null;
+            
 
             // Set up Database file for the player
-            // Set up Database file for the player
             try {
-                db.player.set(`${playerId}`, false, "engaged");
-                db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
+                // db.player.set(`${playerId}`, false, "engaged");
+                // db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
                 db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-                db.player.set(`${playerId}`, {
+                /*db.player.set(`${playerId}`, {
                     currentSector: 'Southeast',
                     currentSystem: starterSystem,
                     currentLocation: starterLocation
-                }, "location");
+                }, "location"); */
                 db.player.set(`${playerId}`, [], "hangar");
-                db.player.set(`${playerId}`, 200000, "credits");
+                db.player.set(`${playerId}`, 300000, "credits");
                 db.player.set(`${playerId}`, selectedCareer, "career");
             } catch (e) {
                 console.log(e);

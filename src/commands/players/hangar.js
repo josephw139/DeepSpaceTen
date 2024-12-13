@@ -2,7 +2,7 @@ const { SlashCommandBuilder, ChannelType, EmbedBuilder } = require('discord.js')
 const { Fleet, capitalize } = require('../../modules/ships/base.js');
 const { sectors } = require('../../database/locations.js')
 const db = require('../../database/db.js');
-const { getPlayerData, calculateWeight } = require('../../database/playerFuncs.js');
+const { getPlayerData } = require('../../database/playerFuncs.js');
 const { removeItemFromShipInventory, updateHangar, withdrawItemFromHangar, addItemToShipInventory } = require('../../database/hangerFuncs.js')
 
 
@@ -45,14 +45,10 @@ module.exports = {
             interaction.editReply(playerData);
         }
         
-		const fleet = playerData.fleet;
-        const hangar = playerData.hangar;
-        // console.log(hangar);
-		const location = playerData.location;
-		const locationDisplay = playerData.locationDisplay;
-		const activeShip = playerData.activeShip;
-		const isEngaged = playerData.isEngaged;
-        const credits = playerData.credits;
+		const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = playerData;
 
         let isHangar;
         
@@ -63,12 +59,12 @@ module.exports = {
         }
 
         if (!isHangar && subcommand != "view") {
-            await interaction.editReply(`You can't access your hangar here.`);
+            await interaction.editReply(`This ship can't access your hangar here.`);
             return;
         }
 
         if (isEngaged && subcommand != "view") {
-            await interaction.editReply(`You're currently engaged in another activity.`);
+            await interaction.editReply(`This ship is currently engaged in another activity.`);
             return;
         }
 

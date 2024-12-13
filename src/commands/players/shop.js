@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, ChannelType, EmbedBuilder, AttachmentBuilder, ActionRowBuilder, StringSelectMenuBuilder } = require('discord.js');
+const { v4: uuidv4 } = require('uuid');
 const { Fleet, generateRandomShip, capitalize } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const shopList = require('../../database/shops/shopList.js');
@@ -63,14 +64,25 @@ module.exports = {
 		if (typeof playerData === 'string') {
             interaction.editReply(playerData);
         }
-		const { isEngaged, hangar, fleet, location,	locationDisplay, activeShip, credits } = playerData;
+		
+		const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = playerData;
 
-		const canShop = location.currentLocation.activities.includes('Shop');
-
-		if (!canShop) {
+		try {
+			const canShop = location.currentLocation.activities.includes('Shop');
+			if (!canShop) {
+				await interaction.editReply({ content: `There's nowhere to shop here`, ephemeral: true });
+				return;
+			}
+		} catch (err) {
 			await interaction.editReply({ content: `There's nowhere to shop here`, ephemeral: true });
 			return;
 		}
+		
+
+		
 
 		const selections = {};
 
@@ -158,11 +170,7 @@ module.exports = {
 						const item = inventory[type][parseInt(index)];
 						selections['item'] = item;
 
-						// Check if the player has enough credits
-						if (credits < item.price) {
-							await i.editReply({ content: `You do not have enough credits to buy '${item.name}'. You need ${item.price}.`, ephemeral: true });
-							return;
-						}
+						
 		
 						await i.editReply({ content: `You have selected to purchase: ${item.name} for ${item.price}.`, components: [] });
 						// Here you can handle the logic to actually purchase the item
@@ -173,12 +181,20 @@ module.exports = {
 				collector.on('end', () => {
 					try {
 						const item = selections['item'];	
-						const type = selections['type'];				
+						const type = selections['type'];
+						
+						// Check if the player has enough credits
+						if (credits < item.price) {
+							i.channel.send({ content: `You do not have enough credits to buy '${item.name}'. You need ${item.price}.`, ephemeral: true });
+							return;
+						}
 						
 						// Use itemToBuyResult.type to determine action
 						if (type === 'ships') {
 							// Add ship to fleet
-							fleet.ships.push(item);
+							item.id = uuidv4();
+							item.location = JSON.parse(JSON.stringify(location));
+							fleet.saveShipToFleet(item);
 							// Save the updated fleet or hangar
 							db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 						} else if (type === 'modules' || type === 'furnishings') {

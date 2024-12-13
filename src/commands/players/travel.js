@@ -19,23 +19,25 @@ module.exports = {
 		const member = interaction.member;
         const playerId = member.id;
 		const channel = interaction.channel;
-        // rework to use playerData function
-        const actualPlayerData = getPlayerData(playerId);
-        if (typeof actualPlayerData === 'string') {
-            interaction.editReply(actualPlayerData);
-        }
-        
-        const { activeShip, isEngaged } = actualPlayerData;
 
-        const playerData = db.player.get(`${member.id}`, "location");
+        const PlayerData = getPlayerData(playerId);
+        if (typeof PlayerData === 'string') {
+            interaction.editReply(PlayerData);
+        }
+
+        const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = PlayerData;
+
         const discoveries = db.player.get(`${playerId}`, "discoveries");
-        const currentSystemName = playerData.currentSystem.name;
+        const currentSystemName = location.currentSystem.name;
         const systemNameToTravel = interaction.options.getString('system') || currentSystemName;
         
         const systemToTravel = findSystemByName(systemNameToTravel, discoveries);
 
         if (isEngaged) {
-            await i.update({ content: `You're already engaged in another activity.`, components: [] });
+            await interaction.editReply({ content: `This ship is already engaged in another activity.`, components: [] });
             return;
         }
 
@@ -50,7 +52,7 @@ module.exports = {
         }
 
 
-		const locations = getLocationsForSystem(systemToTravel, playerData.currentLocation.name);
+		const locations = getLocationsForSystem(systemToTravel, location.currentLocation.name);
 
         // Create a dropdown menu with locations as options
         const row = new ActionRowBuilder()
@@ -77,14 +79,15 @@ module.exports = {
 
         collector.on('collect', async (i) => {
             const selectedLocation = i.values[0];
-            const travelTime = calculateTravelTime(playerData, selectedLocation, minCrew, activeShip);
-            scheduleTravel(playerId, selectedLocation, travelTime, channel); 
+            const travelTime = calculateTravelTime(location, selectedLocation, minCrew, activeShip);
+            scheduleTravel(playerId, fleet, activeShip.id, selectedLocation, travelTime, channel); 
 
-            await i.update({ content: `You will arrive at ${selectedLocation} in ${Math.floor(travelTime / 60)} minutes.`, components: [] });
+            await i.channel.send({ content: `${activeShip.name} will arrive at ${selectedLocation} in ${Math.floor(travelTime / 60)} minutes.`, components: [] });
         });
 
         collector.on('end', collected => {
-            if (!collected.size) interaction.followUp({ content: 'Travel command timed out. Please try again.', ephemeral: true });
+            if (!collected.size) interaction.update({ content: 'Travel command timed out. Please try again.', ephemeral: true });
+            return;
         });
 
     },
@@ -109,10 +112,10 @@ function getLocationsForSystem(systemToTravel, currentLocationName) {
     return systemToTravel.locations.filter(location => location.name !== currentLocationName);
 }
 
-function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) {
-	const currentSector = playerData.currentSector;
-	const currentSystem = playerData.currentSystem;
-	const currentLocation = playerData.currentLocation;
+function calculateTravelTime(location, selectedLocation, minCrew, activeShip) {
+	const currentSector = location.currentSector;
+	const currentSystem = location.currentSystem;
+	const currentLocation = location.currentLocation;
 
 	const locationExists = currentSystem.locations.some(location => location.name === selectedLocation);
 
@@ -151,44 +154,56 @@ function calculateTravelTime(playerData, selectedLocation, minCrew, activeShip) 
     }
 }
 
-function scheduleTravel(playerId, destination, travelTime, channel) {
+function scheduleTravel(playerId, fleet, shipId, destination, travelTime, channel) {
+    
+    const ship = fleet.ships.find(s => s.id === shipId);
+
 	// multiply travelTime by 10000 if travelTime is minutes, 1000 for seconds)
     const arrivalTime = new Date(new Date().getTime() + travelTime * 1000);
     // Schedule a job to update the player's location
     schedule.scheduleJob(arrivalTime, () => {
-        completeTravel(playerId, destination, channel);
+        completeTravel(playerId, fleet, shipId, destination, channel);
     });
 
     // Update player's travel destination and expected arrival time in the database
-	db.player.set(`${playerId}`, `En route to ${destination}`, "location.currentLocation")
-    db.player.set(`${playerId}`, destination, "location.destination");
-    db.player.set(`${playerId}`, arrivalTime, "location.arrivalTime");
-    db.player.set(`${playerId}`, channel.id, "location.channelId");
-    db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `Your ship is en route to ${destination}`, "activity");
+	//db.player.set(`${playerId}`, `En route to ${destination}`, `${activeShip.id}.location.currentLocation`);
+    db.player.set(`${playerId}`, destination, `travel.${ship.id}.destination`);
+    db.player.set(`${playerId}`, arrivalTime, `travel.${ship.id}.arrivalTime`);
+    db.player.set(`${playerId}`, channel.id, `travel.${ship.id}.channelId`);
+
+    ship.engaged = true;
+    ship.activity = `Hurtling through space!`;
+    ship.location.currentLocation = {name: `En route to ${destination}.`};
+    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 
 }
 
-async function completeTravel(playerId, destination, channel) {
+async function completeTravel(playerId, fleet, shipId, destination, channel) {
+
+    const ship = fleet.ships.find(s => s.id === shipId);
+
     // Update player's current location
-	const locations = db.player.get(`${playerId}`, 'location');
+	// const locations = db.player.get(`${playerId}`, 'location');
+    const locations = ship.location;
 	const currentSystem = locations.currentSystem;
 	const destinationObject = currentSystem.locations.find(location => location.name === destination);
 
 	if (destinationObject) {
-		db.player.set(`${playerId}`, destinationObject, "location.currentLocation");
+		//db.player.set(`${playerId}`, destinationObject, "location.currentLocation");
+        ship.location.currentLocation = destinationObject;
 
 		// Clear destination and arrival time
-		db.player.delete(`${playerId}`, "location.destination");
-		db.player.delete(`${playerId}`, "location.arrivalTime");
-        db.player.delete(`${playerId}`, "location.channelId");
-        db.player.set(`${playerId}`, false, "engaged");
-        db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
+		db.player.delete(`${playerId}`, `travel.${ship.id}`);
+
+        ship.engaged = false;
+        ship.activity = "Crew on standby, ship conserving power.";
+        db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+        await channel.send({ content: `<@${playerId}>, ${ship.name} has arrived at ${ship.location.currentLocation.name}` });
+
 	} else {
 		console.error(`Destination ${destinationName} not found in the current system for player ${playerId}.`);
 	}
     
 	//console.log(db.player.get(`${playerId}`, 'location'));
 
-    await channel.send({ content: `<@${playerId}>, you've arrived at ${destination}` });
 } 

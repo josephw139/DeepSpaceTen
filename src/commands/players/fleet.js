@@ -3,6 +3,7 @@ const { Fleet, capitalize, applyModule, removeModule } = require('../../modules/
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData } = require('../../database/playerFuncs.js');
+const { updateShipRoles } = require('../../roleManagement.js');
 const { removeItemFromShipInventory, updateHangar, withdrawItemFromHangar, addItemToShipInventory } = require('../../database/hangerFuncs.js');
 
 
@@ -15,7 +16,7 @@ module.exports = {
             .setDescription("View by itself will show all ships. Use ships' number to select individual ships.")
             .setRequired(true)
             .addChoices(
-				{ name: 'view', value: 'view' },
+				{ name: 'overview', value: 'overview' },
                 { name: 'inspect', value: 'inspect' },
                 { name: 'active', value: 'active' },
                 { name: 'rename', value: 'rename' },
@@ -30,47 +31,20 @@ module.exports = {
 		const playerId = member.id
 		const channel = interaction.channel;
 		const playerData = getPlayerData(playerId);
+		
 		if (typeof playerData === 'string') {
             interaction.editReply(playerData);
         }
-		const fleet = playerData.fleet;
-		const location = playerData.location;
-		const locationDisplay = playerData.locationDisplay;
-		const activeShip = playerData.activeShip;
-		const credits = playerData.credits;
-		const hangar = playerData.hangar;
-		const isEngaged = playerData.isEngaged;
-		const activity = playerData.activity;
+
+		const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = playerData;
 
 		const manageOption = interaction.options.getString('manage');
 		const nameOption = interaction.options.getString('rename');
 
 		const selections = {};
-
-
-		// Assign "type: 'module'" to modules in hangar and fleet 
-		hangar.forEach(item => {
-			if (item.rarity && item.name !== "Home Theater" && !item.type) {
-				item.type = "module";
-			} else if (item.name === "Home Theater") {
-				item.type = "furnishing";
-			}
-		});
-		db.player.set(`${playerId}`, hangar, "hangar");
-
-
-		fleet.ships.forEach(ship => {
-			ship.modules.forEach(modules => {
-				if (!modules.type) {
-					modules.type = "module";
-				}
-			})
-		})
-		db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
-
-		
-
-
 
 		let target;
 		let shipOption;
@@ -103,7 +77,7 @@ module.exports = {
 				//console.log("Collected values:", i.values);
 				selections[i.customId] = parseInt(i.values[0]);
 				//console.log(selections['ship-inspect']);
-				i.followUp({content: `Use /fleet manage:view to see all your ships`, ephemeral: true});
+				i.followUp({content: `Use /fleet manage:overview to see all your ships`, ephemeral: true});
 				collector.stop();
 			})
             
@@ -139,19 +113,19 @@ module.exports = {
 					console.log(err);
 				}
 				
-				//interaction.channel.send({content: `Use /fleet manage:view to see all your ships`, ephemeral: true});
+				//interaction.channel.send({content: `Use /fleet manage:overview to see all your ships`, ephemeral: true});
 	
 			})
-		} else if (manageOption === 'view') {
+		} else if (manageOption === 'overview') {
 			// SHOW ALL SHIPS
 			let shipDisplay = fleet.showAllShips();
-			//console.log(fleet);
+			//console.log(fleet.ships[1].location);
 				
 			const fleetDisplay = new EmbedBuilder()
 			.setTitle(`Captain ${member.displayName}`)
-			.setDescription(`__Fleet Overview__\nBank: ${credits} C\n*${activity}*`)
+			.setDescription(`__Fleet Overview__\nBank: ${credits} C`)
 			.addFields(
-				{ name: 'Location', value: `${locationDisplay}`},
+				//{ name: 'Location', value: `${locationDisplay}`},
 				{ name: 'Ships', value: `${shipDisplay}` },
 				// { name: 'Drone Ships', value: `${drones}`},
 				// { name: 'Available Modules', value: `${modules}`},
@@ -204,6 +178,8 @@ module.exports = {
 	
 				fleet.setActiveShip(target);
 				db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+				updateShipRoles(member, target.capabilities, true);
+
 				// interaction.channel.send({content: `${fleet.getActiveShip().name} is set to ACTIVE.`, ephemeral: true});
 			})
 		} else if (manageOption === 'rename') {
@@ -212,6 +188,13 @@ module.exports = {
 				await interaction.editReply({content: `Please specify a name`, ephemeral: true});
 				return;
 			}
+
+			fleet.ships.forEach(ship => {
+				if (ship.name === nameOption) {
+					interaction.channel.send({content: `You already have a ship with this name.`, ephemeral: true});
+					return;
+				}
+			})
 
 			// Create a dropdown menu with ships as options
 			const shipRow = new ActionRowBuilder()
@@ -247,8 +230,8 @@ module.exports = {
 					const oldActiveName = activeShip.name;
 					target.name = nameOption;
 
-					console.log('RENAMING SHIP AND SAVING TO FLEET');
-					console.log(fleet);
+					//console.log('RENAMING SHIP AND SAVING TO FLEET');
+					//console.log(fleet);
 					db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 
 					const updatedFleet = new Fleet(db.player.get(`${playerId}`, "fleet"));
@@ -364,6 +347,16 @@ module.exports = {
 
 					target = fleet.ships[shipOption];
 					//console.log(target);
+
+					try {
+						if (!target.location.currentLocation.activities.includes("Hangar")) {
+							interaction.channel.send({content: `${target.name} is not at a Hangar.`, ephemeral: true});
+							return;
+						}
+					} catch (err) {
+						interaction.channel.send({content: `${target.name} is not at a Hangar.`, ephemeral: true});
+						return;
+					}
 	
 					if (typeOption === "module") {
 						if (target.modules.length >= target.modCapacity) {
@@ -371,8 +364,8 @@ module.exports = {
 							return;
 						}
 						
-						console.log(moduleList);
-						console.log(moduleList[moduleOption]);
+						//console.log(moduleList);
+						//console.log(moduleList[moduleOption]);
 						const moduleToEquip = withdrawItemFromHangar(playerId, hangar, capitalize(moduleList[moduleOption].name), 1);
 						if (!moduleToEquip) {
 							interaction.channel.send({content: `Module not found`, ephemeral: true});

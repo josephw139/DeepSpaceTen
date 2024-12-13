@@ -25,8 +25,6 @@ module.exports = {
             interaction.editReply(playerData);
         }
 		const fleet = playerData.fleet;
-		const location = playerData.location;
-		const locationDisplay = playerData.locationDisplay;
 		const activeShip = playerData.activeShip;
 		const credits = playerData.credits;
 

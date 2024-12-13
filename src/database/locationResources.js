@@ -13,56 +13,56 @@ const resources = {
     Ore: {
         Iron: {
             type: "Ore",
-            weight: 3,
-            sellPrice: 70,
+            weight: 5,
+            sellPrice: 40,
             availability: {
-                Very_Low: { min: 50, max: 90 },
-                Low: { min: 70, max: 120 },
-                Medium: { min: 100, max: 150 },
-                High: { min: 130, max: 190 },
-                Very_High: { min: 160, max: 220 },
-                Rich: { min: 190, max: 250 },
+                Very_Low: { min: 15, max: 25 },
+                Low: { min: 25, max: 35 },
+                Medium: { min: 35, max: 45 },
+                High: { min: 40, max: 50 },
+                Very_High: { min: 45, max: 55 },
+                Rich: { min: 50, max: 60 },
             }
         },
         Platinum: {
             type: "Ore",
-            weight: 5,
-            sellPrice: 120,
+            weight: 10,
+            sellPrice: 90,
             availability: {
-                Very_Low: { min: 10, max: 20 },
-                Low: { min: 15, max: 30 },
-                Medium: { min: 25, max: 40 },
-                High: { min: 35, max: 50 },
-                Very_High: { min: 45, max: 60 },
-                Rich: { min: 55, max: 70 },
+                Very_Low: { min: 13, max: 18 },
+                Low: { min: 18, max: 23 },
+                Medium: { min: 23, max: 28 },
+                High: { min: 25, max: 30 },
+                Very_High: { min: 28, max: 33 },
+                Rich: { min: 30, max: 36 },
             }
         }
     },
     Gas: {
         Helium_3: {
             type: "Gas",
-            sellPrice: 40,
-            weight: 1,
+            sellPrice: 15,
+            weight: 3,
             availability: {
-                Very_Low: { min: 80, max: 140 },
-                Low: { min: 120, max: 200 },
-                Medium: { min: 180, max: 260 },
-                High: { min: 240, max: 320 },
-                Very_High: { min: 300, max: 380 },
-                Rich: { min: 360, max: 440 },
+                Very_Low: { min: 50, max: 100 },
+                Low: { min: 70, max: 120 },
+                Medium: { min: 100, max: 150 },
+                High: { min: 130, max: 180 },
+                Very_High: { min: 150, max: 210 },
+                Rich: { min: 180, max: 230 },
             }
         },
         Tritium: {
             type: "Gas",
-            sellPrice: 50,
-            weight: 0.9,
+            sellPrice: 20,
+            weight: 3,
             availability: {
-                Very_Low: { min: 90, max: 160 },
-                Low: { min: 140, max: 220 },
-                Medium: { min: 200, max: 300 },
-                High: { min: 280, max: 360 },
-                Very_High: { min: 340, max: 420 },
-                Rich: { min: 400, max: 480 },
+                Very_Low: { min: 50, max: 100 },
+                Low: { min: 70, max: 120 },
+                Medium: { min: 100, max: 150 },
+                High: { min: 130, max: 180 },
+                Very_High: { min: 150, max: 210 },
+                Rich: { min: 180, max: 230 },
             }
         }
     }
@@ -103,10 +103,10 @@ const uniqueItems = {
 
 
 const researchSellPrice = {
-    Bio: 1250,
-    Tech: 1250,
-    Cosmic: 1250,
-    Exotic: 1250,
+    Bio: 1000,
+    Tech: 1000,
+    Cosmic: 1000,
+    Exotic: 1000,
 }
 
 
@@ -115,33 +115,33 @@ const researchTypes = {
         Very_Low: { min: 1, max: 2 },
         Low: { min: 1, max: 3 },
         Medium: { min: 2, max: 3 },
-        High: { min: 3, max: 5 },
-        Very_High: { min: 4, max: 6 },
-        Rich: { min: 4, max: 8 },
+        High: { min: 2, max: 4 },
+        Very_High: { min: 3, max: 5 },
+        Rich: { min: 3, max: 6 },
     },
     Tech: {
         Very_Low: { min: 1, max: 2 },
         Low: { min: 1, max: 3 },
         Medium: { min: 2, max: 3 },
-        High: { min: 3, max: 5 },
-        Very_High: { min: 4, max: 6 },
-        Rich: { min: 4, max: 8 },
+        High: { min: 2, max: 4 },
+        Very_High: { min: 3, max: 5 },
+        Rich: { min: 3, max: 6 },
     },
     Cosmic: {
         Very_Low: { min: 1, max: 2 },
         Low: { min: 1, max: 3 },
         Medium: { min: 2, max: 3 },
-        High: { min: 3, max: 5 },
-        Very_High: { min: 4, max: 6 },
-        Rich: { min: 4, max: 8 },
+        High: { min: 2, max: 4 },
+        Very_High: { min: 3, max: 5 },
+        Rich: { min: 3, max: 6 },
     },
     Exotic: {
         Very_Low: { min: 1, max: 2 },
         Low: { min: 1, max: 3 },
         Medium: { min: 2, max: 3 },
-        High: { min: 3, max: 5 },
-        Very_High: { min: 4, max: 6 },
-        Rich: { min: 4, max: 8 },
+        High: { min: 2, max: 4 },
+        Very_High: { min: 3, max: 5 },
+        Rich: { min: 3, max: 6 },
     }
 }
 
@@ -177,7 +177,6 @@ module.exports = {
     researchTypes,
     uniqueItems,
     hiddenMessages,
-    calculateWeight,
     randomizeInput,
     getRndInteger,
  };

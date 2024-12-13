@@ -7,9 +7,13 @@ const { Guild, GuildMember } = require('discord.js');
  * @param {GuildMember} member The guild member whose roles need to be updated.
  * @param {Array} capabilities The capabilities of the active ship.
  */
-async function updateShipRoles(member, capabilities) {
-    const rolesToRemove = ['1301935269305389178', '1301935368664518737', '1301935428160716861', '1301935457436831754'];
-    await member.roles.remove(rolesToRemove);
+async function updateShipRoles(member, capabilities, removeAll) {
+
+    if (removeAll) {
+        const rolesToRemove = ['1301935269305389178', '1301935368664518737', '1301935428160716861', '1301935457436831754'];
+        await member.roles.remove(rolesToRemove);
+    }
+    
 
     // Add new roles based on the ship's capabilities
     capabilities.forEach(async (capability) => {

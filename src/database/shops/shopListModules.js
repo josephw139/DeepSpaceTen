@@ -5,24 +5,37 @@ const { Fleet, capitalize } = require('../../modules/ships/base');
 // rarity: 1 - common, 2 - uncommon, 3 - rare, 4 - extra rare, - 5 super extra rare
 
 const shopListModules = {
-    cargo_storage: {
+    exterior_cargo_bay: {
         type: "module",
         name: `Exterior Cargo Bay`,
-        description: `Increase your ship's cargo capacity by 600.\nSpecial: Stacks`,
+        description: `Increase your ship's cargo capacity by 2000.\nSpecial: Stacks`,
+        price: 24000,
+        quantity: 1,
+        weight: 0,
+        rarity: 3,
+        stacking: true,
+        stats: {
+            cargoCapacity: +2000,
+        }
+    },
+    cargo_hold_expansion: {
+        type: "module",
+        name: `Exterior Cargo Bay`,
+        description: `Increase your ship's cargo capacity by 800.\nSpecial: Stacks`,
         price: 10000,
         quantity: 1,
         weight: 0,
         rarity: 1,
         stacking: true,
         stats: {
-            cargoCapacity: +600,
+            cargoCapacity: +800,
         }
     },
     mining_apparatus: {
         type: "module",
         name: `Mining Apparatus`,
         description: `Allows your ship to mine, or further increases mining outputs.\nSpecial: Stacks`,
-        price: 15000,
+        price: 30000,
         quantity: 1,
         weight: 0,
         rarity: 1,
@@ -35,11 +48,41 @@ const shopListModules = {
         },
         capabilities: ["Mining"],
     },
+    gas_extractor: {
+        type: "module",
+        name: `Gas Extractor`,
+        description: `Increases gas mining efficiency. Does not add Mining capability.\nSpecial: Stacks`,
+        price: 40000,
+        quantity: 1,
+        weight: 0,
+        rarity: 2,
+        stacking: true,
+        stats: {
+            extractionPower: {
+                gas: 1,
+            },
+        },
+    },
+    ore_refinery: {
+        type: "module",
+        name: `Ore Refinery`,
+        description: `In-ship refinery allows for an increased ore output. Does not add Mining capability.\nSpecial: Stacks`,
+        price: 30000,
+        quantity: 1,
+        weight: 0,
+        rarity: 2,
+        stacking: true,
+        stats: {
+            extractionPower: {
+                ore: 1,
+            },
+        },
+    },
     science_lab: {
         type: "module",
         name: `Science Lab`,
         description: `Allows your ship to research, or further increases research outputs.\nSpecial: Stacks`,
-        price: 15000,
+        price: 30000,
         quantity: 1,
         weight: 0,
         rarity: 1,
@@ -73,10 +116,10 @@ const shopListModules = {
             travelSpeed: +1,
         },
     },
-    warp_drives: {
+    experimental_drive_upgrade: {
         type: "module",
-        name: `Warp Drive Thrusters`,
-        description: `Warp Drives: Psuedo-science or the next age of space travel? Only time will tell! Increases Speed.`,
+        name: `Experimental Drive Upgrade`,
+        description: `Faster is always better. Increases Speed.`,
         price: 15000,
         quantity: 1,
         weight: 0,

@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData, getCurrentLocationFromPlayerData } = require('../../database/playerFuncs.js');
-const { levelWeights, miningSellPrice, miningResources, researchSellPrice, researchTypes, calculateWeight } = require('../../database/locationResources.js');
+const { levelWeights, researchSellPrice, researchTypes } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -32,11 +32,12 @@ module.exports = {
             interaction.editReply(playerData);
         }
         
-        const {
-            fleet, location, locationDisplay, activeShip, isEngaged
-        } = playerData;
+        const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = playerData;
 
-        const liveLocation = getCurrentLocationFromPlayerData(location);
+        const liveLocation = getCurrentLocationFromPlayerData(activeShip.location);
 
 		if (job === "start") {
 			if (!isEngaged) {
@@ -45,7 +46,7 @@ module.exports = {
                 const minCrew = activeShip.crew.length >= activeShip.crewCapacity[0];
 
 				if (canResearch && isResearchShip && minCrew ) {
-					startResearch(member.id, liveLocation, activeShip, fleet);
+					startResearch(member.id, liveLocation, activeShip.id, fleet);
 					await interaction.editReply({ content: `You've started researching! Results will be produced every hour`, ephemeral: true });
 				} else if (!canResearch) {
 					await interaction.editReply({ content: `You can't research at this location`, ephemeral: true });
@@ -59,14 +60,15 @@ module.exports = {
 			}
 		} else {
 			if (isEngaged) {
-				const researchDetails = db.player.get(`${playerId}`, "research.details");
+				const researchDetails = db.player.get(`${playerId}`, `research.${activeShip.id}.details`);
 				const jobToCancel = jobReferences.get(researchDetails.jobId);
 				if (jobToCancel) {
 					jobToCancel.cancel();
 					jobReferences.delete(researchDetails.jobId); // Remove the reference after cancelling
-					db.player.delete(`${playerId}`, "research.details"); // Clean up database entries
-					db.player.delete(`${playerId}`, "research.startTime");
-					db.player.set(`${playerId}`, false, "engaged");
+					db.player.delete(`${playerId}`, `research.${activeShip.id}.details`); // Clean up database entries
+					db.player.delete(`${playerId}`, `research.${activeShip.id}.startTime`);
+					activeShip.engaged = false;
+                    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
                     db.player.set(`${playerId}`, "Crew on standby, ship conserving power", "activity");
 					//await interaction.reply({ content: `Research job finished`, ephemeral: true });
 
@@ -78,18 +80,20 @@ module.exports = {
                     
 				}
 			} else {
-				await interaction.editReply({ content: `You weren't researching.`, ephemeral: true });
+				await interaction.editReply({ content: `This ship was not researching.`, ephemeral: true });
 			}
 		}
 	}
 };
 
-function startResearch(playerId, location, activeShip, fleet) {
+function startResearch(playerId, location, shipId, fleet) {
+    const ship = fleet.ships.find(s => s.id === shipId);
     const startTime = new Date();
 
-    db.player.set(`${playerId}`, startTime, "research.startTime");
-	db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `${activeShip.name}'s crew is researching at ${location.name}`, "activity");
+    db.player.set(`${playerId}`, startTime, `research.${ship.id}.startTime`);
+	ship.engaged = true;
+    ship.activity = `${ship.name}'s crew is researching at ${location.name}`;
+    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 
 
     // Get the current minute to start the cron job at that minute every hour
@@ -100,59 +104,50 @@ function startResearch(playerId, location, activeShip, fleet) {
     // Schedule a job to run every 1 hour 
 	const jobId = `${playerId}-${Date.now()}`;
     const job = schedule.scheduleJob(jobId, cronExpression, function() {
-		const shipName = activeShip.name;
-        const ship = getShipFromFleet(shipName, fleet);
-		// console.log(ship);
-		
 
         if (ship) {
             try {
-                const resource = calculateResearch(location, activeShip.morale, activeShip.researchPower);
+                const resource = calculateResearch(location, ship.morale, ship.researchPower);
                 //const totalWeight = getTotalWeight(ship.inventory);
                 // const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
 				// console.log(resource);
-                updateShipInventory(playerId, shipName, resource, fleet);
+                updateShipInventory(playerId, shipId, resource, fleet);
 
             } catch (e) {
                 console.error(e);
             }
         } else {
-			console.log(activeShip);
 			console.log(ship);
 		}
     });
 	jobReferences.set(jobId, job);
-	db.player.set(`${playerId}`, { jobId: jobId, startTime: new Date() }, "research.details");
+	db.player.set(`${playerId}`, { jobId: jobId, startTime: new Date() }, `research.${ship.id}.details`);
 
 }
 
 
-function updateShipInventory(playerId, shipName, resource, fleet) {
-    const shipIndex = fleet.ships.findIndex(s => s.name === shipName);
-    if (shipIndex !== -1) {
-        const ship = fleet.ships[shipIndex];
-        const resourceEntry = ship.lab.find(item => item.name === resource.type);
-        // const resourceWeight = calculateWeight(resource.type, resource.quantity);
+function updateShipInventory(playerId, shipId, resource, fleet) {
+    const ship = fleet.ships.find(s => s.id === shipId);
+   
+    const resourceEntry = ship.lab.find(item => item.name === resource.type);
+    // const resourceWeight = calculateWeight(resource.type, resource.quantity);
 
-        if (resourceEntry) {
-            resourceEntry.quantity += resource.quantity;
-            // resourceEntry.weight += resourceWeight;
-        } else {
-            ship.lab.push({
-                name: resource.type,
-                quantity: resource.quantity,
-                // weight: resourceWeight,
-                description: resource.type,
-                sellPrice: resource.sellPrice,
-            });
-        }
-
-        //fleet[shipIndex] = ship; 
-        db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+    if (resourceEntry) {
+        resourceEntry.quantity += resource.quantity;
+        // resourceEntry.weight += resourceWeight;
     } else {
-        console.error(`Ship with name ${shipName} not found in the fleet.`);
+        ship.lab.push({
+            name: resource.type,
+            quantity: resource.quantity,
+            // weight: resourceWeight,
+            description: resource.type,
+            sellPrice: resource.sellPrice,
+        });
     }
+
+    //fleet[shipIndex] = ship; 
+    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
 }
 
 
@@ -193,7 +188,7 @@ function calculateResearch(location, morale, researchPower) {
     }
 
     const { min, max } = researchTypes[selectedType][researchLevel];
-    let researchQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * researchPower;
+    let researchQuantity = (Math.floor(Math.random() * (max - min + 1)) + min) * researchPower.base;
     researchQuantity = applyMoraleEffects(researchQuantity, morale);
     
     return {

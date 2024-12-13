@@ -9,7 +9,7 @@ function generateRandomCrewMember() {
 	const attitude = attitudes[Math.floor(Math.random() * attitudes.length)];
 	const career = careers[Math.floor(Math.random() * careers.length)];
 	const age = Math.floor(Math.random() * (60 - 18 + 1)) + 18; // Generate a random age between 18 and 60
-    const cost = Math.floor(Math.random() * (9000 - 6000 + 1)) + 6000; // Generate a random cost between 6000 and 9000
+    const cost = Math.floor(Math.random() * (30000 - 20000 + 1)) + 20000; // Generate a random cost between 20000 and 30000
 	let stats = {
 		Danger: 0,
 		Tech: 0,

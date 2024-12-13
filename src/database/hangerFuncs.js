@@ -1,4 +1,4 @@
-const { calculateWeight } = require('./locationResources.js');
+const { resources } = require('./locationResources.js');
 const db = require('./db.js');
 
 
@@ -28,26 +28,38 @@ function removeItemFromShipInventory(playerId, fleet, activeShip, itemName, quan
     // console.log("Fleet:");
     // Adjust quantity or remove item from inventory
     if (item.quantity > quantity) {
-        if (isLab) {
-            ship.lab[itemIndex] = {
-                ...item,
-                quantity: item.quantity - quantity,
-            };
-        } else {
-            ship.inventory[itemIndex] = {
-                ...item,
-                quantity: item.quantity - quantity,
-                weight: calculateWeight(item.name, item.quantity - quantity)
-            };
+
+        let objectWeight;
+        let weightAdjusted;
+        try {
+            objectWeight = resources[item.description][item.name].weight;
+            weightAdjusted = Math.floor((item.quantity - quantity) * objectWeight);
+        } catch (err) {
+            //console.error("Error fetching item weight:", err);
+            objectWeight = item.weight / item.quantity; // Fallback to per unit weight based on current data
+            weightAdjusted = Math.floor((item.quantity - quantity) * objectWeight);
         }
 
-        // console.log(fleet);
+        const updatedItem = {
+            ...item,
+            quantity: item.quantity - quantity,
+            weight: weightAdjusted
+        };
+
+        if (isLab) {
+            ship.lab[itemIndex] = updatedItem;
+        } else {
+            ship.inventory[itemIndex] = updatedItem;
+        }
+
+        console.log(`Updated item in inventory:`, updatedItem);
         db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+
         // Return a new object representing the removed portion
         return {
             ...item,
             quantity: quantity,
-            weight: calculateWeight(item.name, quantity)
+            weight: Math.floor(objectWeight * quantity)
         };
     } else {
         // Remove the item entirely if quantity matches
@@ -78,8 +90,8 @@ function updateHangar(playerId, hangar, itemToAdd) {
         hangar.push(itemToAdd);
     }
 
-    console.log("Updated Hangar:");
-    console.log(hangar);
+    //console.log("Updated Hangar:");
+    //console.log(hangar);
     db.player.set(`${playerId}`, hangar, "hangar");
 }
 
@@ -96,8 +108,20 @@ function withdrawItemFromHangar(playerId, hangar, itemName, quantityToRemove) {
 
     // Adjust or remove item from hangar
     if (item.quantity > quantity) {
+
+        let objectWeight;
+        let weightAdjusted;
+        try {
+            objectWeight = resources[item.description][item.name].weight;
+            weightAdjusted = Math.floor((item.quantity - quantity) * objectWeight);
+        } catch (err) {
+            //console.error("Error fetching item weight:", err);
+            objectWeight = item.weight / item.quantity; // Fallback to per unit weight based on current data
+            weightAdjusted = Math.floor((item.quantity - quantity) * objectWeight);
+        }
+
         hangar[itemIndex].quantity -= quantity;
-        hangar[itemIndex].weight -= calculateWeight(item.name, quantity);
+        hangar[itemIndex].weight -= weightToRemove;
     } else {
         hangar.splice(itemIndex, 1); // Remove the item if all of it is withdrawn
     }

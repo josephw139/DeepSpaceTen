@@ -3,7 +3,7 @@ const { Fleet } = require('../../modules/ships/base.js');
 const sectors = require('../../database/locations.js');
 const db = require('../../database/db.js');
 const { getPlayerData, getCurrentLocationFromPlayerData } = require('../../database/playerFuncs.js');
-const { levelWeights, miningSellPrice, miningResources, resources, calculateWeight, hiddenMessages, randomizeInput } = require('../../database/locationResources.js');
+const { levelWeights, miningSellPrice, miningResources, resources, hiddenMessages, randomizeInput } = require('../../database/locationResources.js');
 const schedule = require('node-schedule');
 
 const jobReferences = new Map();
@@ -32,9 +32,10 @@ module.exports = {
             interaction.editReply(playerData);
         }
         
-        const {
-            fleet, location, locationDisplay, activeShip, isEngaged
-        } = playerData;
+        const { 
+			hangar, fleet, activeShip, isEngaged,
+			location, activity, locationDisplay, credits 
+		} = playerData;
 
         const liveLocation = getCurrentLocationFromPlayerData(location);
 
@@ -47,7 +48,7 @@ module.exports = {
                 const isCargoAlmostFull = Math.abs(activeShip.cargoCapacity - totalWeight) <= 10;
                 
 				if (canMine && isMiningShip && minCrew && !isCargoAlmostFull ) {
-					startMining(interaction, member.id, liveLocation, activeShip, fleet);
+					startMining(interaction, member.id, liveLocation, activeShip.id, fleet);
 					await interaction.editReply({ content: `You've started mining! Resources will be extracted every hour`, ephemeral: true });
 				} else if (!canMine) {
 					await interaction.editReply({ content: `You can't mine at this location`, ephemeral: true });
@@ -63,15 +64,17 @@ module.exports = {
 			}
 		} else {
 			if (isEngaged) {
-				const miningDetails = db.player.get(`${playerId}`, "mining.details");
+				const miningDetails = db.player.get(`${playerId}`, `mining.${activeShip.id}.details`);
 				const jobToCancel = jobReferences.get(miningDetails.jobId);
 				if (jobToCancel) {
 					jobToCancel.cancel();
 					jobReferences.delete(miningDetails.jobId); // Remove the reference after cancelling
-					db.player.delete(`${playerId}`, "mining.details"); // Clean up database entries
-					db.player.delete(`${playerId}`, "mining.startTime");
-					db.player.set(`${playerId}`, false, "engaged");
-                    db.player.set(`${playerId}`, "Crew on standby, ship conserving power.", "activity");
+					db.player.delete(`${playerId}`, `mining.${activeShip.id}.details`); // Clean up database entries
+					db.player.delete(`${playerId}`, `mining.${activeShip.id}.startTime`);
+                    activeShip.engaged = false;
+                    activeShip.activity = "Crew on standby, ship conserving power."
+                    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+
 					//await interaction.reply({ content: `Mining job finished`, ephemeral: true });
 
                     if (!interaction.deferred && !interaction.replied) {
@@ -82,43 +85,45 @@ module.exports = {
                     
 				}
 			} else {
-				await interaction.editReply({ content: `You weren't mining.`, ephemeral: true });
+				await interaction.editReply({ content: `This ship was not mining.`, ephemeral: true });
 			}
 		}
 	}
 };
 
-function startMining(interaction, playerId, location, activeShip, fleet) {
+function startMining(interaction, playerId, location, shipId, fleet) {
+    const ship = fleet.ships.find(s => s.id === shipId);
     const startTime = new Date();
+    //console.log(location.name);
 
-    db.player.set(`${playerId}`, startTime, "mining.startTime");
-	db.player.set(`${playerId}`, true, "engaged");
-    db.player.set(`${playerId}`, `${activeShip.name}'s crew is mining at ${location.name}`, "activity");
+    db.player.set(`${playerId}`, startTime, `mining.${ship.id}.startTime`);
+    ship.engaged = true;
+    ship.activity = `${ship.name}'s crew is mining at ${location.name}`;
+    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+
     
 
     // Get the current minute to start the cron job at that minute every hour
     const currentMinute = startTime.getMinutes();
-    const cronExpression = `* * * * *`;  // This will fire at 'currentMinute' every hour
+    const cronExpression = `${currentMinute} * * * *`;  // This will fire at 'currentMinute' every hour
 
     // Schedule a job to run every 1 hour (change the ${currentMinute} to a * to run every minute)
 
 	const jobId = `${playerId}-${Date.now()}`;
     const job = schedule.scheduleJob(jobId, cronExpression, function() {
-		const shipName = activeShip.name;
-        const ship = getShipFromFleet(shipName, fleet);
+        const ship = fleet.ships.find(s => s.id === shipId);
 		// console.log(ship);
 		
-
         if (ship) {
             try {
-                const resource = calculateMinerals(location, activeShip.morale, activeShip.extractionPower);
-                console.log(resource);
+                const resource = calculateMinerals(location, ship.morale, ship.extractionPower);
+                //console.log(resource);
                 const totalWeight = getTotalWeight(ship.inventory);
                 const resourceWeight = resource.weight;
 
 				// console.log(resource);
                 if (totalWeight + resourceWeight <= ship.cargoCapacity) {
-                    updateShipInventory(playerId, shipName, resource, fleet);
+                    updateShipInventory(playerId, ship.id, resource, fleet);
                 } else {
                     const remainingCapacity = ship.cargoCapacity - totalWeight;
 					if (remainingCapacity > 0) {
@@ -126,27 +131,28 @@ function startMining(interaction, playerId, location, activeShip, fleet) {
                 
                         // Update the inventory with the adjusted amount
                         if (adjustedResourceAmount.quantity > 0) {
-                            updateShipInventory(playerId, shipName, adjustedResourceAmount, fleet);
+                            updateShipInventory(playerId, ship.id, adjustedResourceAmount, fleet);
                         }
                     }
 
 					this.cancel(); // Cancel the scheduled job after adding the last bit of resources
-					db.player.delete(`${playerId}`, "mining.startTime");
-					db.player.set(`${playerId}`, false, "engaged");
-                    db.player.set(`${playerId}`, "Crew on standby, ship conserving power.", "activity");
-                    interaction.channel.send({ content: `<@${playerId}> ${activeShip.name}'s crew loads one last crate into the hold - your cargo hold is full.` });
+					db.player.delete(`${playerId}`, `mining.${ship.id}.startTime`);
+                    ship.engaged = false;
+                    ship.activity = "Crew on standby, ship conserving power.";
+                    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+                    interaction.channel.send({ content: `<@${playerId}> ${ship.name}'s crew loads one last crate into the hold - your cargo hold is full.` });
 
                 }
             } catch (e) {
                 console.error(e);
             }
         } else {
-			console.log(activeShip);
+            console.log("\n\nNO SHIP\n\n")
 			console.log(ship);
 		}
     });
 	jobReferences.set(jobId, job);
-	db.player.set(`${playerId}`, { jobId: jobId, startTime: new Date() }, "mining.details");
+	db.player.set(`${playerId}`, { jobId: jobId, startTime: new Date() }, `mining.${ship.id}.details`);
 
 }
 
@@ -169,31 +175,28 @@ function calculateAdjustedResourceAmount(resource, remainingCapacity) {
 }
 
 
-function updateShipInventory(playerId, shipName, resource, fleet) {
-    const shipIndex = fleet.ships.findIndex(s => s.name === shipName);
-    if (shipIndex !== -1) {
-        const ship = fleet.ships[shipIndex];
-        const resourceEntry = ship.inventory.find(item => item.name === resource.type);
-        const resourceWeight = resource.weight;
+function updateShipInventory(playerId, shipId, resource, fleet) {
+    const ship = fleet.ships.find(s => s.id === shipId);
 
-        if (resourceEntry) {
-            resourceEntry.quantity += resource.quantity;
-            resourceEntry.weight += resourceWeight;
-        } else {
-            ship.inventory.push({
-                name: resource.type,
-                quantity: resource.quantity,
-                weight: resourceWeight,
-                description: resource.description,
-                sellPrice: resource.sellPrice,
-            });
-        }
+    const resourceEntry = ship.inventory.find(item => item.name === resource.type);
+    const resourceWeight = resource.weight;
 
-        //fleet[shipIndex] = ship; 
-        db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+    if (resourceEntry) {
+        resourceEntry.quantity += resource.quantity;
+        resourceEntry.weight += resourceWeight;
     } else {
-        console.error(`Ship with name ${shipName} not found in the fleet.`);
+        ship.inventory.push({
+            name: resource.type,
+            quantity: resource.quantity,
+            weight: resourceWeight,
+            description: resource.description,
+            sellPrice: resource.sellPrice,
+        });
     }
+
+    //fleet[shipIndex] = ship; 
+    db.player.set(`${playerId}`, fleet.fleetSave(), "fleet");
+    
 }
 
 

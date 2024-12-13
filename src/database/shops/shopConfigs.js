@@ -6,8 +6,8 @@ const shopInventories = {
         equipment: [],
         lastUpdateTime: null,
         config: {
-            ships: 1,
-            modules: 2,
+            ships: 2,
+            modules: 3,
             furnishings: 1,
             //equipment: 1,
         }
